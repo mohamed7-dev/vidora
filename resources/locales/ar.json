@@ -1,0 +1,126 @@
+{
+  "appSidebar": {
+    "general": {
+      "title": "العام",
+      "items": {
+        "home": "الرئيسية",
+        "history": "السجل"
+      }
+    },
+    "downloads": {
+      "title": "التحميلات",
+      "items": {
+        "downloading": "التحميلات",
+        "completed": "الكامل"
+      }
+    }
+  },
+  "appHeader": {
+    "actionsMenu": {
+      "preferences": "الإعدادات",
+      "about": "عن التطبيق"
+    }
+  },
+  "generic": {
+    "actions": {
+      "reset": "إعادة التعيين"
+    }
+  },
+  "pref": {
+    "tabs": {
+      "general": "عام",
+      "downloader": "التحميل",
+      "converter": "المحول"
+    },
+    "general": {
+      "section": {
+        "userInterface": "واجهة المستخدم",
+        "downloads": "التنزيلات",
+        "application": "التطبيق"
+      },
+      "closeAppToSystemTray": {
+        "title": "إغلاق التطبيق إلى شريط النظام"
+      },
+      "restartApp": {
+        "title": "تطبيق لغة النظام",
+        "button": "إعادة تشغيل التطبيق"
+      },
+      "theme": {
+        "title": "الوضع",
+        "options": {
+          "system": "النظام",
+          "dark": "داكن",
+          "light": "فاتح"
+        },
+        "placeholder": "اختر"
+      },
+      "language": {
+        "title": "اللغة",
+        "options": {
+          "en": "English",
+          "ar": "العربية"
+        },
+        "placeholder": "اختر اللغة"
+      },
+      "downloadPath": {
+        "title": "مسار التنزيل",
+        "change": "تغيير"
+      },
+      "maxDownloads": {
+        "title": "الحد الأقصى لعدد التنزيلات"
+      },
+      "videoQuality": {
+        "title": "جودة الفيديو المفضلة",
+        "options": {
+          "1080p": "1080p",
+          "720p": "720p",
+          "480p": "480p",
+          "360p": "360p"
+        },
+        "placeholder": "اختر الجودة"
+      },
+      "videoCodec": {
+        "title": "ترميز الفيديو المفضل",
+        "options": {
+          "h264": "H.264",
+          "h265": "H.265",
+          "vp9": "VP9",
+          "av1": "AV1"
+        },
+        "placeholder": "اختر الترميز"
+      },
+      "audioQuality": {
+        "title": "جودة الصوت المفضلة",
+        "options": {
+          "128kbps": "128kbps",
+          "192kbps": "192kbps",
+          "256kbps": "256kbps",
+          "320kbps": "320kbps"
+        },
+        "placeholder": "اختر جودة الصوت"
+      },
+      "fileNameFormatPlaylists": {
+        "title": "تنسيق اسم الملف لقوائم التشغيل"
+      },
+      "folderNameFormatPlaylists": {
+        "title": "تنسيق اسم المجلد لقوائم التشغيل"
+      }
+    },
+    "downloader": {
+      "section": {
+        "downloader": "تحميل"
+      },
+      "cookiesFromBrowser": {
+        "title": "(Cookies) من المتصفح",
+        "options": {
+          "none": "لا شيء"
+        },
+        "placeholder": "اختر"
+      },
+      "proxyServer": {
+        "title": "(Proxy) خادم الوكالات",
+        "placeholder": "أدخل خادم الوكالات"
+      }
+    }
+  }
+}

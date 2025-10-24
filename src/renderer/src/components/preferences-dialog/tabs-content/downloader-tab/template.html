@@ -1,0 +1,30 @@
+<template id="downloader-tab-template">
+  <div class="tab-content__sections-container">
+    <section class="tab-content__section">
+      <h1 class="tab-content__section__title" data-i18n="pref.downloader.section.downloader">
+        Downloader
+      </h1>
+      <div class="tab-content__section__content">
+        <article class="tab-content__section__content__article">
+          <h2
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.downloader.cookiesFromBrowser.title"
+          >
+            Cookies From Browser
+          </h2>
+          <ui-select id="cookies-from-browser-select" placeholder="Select" variant="outline">
+          </ui-select>
+        </article>
+        <article class="tab-content__section__content__article">
+          <h2 data-i18n="pref.downloader.proxyServer.title">Proxy Server</h2>
+          <ui-input
+            dir="ltr"
+            type="text"
+            placeholder="http://localhost:8080"
+            id="proxy-server-input"
+          />
+        </article>
+      </div>
+    </section>
+  </div>
+</template>

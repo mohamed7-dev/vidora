@@ -1,0 +1,28 @@
+:host {
+  display: contents;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--sidebar);
+  color: var(--sidebar-foreground);
+  border-right: 1px solid var(--border);
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 0.75rem;
+  padding-top: calc(var(--toolbar-height) + 1rem);
+}
+
+/* Hidden on small screens */
+@media (max-width: 767px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+/* Visible on medium+ screens */
+@media (min-width: 768px) {
+  .sidebar {
+    display: block;
+  }
+}

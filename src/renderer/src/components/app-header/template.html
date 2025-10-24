@@ -1,0 +1,104 @@
+<template id="app-header-template">
+  <header>
+    <div class="app-header__left">
+      <ui-dialog>
+        <ui-button
+          class="app-header__new-button"
+          id="app-header-new-button"
+          slot="trigger"
+          variant="ghost"
+          size="icon"
+          style="--ui-button-icon-size: 22px"
+        >
+        </ui-button>
+
+        <div slot="content" style="padding: 1rem">
+          <h3>Dialog content</h3>
+          <p>Place any content here.</p>
+        </div>
+
+        <div slot="footer">
+          <ui-button slot="cancel" variant="secondary" size="sm">Cancel</ui-button>
+          <ui-button variant="default" size="sm">Confirm</ui-button>
+        </div>
+      </ui-dialog>
+      <h1>Downloader</h1>
+      <ui-dropdown align="center">
+        <ui-button
+          class="app-header__dropdown-button"
+          id="app-header-dropdown-button"
+          slot="trigger"
+          variant="ghost"
+          size="icon"
+          style="--ui-button-icon-size: 22px"
+        >
+        </ui-button>
+        <div slot="content" style="min-width: 180px"></div>
+        <div
+          slot="menu-item"
+          class="app-header__dropdown-menu-item"
+          id="app-header-menu-preferences"
+          data-i18n="appHeader.actionsMenu.preferences"
+        >
+          Preferences
+        </div>
+        <div
+          slot="menu-item"
+          class="app-header__dropdown-menu-item"
+          data-i18n="appHeader.actionsMenu.about"
+        >
+          About
+        </div>
+      </ui-dropdown>
+      <preferences-dialog></preferences-dialog>
+      <ui-sheet side="left">
+        <ui-button
+          class="app-header__sheet-button"
+          id="app-header-sheet-button"
+          slot="trigger"
+          variant="ghost"
+          size="icon"
+          style="--ui-button-icon-size: 22px"
+        >
+        </ui-button>
+
+        <div slot="content" style="padding: 1rem">
+          <app-sidebar-content></app-sidebar-content>
+        </div>
+
+        <div slot="footer">
+          <ui-button slot="cancel" variant="secondary" size="sm">Cancel</ui-button>
+          <ui-button variant="default" size="sm">Confirm</ui-button>
+        </div>
+      </ui-sheet>
+    </div>
+    <div class="app-header__right">
+      <div class="app-header__chrome-controls" id="chrome-controls">
+        <ui-button
+          variant="secondary"
+          size="icon"
+          class="app-header__chrome-controls-button"
+          id="chrome-controls-minimize"
+          style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px"
+        >
+        </ui-button>
+        <ui-button
+          variant="secondary"
+          size="icon"
+          class="app-header__chrome-controls-button"
+          id="chrome-controls-maximize"
+          style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px"
+        >
+        </ui-button>
+        <ui-button
+          variant="secondary"
+          size="icon"
+          class="app-header__chrome-controls-button"
+          id="chrome-controls-close"
+          style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px"
+        >
+        </ui-button>
+      </div>
+    </div>
+  </header>
+</template>

@@ -1,0 +1,11 @@
+.preferences-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.preferences-dialog__content ui-tabs {
+  flex: 1;
+  height: 100%;
+}

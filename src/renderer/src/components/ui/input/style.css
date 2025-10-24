@@ -1,0 +1,51 @@
+:host {
+  display: inline-block;
+  font: inherit;
+}
+
+:host([block]) {
+  display: block;
+  width: 100%;
+}
+
+.root {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.control {
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  width: 100%;
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.control::placeholder {
+  color: color-mix(in oklch, var(--foreground) 50%, transparent);
+}
+
+.control:focus-visible {
+  border-color: var(--ring);
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--ring);
+}
+
+.control:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}

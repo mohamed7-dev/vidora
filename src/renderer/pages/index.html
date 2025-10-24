@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Electron</title>
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    />
+
+    <link href="../src/assets/main.css" type="text/css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <script type="module" src="../src/components/preferences-dialog/index.ts"></script>
+    <script type="module" src="../src/components/app-header/index.ts"></script>
+    <script type="module" src="../src/components/app-sidebar/index.ts"></script>
+    <script type="module" src="../src/components/app-sidebar/content/index.ts"></script>
+    <script type="module">
+      import '../src/components/ui/index.ts'
+    </script>
+    <app-header></app-header>
+    <app-sidebar></app-sidebar>
+
+    <script type="module" src="../src/renderer.ts"></script>
+  </body>
+</html>

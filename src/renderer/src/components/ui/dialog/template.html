@@ -1,0 +1,39 @@
+<template id="ui-dialog-template">
+  <div part="overlay" class="overlay" data-overlay></div>
+  <div part="panel" class="panel" data-panel role="alertdialog" aria-modal="true">
+    <header part="header" class="header">
+      <slot name="header"></slot>
+      <ui-button
+        class="close-btn"
+        id="close-btn"
+        variant="secondary"
+        size="icon"
+        style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px"
+        part="close"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-x-icon lucide-x"
+        >
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" /></svg
+      ></ui-button>
+    </header>
+    <div part="content" class="content">
+      <slot name="content"></slot>
+    </div>
+    <footer part="footer" class="footer">
+      <slot name="cancel"></slot>
+      <slot name="footer"></slot>
+    </footer>
+  </div>
+  <slot name="trigger"></slot>
+</template>

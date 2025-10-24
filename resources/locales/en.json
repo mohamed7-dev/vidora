@@ -1,0 +1,126 @@
+{
+  "appSidebar": {
+    "general": {
+      "title": "General",
+      "items": {
+        "home": "Home",
+        "history": "History"
+      }
+    },
+    "appHeader": {
+      "actionsMenu": {
+        "preferences": "Preferences",
+        "about": "About"
+      }
+    },
+    "downloads": {
+      "title": "Downloads",
+      "items": {
+        "downloading": "Downloading",
+        "completed": "Completed"
+      }
+    }
+  },
+  "generic": {
+    "actions": {
+      "reset": "Reset"
+    }
+  },
+  "pref": {
+    "tabs": {
+      "general": "General",
+      "downloader": "Downloader",
+      "converter": "Converter"
+    },
+    "general": {
+      "section": {
+        "userInterface": "User Interface",
+        "downloads": "Downloads",
+        "application": "Application"
+      },
+      "closeAppToSystemTray": {
+        "title": "Close App To System Tray"
+      },
+      "restartApp": {
+        "title": "Apply System Locale",
+        "button": "Restart App"
+      },
+      "theme": {
+        "title": "Theme",
+        "options": {
+          "system": "System",
+          "dark": "Dark",
+          "light": "Light"
+        },
+        "placeholder": "Select"
+      },
+      "language": {
+        "title": "Language",
+        "options": {
+          "en": "English",
+          "ar": "Arabic"
+        },
+        "placeholder": "Select language"
+      },
+      "downloadPath": {
+        "title": "Download Path",
+        "change": "Change"
+      },
+      "maxDownloads": {
+        "title": "Max Number of Downloads"
+      },
+      "videoQuality": {
+        "title": "Preferred Video Quality",
+        "options": {
+          "1080p": "1080p",
+          "720p": "720p",
+          "480p": "480p",
+          "360p": "360p"
+        },
+        "placeholder": "Select quality"
+      },
+      "videoCodec": {
+        "title": "Preferred Video Codec",
+        "options": {
+          "h264": "H.264",
+          "h265": "H.265",
+          "vp9": "VP9",
+          "av1": "AV1"
+        },
+        "placeholder": "Select codec"
+      },
+      "audioQuality": {
+        "title": "Preferred Audio Quality",
+        "options": {
+          "128kbps": "128kbps",
+          "192kbps": "192kbps",
+          "256kbps": "256kbps",
+          "320kbps": "320kbps"
+        },
+        "placeholder": "Select audio quality"
+      },
+      "fileNameFormatPlaylists": {
+        "title": "File Name Format For Playlists"
+      },
+      "folderNameFormatPlaylists": {
+        "title": "Folder Name Format For Playlists"
+      }
+    },
+    "downloader": {
+      "section": {
+        "downloader": "Downloader"
+      },
+      "cookiesFromBrowser": {
+        "title": "Cookies From Browser",
+        "options": {
+          "none": "None"
+        },
+        "placeholder": "Select"
+      },
+      "proxyServer": {
+        "title": "Proxy Server",
+        "placeholder": "Enter proxy server"
+      }
+    }
+  }
+}

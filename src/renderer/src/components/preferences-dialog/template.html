@@ -1,0 +1,31 @@
+<template id="preferences-dialog-template">
+  <ui-dialog closable>
+    <div class="preferences-dialog__header" slot="header">
+      <ui-button
+        class="preferences-dialog__header__button"
+        id="general-tab-trigger"
+        variant="ghost"
+        value="general"
+        block
+      >
+        <span data-i18n="pref.tabs.general">General</span>
+      </ui-button>
+      <ui-button
+        class="preferences-dialog__header__button"
+        id="downloader-tab-trigger"
+        variant="ghost"
+        value="downloader"
+        block
+      >
+        <span data-i18n="pref.tabs.downloader">Downloader</span>
+      </ui-button>
+    </div>
+
+    <div slot="content" class="preferences-dialog__content">
+      <ui-tabs value="general">
+        <general-tab-content slot="panel" value="general"></general-tab-content>
+        <downloader-tab-content slot="panel" value="downloader"></downloader-tab-content>
+      </ui-tabs>
+    </div>
+  </ui-dialog>
+</template>

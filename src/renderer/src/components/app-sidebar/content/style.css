@@ -1,0 +1,44 @@
+:host {
+  display: block;
+}
+
+.nav {
+  display: grid;
+  gap: 4px;
+}
+
+.nav-item {
+  display: block;
+  color: var(--sidebar-foreground, var(--foreground));
+  text-decoration: none;
+  padding: 0.5rem 0.625rem;
+  border-radius: calc(var(--radius) - 4px);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-item:hover {
+  background: var(--sidebar-accent, var(--accent));
+  color: var(--sidebar-accent-foreground, var(--accent-foreground));
+}
+
+.nav-item.active {
+  background: var(--sidebar-accent, var(--accent));
+  color: var(--sidebar-accent-foreground, var(--accent-foreground));
+}
+
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-section-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted-foreground, #888);
+  padding: 0.25rem 0.25rem;
+  margin: 0.5rem 0 0.25rem;
+}

@@ -1,0 +1,99 @@
+:host {
+  display: contents;
+}
+
+/* Overlay */
+:host .overlay {
+  position: fixed;
+  inset: 0;
+  /* Light mode default: darker scrim */
+  background: color-mix(in oklch, black 40%, transparent);
+  /* Blur content behind the overlay */
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+}
+
+/* Dark mode: lighter scrim to avoid over-darkening */
+:host-context(.dark) .overlay {
+  background: color-mix(in oklch, white 12%, transparent);
+}
+
+:host [data-open].overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Panel */
+:host .panel {
+  position: fixed;
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 40px rgba(0 0 0 / 0.2);
+  display: flex;
+  flex-direction: column;
+  max-width: 90vw;
+  max-height: 100vh;
+  transition:
+    transform 0.25s ease,
+    opacity 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1001;
+}
+
+:host [data-open].panel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+:host .panel .footer {
+  margin-top: auto;
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+:host .panel[data-side='right'] {
+  top: 0;
+  right: 0;
+  width: min(420px, 90vw);
+  height: 100vh;
+  transform: translateX(100%);
+}
+
+:host .panel[data-side='left'] {
+  top: 0;
+  left: 0;
+  width: min(420px, 90vw);
+  height: 100vh;
+  transform: translateX(-100%);
+}
+
+:host .panel[data-side='top'] {
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: min(50vh, 560px);
+  transform: translateY(-100%);
+}
+
+:host .panel[data-side='bottom'] {
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: min(50vh, 560px);
+  transform: translateY(100%);
+}
+
+:host [data-open].panel[data-side='right'],
+:host [data-open].panel[data-side='left'],
+:host [data-open].panel[data-side='top'],
+:host [data-open].panel[data-side='bottom'] {
+  transform: translate(0, 0);
+  opacity: 1;
+  pointer-events: auto;
+}

@@ -1,0 +1,11 @@
+<template id="ui-sheet-template">
+  <div part="overlay" class="overlay" data-overlay></div>
+  <div part="panel" class="panel">
+    <slot name="content"></slot>
+    <div class="footer">
+      <slot name="cancel"></slot>
+      <slot name="footer"></slot>
+    </div>
+  </div>
+  <slot name="trigger"></slot>
+</template>

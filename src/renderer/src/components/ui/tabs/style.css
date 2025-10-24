@@ -1,0 +1,43 @@
+:host {
+  display: block;
+  height: 100%;
+}
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+}
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: var(--ui-tabs-list-gap, 0.25rem);
+  width: var(--ui-tabs-list-width, 100%);
+  max-width: var(--ui-tabs-list-max-width, none);
+  margin-inline: auto;
+}
+::slotted([slot='tab']) {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--muted-foreground);
+  border-radius: calc(var(--radius) - 4px);
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+}
+::slotted([slot='tab'][data-selected]) {
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+}
+.panels {
+  padding: 0.75rem;
+  flex: 1;
+  min-height: 0;
+}
+::slotted([slot='panel']) {
+  display: block;
+}
+::slotted([slot='panel'][hidden]) {
+  display: none;
+}

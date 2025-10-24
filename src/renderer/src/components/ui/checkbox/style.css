@@ -1,0 +1,120 @@
+:host {
+  display: inline-block;
+}
+
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  color: var(--foreground);
+}
+
+/* Native input (visually hidden, still accessible) */
+.native {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Control box */
+.control {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: calc(var(--radius) - 4px);
+  border: 1px solid var(--input);
+  background: var(--background);
+  color: var(--foreground);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.icon {
+  width: 12px;
+  height: 12px;
+  opacity: 0;
+  transform: scale(0.8);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+  display: block;
+}
+
+/* Label text */
+.label {
+  font: inherit;
+}
+
+/* Hover/focus */
+:host(:not([disabled])) .root:hover .control {
+  border-color: var(--ring);
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--ring);
+}
+
+:host(:focus-within) .control {
+  border-color: var(--ring);
+}
+
+/* Checked state */
+:host([checked]) .control,
+.native:checked + .control {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: transparent;
+}
+
+:host([checked]) .icon,
+.native:checked + .control .icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Disabled */
+:host([disabled]) .root {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Sizes */
+:host([size='sm']) .control {
+  width: 16px;
+  height: 16px;
+}
+:host([size='sm']) .icon {
+  width: 10px;
+  height: 10px;
+}
+:host([size='lg']) .control {
+  width: 20px;
+  height: 20px;
+}
+:host([size='lg']) .icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Variants (checked colors) */
+:host([variant='secondary'][checked]) .control,
+:host([variant='secondary']) .native:checked + .control {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+:host([variant='destructive'][checked]) .control,
+:host([variant='destructive']) .native:checked + .control {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+}
+
+:host([variant='outline']) .control {
+  background: transparent;
+}

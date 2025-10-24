@@ -1,0 +1,148 @@
+:root {
+  --button-hover-mix: 80%;
+}
+
+:host {
+  display: inline-block;
+}
+
+:host([block]) {
+  display: block;
+  width: 100%;
+}
+
+:host([block]) button {
+  width: 100%;
+}
+
+:host button {
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  border: 1px solid transparent;
+  border-radius: var(--ui-button-radius, var(--radius));
+  cursor: pointer;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+  /* Allow control from light DOM */
+  font-size: var(--ui-button-font-size, 0.875rem);
+  padding: var(--ui-button-padding, 0.5rem 1rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+:host button:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--ring);
+}
+
+/* Icon sizing for slotted content */
+:host button ::slotted(svg),
+:host button ::slotted(img),
+:host button ::slotted(i),
+:host button ::slotted(span.icon) {
+  width: var(--ui-button-icon-size, 1rem);
+  height: var(--ui-button-icon-size, 1rem);
+  font-size: var(--ui-button-icon-size, 1rem);
+  display: inline-block;
+}
+
+/* Variants */
+:host([variant='default']) button {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: transparent;
+}
+
+:host([variant='secondary']) button {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: var(--input);
+}
+
+:host([variant='secondary']:hover) button {
+  background: oklch(from var(--secondary) calc(l + 0.2) c h);
+  color: var(--secondary-foreground);
+}
+
+:host([variant='destructive']) button {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+  border-color: transparent;
+}
+
+:host([variant='destructive']:hover) button {
+  background: color-mix(in oklch, var(--destructive) var(--button-hover-mix), var(--background));
+  color: var(--destructive-foreground);
+}
+
+:host([variant='outline']) button {
+  background: transparent;
+  color: var(--foreground);
+  border-color: var(--input);
+}
+
+:host([variant='outline']:hover) button {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+:host([variant='ghost']) button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--foreground);
+}
+
+:host([variant='ghost']:hover) button {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+:host([variant='link']) button {
+  background: transparent;
+  color: var(--primary);
+  border-color: transparent;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Sizes */
+:host([size='default']) button {
+  height: var(--ui-button-height, 2.5rem);
+}
+
+:host([size='sm']) button {
+  height: var(--ui-button-height, 2.25rem);
+  border-radius: var(--ui-button-radius, calc(var(--radius) - 2px));
+}
+
+:host([size='lg']) button {
+  height: var(--ui-button-height, 2.75rem);
+  font-size: var(--ui-button-font-size, 1rem);
+}
+
+:host([size='icon']) button {
+  height: var(--ui-button-icon-box, 2.25rem);
+  width: var(--ui-button-icon-box, 2.25rem);
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 100%;
+}
+
+/* Disabled */
+:host([disabled]) button,
+:host button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
