@@ -7,18 +7,18 @@
         "history": "History"
       }
     },
-    "appHeader": {
-      "actionsMenu": {
-        "preferences": "Preferences",
-        "about": "About"
-      }
-    },
     "downloads": {
       "title": "Downloads",
       "items": {
         "downloading": "Downloading",
         "completed": "Completed"
       }
+    }
+  },
+  "appHeader": {
+    "actionsMenu": {
+      "preferences": "Preferences",
+      "about": "About"
     }
   },
   "generic": {
@@ -30,12 +30,11 @@
     "tabs": {
       "general": "General",
       "downloader": "Downloader",
-      "converter": "Converter"
+      "downloads": "Downloads"
     },
     "general": {
       "section": {
         "userInterface": "User Interface",
-        "downloads": "Downloads",
         "application": "Application"
       },
       "closeAppToSystemTray": {
@@ -61,6 +60,13 @@
           "ar": "Arabic"
         },
         "placeholder": "Select language"
+      }
+    },
+    "downloads": {
+      "sections": {
+        "qualityControl": "Quality Control",
+        "naming": "Naming",
+        "downloads": "Downloads"
       },
       "downloadPath": {
         "title": "Download Path",
@@ -121,6 +127,27 @@
         "title": "Proxy Server",
         "placeholder": "Enter proxy server"
       }
+    }
+  },
+  "scrim": {
+    "title": "Preparing dependencies…"
+  },
+  "status": {
+    "generic": {
+      "working": "Working…"
+    },
+    "ytdlp": {
+      "checking": "Checking yt-dlp…",
+      "ready": "yt-dlp is ready.",
+      "env_missing": "The configured yt-dlp path does not exist.",
+      "not_found_freebsd": "No yt-dlp found in PATH on FreeBSD. Please install it.",
+      "download_failed": "Failed to download yt-dlp."
+    },
+    "ffmpeg": {
+      "checking": "Checking FFmpeg…",
+      "ready": "FFmpeg is ready.",
+      "env_missing": "The configured FFmpeg path does not exist.",
+      "not_found_freebsd": "FFmpeg is not found on FreeBSD."
     }
   }
 }

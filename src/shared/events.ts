@@ -11,9 +11,18 @@ export const EVENTS = {
     CHANGED: 'general-preferences:download-path-changed'
   },
   I18N: {
-    GET_LOCALE: 'i18n:get-locale',
     LOAD_LOCALE: 'i18n:load-locale',
-    SET_LOCALE: 'i18n:set-locale',
     LOCALE_CHANGED: 'i18n:locale-changed'
+  },
+  CONFIG: {
+    GET_STATUS: 'config:get-status',
+    STATUS: 'config:status',
+    GET: 'config:get',
+    UPDATE: 'config:update',
+    GET_APP_DEFAULTS: 'config:get-defaults'
+  },
+  STATUS: {
+    UPDATE: 'status:update', // renderer listens
+    SNAPSHOT: 'status:snapshot' // renderer invokes to get current state
   }
 }

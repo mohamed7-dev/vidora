@@ -1,8 +1,7 @@
 import { ipcMain, BrowserWindow } from 'electron'
 import { EVENTS } from '../shared/events'
 
-export function handleWindowControls(): void {
-  // Window control IPC
+export function handleWindowControlsIpc(): void {
   ipcMain.on(EVENTS.WINDOW.MINIMIZE, (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     win?.minimize()

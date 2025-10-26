@@ -1,0 +1,109 @@
+:host {
+  display: none;
+}
+:host([data-visible='true']) {
+  display: contents;
+}
+
+/* default overlay appearance; page may override via ::part */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in oklch, black 40%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+}
+
+:host-context(.dark) .overlay {
+  background: color-mix(in oklch, white 12%, transparent);
+}
+
+.overlay__box {
+  background: var(--bg, var(--card));
+  color: var(--fg, var(--card-foreground));
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  min-width: 280px;
+  max-width: 90vw;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.overlay__title {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+.overlay__msg {
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* simple spinner */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid #ccc;
+  border-top-color: #666;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 0.75rem;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* row styling  */
+
+.tasks {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.task {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--bg, var(--card)) 92%, transparent);
+}
+
+.task__icon {
+  width: 24px;
+  height: 24px;
+}
+
+.task__title {
+  font-weight: 600;
+  margin: 0;
+}
+.task__msg {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.task__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task[data-state='pending'] .task__icon {
+  animation: spin 1s linear infinite;
+  border: 3px solid #ccc;
+  border-top-color: #666;
+  border-radius: 50%;
+}
+.task[data-state='success'] .task__icon {
+  background: var(--success, #16a34a);
+  border-radius: 50%;
+}
+.task[data-state='error'] .task__icon {
+  background: var(--danger, #dc2626);
+  border-radius: 50%;
+}

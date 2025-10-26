@@ -1,5 +1,3 @@
-import { storage } from './lib/storage'
-
 class App {
   private _mql: MediaQueryList | null = null
   private _mqlHandler: ((e: MediaQueryListEvent) => void) | null = null
@@ -10,22 +8,21 @@ class App {
   }
 
   private async syncHTMLLocale(): Promise<void> {
-    const locale = await window.api.i18n?.getLocale()
-    if (!locale) return
+    const config = await window.api.config.getConfig()
+    const locale = config?.general.language
+    const dir = config?.general.dir
+    if (!locale || !dir) return
     document.documentElement.lang = locale
-    const dir = locale === 'ar' ? 'rtl' : 'ltr'
     document.documentElement.dir = dir
   }
 
-  private syncTheme(): void {
-    let theme = storage.get('theme')
-    if (!theme) theme = 'system'
-
+  private async syncTheme(): Promise<void> {
     const apply = (isDark: boolean): void => {
       if (isDark) document.documentElement.classList.add('dark')
       else document.documentElement.classList.remove('dark')
     }
-
+    const config = await window.api.config.getConfig()
+    const theme = config?.general.theme
     if (theme === 'system') {
       if (!this._mql) this._mql = window.matchMedia('(prefers-color-scheme: dark)')
       apply(this._mql.matches)
@@ -39,7 +36,13 @@ class App {
       }
       this._mqlHandler = null
       if (theme === 'dark') apply(true)
-      else apply(false)
+      else {
+        if (theme !== 'light') {
+          apply(true)
+        }
+
+        document.documentElement.classList.add(theme)
+      }
     }
   }
 }
@@ -51,4 +54,4 @@ function init(): void {
   })
 }
 
-init()
+void init()

@@ -1,5 +1,31 @@
+:host .overlay,
+:host .panel,
+:host .header,
+:host .content,
+:host .footer,
+:host .close-btn {
+  -webkit-app-region: no-drag;
+}
+
 :host {
   display: contents;
+}
+
+/* Base wrapper fills viewport and centers panel */
+:host .dialog {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Show base only when dialog is open */
+:host([data-open]) .dialog {
+  display: flex;
+  pointer-events: auto;
 }
 
 /* Overlay */
@@ -11,13 +37,17 @@
   backdrop-filter: blur(6px);
   opacity: 0;
   pointer-events: none;
+  display: none;
+  visibility: hidden;
   transition: opacity 0.2s ease;
-  z-index: 1000;
+  z-index: 1001;
 }
 
-:host [data-open].overlay {
+:host([data-open]) .overlay {
+  display: block;
   opacity: 1;
-  pointer-events: auto; /* Note: overlay is interactive but we don't close on click */
+  pointer-events: auto;
+  visibility: visible;
 }
 
 :host-context(.dark) .overlay {
@@ -26,10 +56,7 @@
 
 /* Panel */
 :host .panel {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -48%);
+  position: relative;
   background: var(--ui-dialog-background, var(--card));
   color: var(--ui-dialog-foreground, var(--card-foreground));
   border: 1px solid var(--ui-dialog-border, var(--border));
@@ -40,17 +67,22 @@
   display: flex;
   flex-direction: column;
   opacity: 0;
+  display: none;
+  visibility: hidden;
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;
-  z-index: 1001;
+  z-index: 1002;
 }
 
-:host [data-open].panel {
+:host([data-open]) .panel {
+  display: flex;
   opacity: 1;
-  transform: translate(-50%, -50%);
+  visibility: visible;
+  will-change: opacity, transform;
 }
 
+/* panel header  */
 :host .header {
   display: flex;
   align-items: center;
@@ -62,7 +94,7 @@
 /* Let header slotted content (tabs) occupy remaining space */
 :host .header ::slotted([slot='header']) {
   flex: 1;
-  min-width: 0; /* prevents overflow; allows grid inside tabs to shrink */
+  min-width: 0;
 }
 
 :host .content {
@@ -73,6 +105,7 @@
   padding: var(--ui-dialog-content-padding, 1rem);
 }
 
+/* panel footer  */
 :host .footer {
   display: flex;
   gap: 0.5rem;
@@ -81,14 +114,20 @@
   border-top: none;
 }
 
-/* Only show footer chrome when content exists */
+/* Only show footer when content exists */
 :host .footer[data-has-footer] {
   padding: var(--ui-dialog-footer-padding, 0.75rem 1rem 1rem);
   border-top: 1px solid var(--ui-dialog-border, var(--border));
 }
 
-/* Internal close button (when using `closable` attribute) */
+/* Internal close button*/
 :host .close-btn {
   width: 27px;
   height: 27px;
+  display: none;
+}
+
+/* Show close button only when dialog is closable */
+.close-btn[data-closable] {
+  display: flex;
 }

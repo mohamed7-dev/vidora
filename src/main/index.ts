@@ -1,11 +1,16 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
-import { handleWindowControls } from './window-controls'
-import { handleNavigation } from './navigation'
+import icon from '../../resources/icons/icon-256.png?asset'
+import { handleWindowControlsIpc } from './window-controls'
+import { handleNavigationIpc } from './navigation'
 import { handleChangeDownloadPath } from './preferences'
-import { handleI18n } from './i18n'
+import { handleI18nIpc } from './i18n'
+import { getIsQuitting, isTrayEnabled } from './tray'
+import { initConfig } from './app-config/init-config'
+import { registerConfigIpc } from './app-config/config-listeners'
+import { setupAppInternals } from './setup'
+import { registerStatusIpc } from './status-bus'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -26,6 +31,15 @@ function createWindow(): void {
     mainWindow.show()
   })
 
+  mainWindow.on('close', (e) => {
+    if (!getIsQuitting() && isTrayEnabled()) {
+      e.preventDefault()
+      mainWindow.hide()
+      if (app.dock) app.dock.hide()
+    }
+    return false
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -42,6 +56,22 @@ function createWindow(): void {
   }
 }
 
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    const win = BrowserWindow.getAllWindows()[0]
+    if (win) {
+      if (win.isMinimized()) win.restore()
+      if (!win.isVisible()) win.show()
+      win.focus()
+    } else {
+      createWindow()
+    }
+  })
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -56,12 +86,23 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  handleWindowControls()
-  handleNavigation()
+  handleWindowControlsIpc()
+  handleNavigationIpc()
   handleChangeDownloadPath()
-  handleI18n()
+  handleI18nIpc()
+  registerConfigIpc()
+  registerStatusIpc()
+  setupAppInternals()
+  initConfig()
 
-  createWindow()
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow()
+  } else {
+    const win = BrowserWindow.getAllWindows()[0]
+    if (win.isMinimized()) win.restore()
+    if (!win.isVisible()) win.show()
+    win.focus()
+  }
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -78,6 +119,3 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

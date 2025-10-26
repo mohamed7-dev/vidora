@@ -1,0 +1,3 @@
+:host([hide-trigger]) .trigger-button {
+  display: none;
+}

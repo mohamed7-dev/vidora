@@ -30,7 +30,6 @@
     border-color 0.15s ease,
     box-shadow 0.15s ease,
     opacity 0.15s ease;
-  /* Allow control from light DOM */
   font-size: var(--ui-button-font-size, 0.875rem);
   padding: var(--ui-button-padding, 0.5rem 1rem);
   display: flex;
@@ -61,6 +60,11 @@
   background: var(--primary);
   color: var(--primary-foreground);
   border-color: transparent;
+}
+
+:host([variant='default']:hover) button {
+  background: oklch(from var(--primary) calc(l + 0.2) c h);
+  color: var(--primary-foreground);
 }
 
 :host([variant='secondary']) button {

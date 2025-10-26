@@ -1,0 +1,26 @@
+/* Disable interactions when blocking */
+html[data-app-blocking='true'] .container {
+  pointer-events: none;
+  user-select: none;
+  /* optional visual cue */
+  filter: grayscale(0.1) opacity(0.9);
+}
+
+/* Show scrim component only when blocking (component already does display:contents on visible) */
+app-scrim {
+  display: none;
+}
+html[data-app-blocking='true'] app-scrim {
+  display: block;
+}
+
+/* main content style  */
+.container {
+  display: flex;
+  min-width: 100%;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}

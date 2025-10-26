@@ -13,6 +13,12 @@
   box-sizing: border-box;
 }
 
+.app-header__right {
+  width: var(--toolbar-right-width);
+  display: flex;
+  justify-content: flex-end;
+}
+
 .app-header__chrome-controls {
   display: flex;
   align-items: center;
@@ -20,7 +26,7 @@
 }
 
 /* Anything clickable must be no-drag */
-.app-header__new-button,
+new-dialog,
 .app-header__sheet-button,
 .app-header__dropdown-button,
 .app-header__chrome-controls,

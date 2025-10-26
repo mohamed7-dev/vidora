@@ -1,8 +1,9 @@
 import './tabs-content/general-tab/index'
 import './tabs-content/downloader-tab/index'
+import './tabs-content/downloads-tab/index'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
-import { UDialog, UIButton, UITabs } from '../ui'
+import { UIDialog, UIButton, UITabs } from '../ui'
 import settingsIcon from '@renderer/assets/icons/settings.svg?raw'
 import arrowIcon from '@renderer/assets/icons/arrow-big-down-dash.svg?raw'
 
@@ -46,9 +47,10 @@ export class PreferencesDialog extends HTMLElement {
     const downloaderTabTrigger = this.shadowRoot?.querySelector(
       '#downloader-tab-trigger'
     ) as UIButton
-
+    const downloadsTabTrigger = this.shadowRoot?.querySelector('#downloads-tab-trigger') as UIButton
     generalTabTrigger.innerHTML = settingsIcon + generalTabTrigger.innerHTML
     downloaderTabTrigger.innerHTML = arrowIcon + downloaderTabTrigger.innerHTML
+    downloadsTabTrigger.innerHTML = arrowIcon + downloadsTabTrigger.innerHTML
 
     generalTabTrigger.addEventListener('click', () => {
       ;(this.shadowRoot?.querySelector('ui-tabs') as UITabs).value = 'general'
@@ -56,14 +58,19 @@ export class PreferencesDialog extends HTMLElement {
     downloaderTabTrigger.addEventListener('click', () => {
       ;(this.shadowRoot?.querySelector('ui-tabs') as UITabs).value = 'downloader'
     })
+    downloadsTabTrigger.addEventListener('click', () => {
+      ;(this.shadowRoot?.querySelector('ui-tabs') as UITabs).value = 'downloads'
+    })
   }
 
   private updateTriggerVariants(active: string): void {
     const general = this.shadowRoot?.querySelector('#general-tab-trigger') as UIButton | null
     const downloader = this.shadowRoot?.querySelector('#downloader-tab-trigger') as UIButton | null
+    const downloads = this.shadowRoot?.querySelector('#downloads-tab-trigger') as UIButton | null
     const map: Record<string, UIButton | null> = {
       general,
-      downloader
+      downloader,
+      downloads
     }
     for (const [key, btn] of Object.entries(map)) {
       if (!btn) continue
@@ -84,7 +91,7 @@ export class PreferencesDialog extends HTMLElement {
   }
 
   openDialog(): void {
-    ;(this.shadowRoot?.querySelector('ui-dialog') as UDialog)?.openDialog()
+    ;(this.shadowRoot?.querySelector('ui-dialog') as UIDialog)?.openDialog()
   }
 }
 

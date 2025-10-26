@@ -1,6 +1,6 @@
 export { UIButton } from './button/index'
 export { USheet } from './sheet/index'
-export { UDialog } from './dialog/index'
+export { UIDialog } from './dialog/index'
 export { UIDropdown } from './dropdown/index'
 export { UITabs } from './tabs/index'
 export { UISelect } from './select/index'

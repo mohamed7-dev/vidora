@@ -1,0 +1,19 @@
+<template id="new-dialog-template">
+  <ui-dialog show-x-button alert>
+    <ui-button
+      class="trigger-button"
+      id="trigger-button"
+      slot="trigger"
+      variant="ghost"
+      size="icon"
+      style="--ui-button-icon-size: 22px"
+    >
+    </ui-button>
+    <div slot="header">New</div>
+    <div slot="content">content goes here</div>
+    <div slot="footer">
+      <ui-button slot="cancel" variant="secondary" size="sm">Cancel</ui-button>
+      <ui-button variant="default" size="sm">Create</ui-button>
+    </div>
+  </ui-dialog>
+</template>

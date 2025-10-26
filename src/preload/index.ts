@@ -1,7 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { EVENTS } from '../shared/events'
-import { getLocale, t } from './i18n'
+import { t } from './i18n'
+import { AppConfig, DeepPartial } from '../shared/types'
 
 const api = {
   window: {
@@ -21,24 +22,35 @@ const api = {
       })
     }
   },
+  config: {
+    getAppDefaults: async (): Promise<AppConfig> =>
+      ipcRenderer.invoke(EVENTS.CONFIG.GET_APP_DEFAULTS),
+    getConfig: async (): Promise<AppConfig> => ipcRenderer.invoke(EVENTS.CONFIG.GET),
+    updateConfig: async (patch: DeepPartial<AppConfig>): Promise<AppConfig> =>
+      ipcRenderer.invoke(EVENTS.CONFIG.UPDATE, patch)
+  },
   i18n: {
-    getLocale: (): string => getLocale(),
     loadLocale: async (locale: string): Promise<Record<string, unknown>> =>
       ipcRenderer.invoke(EVENTS.I18N.LOAD_LOCALE, locale),
-    setLocale: async (locale: string): Promise<void> =>
-      ipcRenderer.invoke(EVENTS.I18N.SET_LOCALE, locale),
     onLocaleChanged: (callback: (locale: string) => void): (() => void) => {
       const handler = (_e: Electron.IpcRendererEvent, locale: string): void => callback(locale)
       ipcRenderer.on(EVENTS.I18N.LOCALE_CHANGED, handler)
       return () => ipcRenderer.removeListener(EVENTS.I18N.LOCALE_CHANGED, handler)
     },
     t: (phrase: string): string => t(phrase)
+  },
+  status: {
+    getSnapshot: async (): Promise<import('../shared/status').StatusSnapshot> =>
+      ipcRenderer.invoke(EVENTS.STATUS.SNAPSHOT),
+    onUpdate: (cb: (snap: import('../shared/status').StatusSnapshot) => void): (() => void) => {
+      const handler = (_: unknown, snap: import('../shared/status').StatusSnapshot): void =>
+        cb(snap)
+      ipcRenderer.on(EVENTS.STATUS.UPDATE, handler)
+      return () => ipcRenderer.removeListener(EVENTS.STATUS.UPDATE, handler)
+    }
   }
 }
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)

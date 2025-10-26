@@ -30,12 +30,11 @@
     "tabs": {
       "general": "عام",
       "downloader": "التحميل",
-      "converter": "المحول"
+      "downloads": "التنزيلات"
     },
     "general": {
       "section": {
         "userInterface": "واجهة المستخدم",
-        "downloads": "التنزيلات",
         "application": "التطبيق"
       },
       "closeAppToSystemTray": {
@@ -56,11 +55,14 @@
       },
       "language": {
         "title": "اللغة",
-        "options": {
-          "en": "English",
-          "ar": "العربية"
-        },
         "placeholder": "اختر اللغة"
+      }
+    },
+    "downloads": {
+      "sections": {
+        "qualityControl": "التحكم في الجودة",
+        "naming": "الإسم",
+        "downloads": "التنزيلات"
       },
       "downloadPath": {
         "title": "مسار التنزيل",
@@ -121,6 +123,27 @@
         "title": "(Proxy) خادم الوكالات",
         "placeholder": "أدخل خادم الوكالات"
       }
+    }
+  },
+  "scrim": {
+    "title": "جاري التحضير للإعتمادات…"
+  },
+  "status": {
+    "generic": {
+      "working": "جارٍ العمل…"
+    },
+    "ytdlp": {
+      "checking": "جارٍ فحص yt-dlp…",
+      "ready": "(yt-dlp) جاهز",
+      "env_missing": "(yt-dlp) المسار المُكوَّن غير موجود.",
+      "not_found_freebsd": "(FreeBSD) غير موجود على (yt-dlp)",
+      "download_failed": "فشل تنزيل (yt-dlp)."
+    },
+    "ffmpeg": {
+      "checking": "(FFMPEG) جارٍ فحص",
+      "ready": "(FFMPEG) جاهز",
+      "env_missing": "(FFMPEG) المسار المُكوَّن غير موجود.",
+      "not_found_freebsd": "(FreeBSD) غير موجود على (FFMPEG)"
     }
   }
 }

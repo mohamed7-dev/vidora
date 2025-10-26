@@ -20,16 +20,3 @@ html[dir='rtl'] .max-downloads-controls {
   align-items: center;
   gap: 1rem;
 }
-
-.name-format-playlists-container ui-button::part(root),
-.restart-app-button::part(root),
-.download-path-button::part(root),
-.max-downloads-controls ui-button::part(root) {
-  transition: background-color 0.15s ease;
-}
-.name-format-playlists-container ui-button::part(root):hover,
-.restart-app-button::part(root):hover,
-.download-path-button::part(root):hover,
-.max-downloads-controls ui-button::part(root):hover {
-  background-color: oklab(from var(--accent) calc(l + 0.2) a b);
-}

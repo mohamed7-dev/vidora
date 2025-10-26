@@ -1,13 +1,27 @@
+import '../preferences-dialog'
+import '../new-dialog'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
+import resetStyle from '@renderer/assets/reset.css?inline'
 import iconMinSvg from '@renderer/assets/icons/minus.svg?raw'
 import iconMaxSvg from '@renderer/assets/icons/square.svg?raw'
 import iconCloseSvg from '@renderer/assets/icons/x.svg?raw'
-import iconNewSvg from '@renderer/assets/icons/plus.svg?raw'
 import iconDropdownSvg from '@renderer/assets/icons/ellipsis-vertical.svg?raw'
 import iconSheetSvg from '@renderer/assets/icons/menu.svg?raw'
+import { DATA } from '@root/shared/data'
+import { UIButton, UIDialog } from '../ui'
 
 export class AppHeader extends HTMLElement {
+  private root: ShadowRoot | null = null
+  private btnMin: UIButton | null = null
+  private btnMax: UIButton | null = null
+  private btnClose: UIButton | null = null
+  private btnDropdown: UIButton | null = null
+  private btnSheet: UIButton | null = null
+  private menuPreferences: HTMLElement | null = null
+  private appTitle: HTMLElement | null = null
+  private prefsDialog: UIDialog | null = null
+
   private t = window.api?.i18n?.t || (() => undefined)
   constructor() {
     super()
@@ -15,47 +29,59 @@ export class AppHeader extends HTMLElement {
   }
 
   connectedCallback(): void {
+    this.root = this.shadowRoot
+    this.render()
+    this.applySvgIcons()
+    this.applyListeners()
+    this.applyI18n()
+  }
+
+  private applyListeners(): void {
+    this.btnMin?.addEventListener('click', () => {
+      window.api?.window?.minimize()
+    })
+    this.btnMax?.addEventListener('click', () => {
+      window.api?.window?.toggleMaximize()
+    })
+    this.btnClose?.addEventListener('click', () => {
+      window.api?.window?.close()
+    })
+    this.menuPreferences?.addEventListener('click', () => {
+      const prefs = this.prefsDialog as UIDialog
+      if (!prefs) return
+      prefs.openDialog()
+    })
+  }
+
+  private render(): void {
     const parser = new DOMParser()
     const parsedTree = parser.parseFromString(template, 'text/html')
     const templateElement = parsedTree.querySelector<HTMLTemplateElement>('#app-header-template')
     if (!templateElement) return
     const content = templateElement.content.cloneNode(true)
     const style = document.createElement('style')
-    style.textContent = styleCss
+    style.textContent = resetStyle + styleCss
     this.shadowRoot?.append(style, content)
+    // query elements
+    this.btnMin = this.root?.querySelector('#chrome-controls-minimize') as UIButton | null
+    this.btnMax = this.root?.querySelector('#chrome-controls-maximize') as UIButton | null
+    this.btnClose = this.root?.querySelector('#chrome-controls-close') as UIButton | null
+    this.btnDropdown = this.root?.querySelector('#app-header-dropdown-button') as UIButton | null
+    this.btnSheet = this.root?.querySelector('#app-header-sheet-button') as UIButton | null
+    this.menuPreferences = this.root?.querySelector(
+      '#app-header-menu-preferences'
+    ) as HTMLElement | null
+    this.appTitle = this.root?.querySelector('#app-header-title') as HTMLElement | null
+    this.prefsDialog = this.root?.querySelector('preferences-dialog') as UIDialog | null
+  }
 
-    const root = this.shadowRoot as ShadowRoot
-    const btnMin = root.querySelector('#chrome-controls-minimize') as HTMLElement | null
-    const btnMax = root.querySelector('#chrome-controls-maximize') as HTMLElement | null
-    const btnClose = root.querySelector('#chrome-controls-close') as HTMLElement | null
-    const btnNew = root.querySelector('#app-header-new-button') as HTMLElement | null
-    const btnDropdown = root.querySelector('#app-header-dropdown-button') as HTMLElement | null
-    const btnSheet = root.querySelector('#app-header-sheet-button') as HTMLElement | null
-    const menuPreferences = root.querySelector('#app-header-menu-preferences') as HTMLElement | null
-
-    if (btnMin) btnMin.innerHTML = iconMinSvg
-    if (btnMax) btnMax.innerHTML = iconMaxSvg
-    if (btnClose) btnClose.innerHTML = iconCloseSvg
-    if (btnNew) btnNew.innerHTML = iconNewSvg
-    if (btnDropdown) btnDropdown.innerHTML = iconDropdownSvg
-    if (btnSheet) btnSheet.innerHTML = iconSheetSvg
-
-    btnMin?.addEventListener('click', () => {
-      window.api?.window?.minimize()
-    })
-    btnMax?.addEventListener('click', () => {
-      window.api?.window?.toggleMaximize()
-    })
-    btnClose?.addEventListener('click', () => {
-      window.api?.window?.close()
-    })
-    menuPreferences?.addEventListener('click', () => {
-      const prefs = root.querySelector('preferences-dialog') as HTMLElement & {
-        openDialog?: () => void
-      }
-      prefs?.openDialog?.()
-    })
-    this.applyI18n()
+  private applySvgIcons(): void {
+    if (this.appTitle) this.appTitle.textContent = DATA.appName
+    if (this.btnMin) this.btnMin.innerHTML = iconMinSvg
+    if (this.btnMax) this.btnMax.innerHTML = iconMaxSvg
+    if (this.btnClose) this.btnClose.innerHTML = iconCloseSvg
+    if (this.btnDropdown) this.btnDropdown.innerHTML = iconDropdownSvg
+    if (this.btnSheet) this.btnSheet.innerHTML = iconSheetSvg
   }
 
   private applyI18n(): void {

@@ -3,7 +3,7 @@ import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { EVENTS } from '../shared/events'
 
-export function handleNavigation(): void {
+export function handleNavigationIpc(): void {
   ipcMain.on(EVENTS.NAVIGATE, (event, page: string) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return

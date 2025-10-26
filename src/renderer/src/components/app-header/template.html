@@ -1,28 +1,8 @@
 <template id="app-header-template">
   <header>
     <div class="app-header__left">
-      <ui-dialog>
-        <ui-button
-          class="app-header__new-button"
-          id="app-header-new-button"
-          slot="trigger"
-          variant="ghost"
-          size="icon"
-          style="--ui-button-icon-size: 22px"
-        >
-        </ui-button>
-
-        <div slot="content" style="padding: 1rem">
-          <h3>Dialog content</h3>
-          <p>Place any content here.</p>
-        </div>
-
-        <div slot="footer">
-          <ui-button slot="cancel" variant="secondary" size="sm">Cancel</ui-button>
-          <ui-button variant="default" size="sm">Confirm</ui-button>
-        </div>
-      </ui-dialog>
-      <h1>Downloader</h1>
+      <new-dialog></new-dialog>
+      <h1 id="app-header-title"></h1>
       <ui-dropdown align="center">
         <ui-button
           class="app-header__dropdown-button"
@@ -33,7 +13,6 @@
           style="--ui-button-icon-size: 22px"
         >
         </ui-button>
-        <div slot="content" style="min-width: 180px"></div>
         <div
           slot="menu-item"
           class="app-header__dropdown-menu-item"
@@ -64,11 +43,6 @@
 
         <div slot="content" style="padding: 1rem">
           <app-sidebar-content></app-sidebar-content>
-        </div>
-
-        <div slot="footer">
-          <ui-button slot="cancel" variant="secondary" size="sm">Cancel</ui-button>
-          <ui-button variant="default" size="sm">Confirm</ui-button>
         </div>
       </ui-sheet>
     </div>

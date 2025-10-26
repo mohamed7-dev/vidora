@@ -1,10 +1,11 @@
 import template from './template.html?raw'
 import styleCss from '../shared.css?inline'
 import { UIInput, UISelect } from '@renderer/components/ui'
-import { DATA } from '@renderer/lib/data'
-import { storage } from '@renderer/lib/storage'
+import { DATA } from '@root/shared/data'
+import { AppConfig } from '@root/shared/types'
 
 export class DownloaderTab extends HTMLElement {
+  private config: AppConfig | null = null
   private cookiesFromBrowserSelect: UISelect | null = null
   private proxyServerInput: UIInput | null = null
   private t = window.api?.i18n?.t ?? ((key: string) => key)
@@ -13,7 +14,18 @@ export class DownloaderTab extends HTMLElement {
     this.attachShadow({ mode: 'open' })
   }
 
-  connectedCallback(): void {
+  async connectedCallback(): Promise<void> {
+    this.render()
+    this.config = (await window.api?.config.getConfig()) || null
+    this.applyI18n()
+    this.syncCookiesFromBrowserSelect()
+    this.changeProxyServerInput()
+    this.syncProxyServerInput()
+    this.changeCookiesFromBrowserSelect()
+    this.syncCookiesFromBrowserSelect()
+  }
+
+  private render(): void {
     const parser = new DOMParser()
     const tree = parser.parseFromString(template, 'text/html')
     const tpl = tree.querySelector<HTMLTemplateElement>('#downloader-tab-template')
@@ -26,32 +38,34 @@ export class DownloaderTab extends HTMLElement {
     this.cookiesFromBrowserSelect =
       this.shadowRoot?.querySelector<UISelect>('#cookies-from-browser-select') ?? null
     this.proxyServerInput = this.shadowRoot?.querySelector<UIInput>('#proxy-server-input') ?? null
-    this.applyI18n()
-    this.syncCookiesFromBrowserSelect()
-    this.changeProxyServerInput()
-    this.syncProxyServerInput()
-    this.changeCookiesFromBrowserSelect()
-    this.syncCookiesFromBrowserSelect()
   }
 
   private applyI18n(): void {
     this.shadowRoot?.querySelectorAll('[data-i18n]').forEach((el) => {
       el.textContent = this.t(el.getAttribute('data-i18n') as string)
     })
+    if (this.cookiesFromBrowserSelect)
+      this.cookiesFromBrowserSelect.setAttribute(
+        'placeholder',
+        this.t('pref.downloader.cookiesFromBrowser.placeholder')
+      )
   }
 
   private changeProxyServerInput(): void {
     if (!this.proxyServerInput) return
     this.proxyServerInput.addEventListener('input', (e) => {
-      storage.set('proxyServer', (e.target as UIInput).value)
+      const value = (e.target as UIInput).value
+      if (!value) return
+      window.api.config.updateConfig({ downloader: { proxyServerUrl: value } })
     })
   }
 
   private syncProxyServerInput(): void {
     if (!this.proxyServerInput) return
     // this.proxyServerInput.pattern = DATA.config.proxyServerPattern
-
-    this.proxyServerInput.value = storage.get('proxyServer') ?? ''
+    const saved = this.config?.downloader.proxyServerUrl
+    if (!saved) return
+    this.proxyServerInput.setAttribute('value', saved)
   }
 
   private changeCookiesFromBrowserSelect(): void {
@@ -60,7 +74,7 @@ export class DownloaderTab extends HTMLElement {
       const value = (e.target as UISelect).value
       if (!value) return
       this.cookiesFromBrowserSelect?.setAttribute('value', value)
-      storage.set('cookiesFromBrowser', value)
+      window.api.config.updateConfig({ downloader: { cookiesFromBrowser: value } })
     })
   }
   private syncCookiesFromBrowserSelect(): void {
@@ -69,7 +83,7 @@ export class DownloaderTab extends HTMLElement {
       return `<ui-option value="${cookie.value}">${cookie.label}</ui-option>`
     })
     this.cookiesFromBrowserSelect.innerHTML = options.join('')
-    this.cookiesFromBrowserSelect.value = storage.get('cookiesFromBrowser') ?? ''
+    this.cookiesFromBrowserSelect.value = this.config?.downloader.cookiesFromBrowser ?? ''
   }
 }
 

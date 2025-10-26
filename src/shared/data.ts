@@ -1,14 +1,7 @@
 export const DATA = {
-  config: {
-    fileNameFormatPlaylists: '%(playlist_index)s.%(title)s.%(ext)s',
-    folderNameFormatPlaylists: '%(playlist_title)s',
-    maxDownloads: 5,
-    videoQuality: '1080',
-    videoCodec: 'avc1',
-    /* eslint-disable-next-line no-useless-escape */
-    proxyServerPattern: '^(http:\/\/|https:\/\/|socks5:\/\/)?[a-zA-Z0-9.]+:[\d]+$',
-    closeAppToSystemTray: false
-  },
+  appName: 'Vidora',
+  /* eslint-disable-next-line no-useless-escape */
+  proxyServerPattern: '^(http://|https://|socks5://)?[a-zA-Z0-9.]+:[\d]+$',
   videoQualities: [
     { value: '144', label: '144p' },
     { value: '240', label: '240p' },
@@ -38,7 +31,9 @@ export const DATA = {
   themes: [
     { value: 'system', label: 'pref.general.theme.options.system' },
     { value: 'dark', label: 'pref.general.theme.options.dark' },
-    { value: 'light', label: 'pref.general.theme.options.light' }
+    { value: 'light', label: 'pref.general.theme.options.light' },
+    { value: 'caffeine', label: 'caffeine' },
+    { value: 'spotify', label: 'spotify' }
   ],
   languages: [
     { value: 'en', label: 'English' },

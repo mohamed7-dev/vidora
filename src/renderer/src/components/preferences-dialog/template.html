@@ -1,5 +1,5 @@
 <template id="preferences-dialog-template">
-  <ui-dialog closable>
+  <ui-dialog show-x-button alert>
     <div class="preferences-dialog__header" slot="header">
       <ui-button
         class="preferences-dialog__header__button"
@@ -9,6 +9,15 @@
         block
       >
         <span data-i18n="pref.tabs.general">General</span>
+      </ui-button>
+      <ui-button
+        class="preferences-dialog__header__button"
+        id="downloads-tab-trigger"
+        variant="ghost"
+        value="downloads"
+        block
+      >
+        <span data-i18n="pref.tabs.downloads">Downloads</span>
       </ui-button>
       <ui-button
         class="preferences-dialog__header__button"
@@ -24,6 +33,7 @@
     <div slot="content" class="preferences-dialog__content">
       <ui-tabs value="general">
         <general-tab-content slot="panel" value="general"></general-tab-content>
+        <downloads-tab-content slot="panel" value="downloads"></downloads-tab-content>
         <downloader-tab-content slot="panel" value="downloader"></downloader-tab-content>
       </ui-tabs>
     </div>

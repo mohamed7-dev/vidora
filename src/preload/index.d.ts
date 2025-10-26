@@ -1,4 +1,6 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
+import { AppConfig, DeepPartial } from '@root/shared/types'
+import { StatusSnapshot } from '@root/shared/status'
 
 declare global {
   interface Window {
@@ -17,13 +19,20 @@ declare global {
         changeDownloadPath: () => void
         changedDownloadPath: (callback: (location: string) => void) => void
       }
+      config: {
+        getAppDefaults: () => Promise<AppConfig>
+        getConfig: () => Promise<AppConfig>
+        // TODO: apply deep partial
+        updateConfig: (patch: DeepPartial<AppConfig>) => Promise<AppConfig>
+      }
       i18n?: {
-        getLocale: () => Promise<string>
-        getAvailableLocales?: () => Promise<string[]>
         loadLocale: (locale: string) => Promise<Record<string, unknown>>
-        setLocale: (locale: string) => Promise<void>
         onLocaleChanged?: (callback: (locale: string) => void) => () => void
         t?: (key: string) => string
+      }
+      status: {
+        getSnapshot: () => Promise<StatusSnapshot>
+        onUpdate: (cb: (snap: StatusSnapshot) => void) => () => void
       }
     }
   }

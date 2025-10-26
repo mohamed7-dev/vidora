@@ -14,6 +14,7 @@
   width: 100%;
 }
 
+/* Base control styles */
 .control {
   -webkit-appearance: none;
   appearance: none;
@@ -48,4 +49,56 @@
   opacity: 0.5;
   pointer-events: none;
   cursor: not-allowed;
+}
+
+/* Invalid state */
+.control[aria-invalid='true'] {
+  border-color: var(--destructive, #dc2626);
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px color-mix(in oklch, var(--destructive, #dc2626) 50%, transparent);
+}
+
+/* Sizes */
+:host([size='sm']) .control {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+:host([size='md']) .control {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+:host([size='lg']) .control {
+  padding: 0.65rem 0.9rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+/* Variants */
+:host([variant='default']) .control {
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  background: transparent;
+}
+
+:host([variant='underline']) .control {
+  border: none;
+  border-bottom: 1px solid var(--input);
+  border-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+:host([variant='underline']) .control:focus-visible {
+  border-bottom-color: var(--ring);
+  box-shadow: none;
+}
+
+:host([variant='underline']) .control[aria-invalid='true'] {
+  border-bottom-color: var(--destructive, #dc2626);
+  box-shadow: none;
 }

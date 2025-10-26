@@ -1,7 +1,6 @@
 import { ipcRenderer } from 'electron'
 import { EVENTS } from '../shared/events'
 
-// Custom APIs for renderer
 let loadedLanguage: Record<string, unknown> = {}
 let currentLocale = 'en'
 
@@ -24,16 +23,8 @@ export function t(phrase: string): string {
 
 export async function initI18nLoader(): Promise<void> {
   try {
-    // Prefer user-selected language in localStorage if present
-    const stored = globalThis.localStorage?.getItem('language')
-    if (stored) currentLocale = stored
-  } catch {
-    // ignore if localStorage not available
-  }
-  try {
-    if (!currentLocale) {
-      currentLocale = await ipcRenderer.invoke(EVENTS.I18N.GET_LOCALE)
-    }
+    const config = await ipcRenderer.invoke(EVENTS.CONFIG.GET)
+    currentLocale = config.general.language
     loadedLanguage = await ipcRenderer.invoke(EVENTS.I18N.LOAD_LOCALE, currentLocale)
   } catch {
     // fallback: try English
@@ -68,11 +59,6 @@ ipcRenderer.on(EVENTS.I18N.LOCALE_CHANGED, async (_e, locale: string) => {
   try {
     currentLocale = locale
     loadedLanguage = await ipcRenderer.invoke(EVENTS.I18N.LOAD_LOCALE, currentLocale)
-    try {
-      globalThis.localStorage?.setItem('language', currentLocale)
-    } catch {
-      /* ignore */
-    }
   } catch {
     /* ignore */
   }
