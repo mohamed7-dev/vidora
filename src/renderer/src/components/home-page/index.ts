@@ -6,6 +6,7 @@ import { UIButton } from '../ui'
 import { NewDialog } from '../new-dialog'
 
 export class HomePage extends HTMLElement {
+  private t = window.api.i18n?.t ?? (() => '')
   private addDownloadBtn: UIButton | null = null
   constructor() {
     super()
@@ -15,6 +16,7 @@ export class HomePage extends HTMLElement {
   async connectedCallback(): Promise<void> {
     await this.render()
     this.setListeners()
+    this.applyI18n()
   }
 
   async render(): Promise<void> {
@@ -37,6 +39,15 @@ export class HomePage extends HTMLElement {
     this.addDownloadBtn.addEventListener('click', () => {
       const newDialog = this.shadowRoot?.querySelector('new-dialog') as NewDialog
       if (newDialog) newDialog.open()
+    })
+  }
+
+  private applyI18n(): void {
+    const elements = this.shadowRoot?.querySelectorAll('[data-i18n]')
+    elements?.forEach((elem) => {
+      const content = elem.getAttribute('data-i18n')
+      if (!content) return
+      elem.textContent = this.t(content)
     })
   }
 }

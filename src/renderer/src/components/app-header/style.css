@@ -19,6 +19,10 @@
   justify-content: flex-end;
 }
 
+:host-context([use-native-toolbar='true']) .app-header__right {
+  display: none;
+}
+
 .app-header__chrome-controls {
   display: flex;
   align-items: center;

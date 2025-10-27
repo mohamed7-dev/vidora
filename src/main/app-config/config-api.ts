@@ -3,6 +3,7 @@ import { DEFAULT_CONFIG, DEFAULT_INTERNAL_CONFIG } from './default-config'
 import { useTray } from '../tray'
 import { updateBrowserLocale } from '../i18n'
 import { AppConfig, DeepPartial } from '../../shared/types'
+import { success } from '../status-bus'
 
 function ensureConfigFile(): void {
   try {
@@ -58,8 +59,12 @@ function mergeNamespaced(base: AppConfig, patch: DeepPartial<AppConfig>): AppCon
 }
 
 function performSideEffects(patch: DeepPartial<AppConfig>): void {
-  if (patch.general?.closeToTray) {
+  if (typeof patch.general?.closeToTray === 'boolean') {
     useTray(patch.general.closeToTray)
+    success(
+      'configTray',
+      patch.general.closeToTray ? 'status.config.tray.enabled' : 'status.config.tray.disabled'
+    )
   }
   if (patch.general?.language) {
     updateBrowserLocale(patch.general.language)
@@ -69,18 +74,12 @@ function performSideEffects(patch: DeepPartial<AppConfig>): void {
 export function updateConfig(patch: DeepPartial<AppConfig>): AppConfig {
   ensureConfigFile()
   const current = readConfig()
-  const newPatch = {
-    ...patch,
-    general: {
-      ...patch.general,
-      ...(patch.general?.language &&
-      (patch.general?.language === 'ar' || patch.general?.language === 'fa')
-        ? { dir: 'rtl' }
-        : { dir: 'ltr' })
-    }
+  const newLang = patch.general?.language
+  if (patch.general && newLang) {
+    patch.general.dir = newLang === 'ar' || newLang === 'fa' ? 'rtl' : 'ltr'
   }
-  const merged = mergeNamespaced(current, newPatch)
+  const merged = mergeNamespaced(current, patch)
   writeConfig(merged)
-  performSideEffects(newPatch)
+  performSideEffects(patch)
   return merged
 }

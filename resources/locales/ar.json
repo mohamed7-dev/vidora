@@ -23,7 +23,8 @@
   },
   "generic": {
     "actions": {
-      "reset": "إعادة التعيين"
+      "reset": "إعادة التعيين",
+      "requireStartAlert": "تغيير هذه الاعدادت يتطلب اعادة تشغيل التطبيق."
     }
   },
   "pref": {
@@ -37,11 +38,14 @@
         "userInterface": "واجهة المستخدم",
         "application": "التطبيق"
       },
+      "useNativeToolbar": {
+        "title": "استخدام شريط الأدوات الأصلي"
+      },
       "closeAppToSystemTray": {
         "title": "إغلاق التطبيق إلى شريط النظام"
       },
       "restartApp": {
-        "title": "تطبيق لغة النظام",
+        "title": "إعادة تشغيل التطبيق",
         "button": "إعادة تشغيل التطبيق"
       },
       "theme": {
@@ -137,13 +141,45 @@
       "ready": "(yt-dlp) جاهز",
       "env_missing": "(yt-dlp) المسار المُكوَّن غير موجود.",
       "not_found_freebsd": "(FreeBSD) غير موجود على (yt-dlp)",
-      "download_failed": "فشل تنزيل (yt-dlp)."
+      "download_failed": "فشل تنزيل (yt-dlp).",
+      "fetching_info": "جاري جلب معلومات الفيديو…",
+      "info_ready": "تم جلب معلومات الفيديو.",
+      "info_failed": "فشل جلب معلومات الفيديو."
     },
     "ffmpeg": {
       "checking": "(FFMPEG) جارٍ فحص",
       "ready": "(FFMPEG) جاهز",
       "env_missing": "(FFMPEG) المسار المُكوَّن غير موجود.",
       "not_found_freebsd": "(FreeBSD) غير موجود على (FFMPEG)"
+    },
+    "config": {
+      "downloadDir": {
+        "writable": "مسار التنزيل جاهز للاستخدام.",
+        "notWritable": "مسار التنزيل غير جاهز للاستخدام."
+      },
+      "tray": {
+        "enabled": "تم تفعيل التطبيق في شريط النظام.",
+        "disabled": "تم إلغاء تفعيل التطبيق في شريط النظام."
+      }
+    },
+    "configYtdlp": {
+      "picking": "(ytdlp) جاري اختيار ملف",
+      "canceled": "(ytdlp) تم الغاء اختيار ملف",
+      "copy_failed": "(ytdlp) فشل نسخ ملف",
+      "ready": "(ytdlp) تم نسخ ملف بنجاح"
+    },
+    "configDownloadDir": {
+      "picking": ".جاري اختيار مسار التنزيل.",
+      "canceled": ".تم الغاء اختيار مسار التنزيل.",
+      "invalid": ".مسار غير صحيح.",
+      "not_writable": ".مسار التنزيل غير قابل للكتابة.",
+      "ready": ".تم اختيار مسار التنزيل بنجاح."
     }
+  },
+  "home": {
+    "pageTitle": "الرئيسية",
+    "cardTitle": "تحميل الوسائط",
+    "cardMessage": "أضف رابط الفيديو أو الصوت أو قائمة التشغيل لبدء التنزيل",
+    "cardButtonTitle": "إضافة تحميل"
   }
 }

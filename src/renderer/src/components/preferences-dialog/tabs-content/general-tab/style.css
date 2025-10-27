@@ -20,3 +20,33 @@ html[dir='rtl'] .max-downloads-controls {
   align-items: center;
   gap: 1rem;
 }
+
+/* language selection  */
+.language-select-container,
+.native-toolbar-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.restart-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  background: var(--primary,);
+  color: var(--primary-foreground,);
+  font-size: 0.75rem;
+  line-height: 1;
+  margin-inline-start: 0.5rem;
+  user-select: none;
+  cursor: help;
+}
+
+ui-tooltip::part(container) {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  width: 10rem;
+}

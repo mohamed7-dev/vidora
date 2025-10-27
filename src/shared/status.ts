@@ -1,4 +1,11 @@
-export type TaskKind = 'ytdlp' | 'ffmpeg' | 'appUpdate' | 'download'
+export type TaskKind =
+  | 'ytdlp'
+  | 'ffmpeg'
+  | 'appUpdate'
+  | 'download'
+  | 'configDownloadDir'
+  | 'configTray'
+  | 'configYtDlp'
 
 export type TaskState = 'idle' | 'pending' | 'success' | 'error'
 

@@ -6,7 +6,10 @@ const TITLES: Record<TaskKind, string> = {
   ytdlp: 'yt-dlp',
   ffmpeg: 'FFmpeg',
   appUpdate: 'App update',
-  download: 'Download'
+  download: 'Download',
+  configDownloadDir: 'Download path',
+  configTray: 'System tray',
+  configYtDlp: 'yt-dlp config'
 }
 
 export class AppScrim extends HTMLElement {
@@ -71,9 +74,16 @@ export class AppScrim extends HTMLElement {
       }
     }
 
-    // Blocking rule: block if any core setup task is pending
-    const blockingKinds: TaskKind[] = ['ytdlp', 'ffmpeg']
-    const blocking = blockingKinds.some((k) => snap[k]?.state === 'pending')
+    // Blocking rule (opt-in): block only for specific pending statuses
+    const allowedPendingKeys = new Set<string>([
+      'status.ytdlp.checking',
+      'status.ffmpeg.checking',
+      'status.configDownloadDir.picking'
+    ])
+    const blocking = (Object.keys(snap) as TaskKind[]).some((k) => {
+      const st = snap[k]
+      return st?.state === 'pending' && !!st.messageKey && allowedPendingKeys.has(st.messageKey)
+    })
 
     document.documentElement.dataset.appBlocking = String(blocking)
     this.toggleAttribute('data-visible', blocking)

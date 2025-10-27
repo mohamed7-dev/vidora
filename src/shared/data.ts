@@ -30,10 +30,10 @@ export const DATA = {
   ],
   themes: [
     { value: 'system', label: 'pref.general.theme.options.system' },
-    { value: 'dark', label: 'pref.general.theme.options.dark' },
-    { value: 'light', label: 'pref.general.theme.options.light' },
-    { value: 'caffeine', label: 'caffeine' },
-    { value: 'spotify', label: 'spotify' }
+    { value: 'dark', mode: 'dark', label: 'pref.general.theme.options.dark' },
+    { value: 'light', mode: 'light', label: 'pref.general.theme.options.light' },
+    { value: 'caffeine', mode: 'dark', label: 'caffeine' },
+    { value: 'spotify', mode: 'dark', label: 'spotify' }
   ],
   languages: [
     { value: 'en', label: 'English' },

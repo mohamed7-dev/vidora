@@ -1,5 +1,6 @@
 export interface AppConfig {
   general: {
+    useNativeToolbar: boolean
     closeToTray: boolean
     language: string
     dir: string
@@ -17,6 +18,7 @@ export interface AppConfig {
   downloader: {
     cookiesFromBrowser: string | null
     proxyServerUrl: string
+    configPath?: string | null
   }
 }
 

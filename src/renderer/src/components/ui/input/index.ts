@@ -11,13 +11,21 @@ const INVALID_ATTR = 'invalid'
 export type UIInputValueDetail = { value: string }
 
 export class UIInput extends HTMLElement {
+  static formAssociated = true
   private _inputEl: HTMLInputElement | null = null
   private _attrObserver: MutationObserver | null = null
   private _eventsAborter: AbortController | null = null
 
+  private _internals: ElementInternals | null = null
+
   constructor() {
     super()
-    this.attachShadow({ mode: 'open' })
+    this.attachShadow({ mode: 'open', delegatesFocus: true })
+    if ((this as unknown as { attachInternals?: () => ElementInternals }).attachInternals) {
+      this._internals = (
+        this as unknown as { attachInternals: () => ElementInternals }
+      ).attachInternals()
+    }
   }
   static get observedAttributes(): string[] {
     return [VALUE_ATTR, PLACEHOLDER_ATTR, TYPE_ATTR, DISABLED_ATTR, INVALID_ATTR]
@@ -46,6 +54,11 @@ export class UIInput extends HTMLElement {
 
     if (!this.hasAttribute('variant')) this.setAttribute('variant', 'default')
     if (!this.hasAttribute('size')) this.setAttribute('size', 'md')
+
+    // Support autofocus semantics even within dialogs by focusing after mount
+    if (this.hasAttribute('autofocus')) {
+      requestAnimationFrame(() => this.focus())
+    }
   }
 
   disconnectedCallback(): void {

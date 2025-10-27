@@ -7,12 +7,15 @@ import { AppConfig } from '@root/shared/types'
 
 export class GeneralTab extends HTMLElement {
   private config: AppConfig | null = null
+  private initialConfig: AppConfig | null = null
   private themeSelect: UISelect | null = null
   private languageSelect: UISelect | null = null
   private t = window.api?.i18n?.t || (() => '')
-  private _systemMql: MediaQueryList | null = null
-  private _systemMqlHandler: ((e: MediaQueryListEvent) => void) | null = null
   private closeAppToSystemTraySwitch: UICheckbox | null = null
+  private useNativeToolbarSwitch: UICheckbox | null = null
+  private restartBtn: UIButton | null = null
+  private needsReload = false
+  private needsRelaunch = false
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
@@ -21,6 +24,7 @@ export class GeneralTab extends HTMLElement {
   async connectedCallback(): Promise<void> {
     this.render()
     this.config = (await window.api?.config.getConfig()) || null
+    this.initialConfig = this.config ? JSON.parse(JSON.stringify(this.config)) : null
     this.syncTheme()
     this.changeTheme()
     this.syncLanguage()
@@ -29,6 +33,8 @@ export class GeneralTab extends HTMLElement {
     this.wireRestartButton()
     this.syncCloseAppToSystemTray()
     this.changeCloseAppToSystemTray()
+    this.syncUseNativeToolbar()
+    this.changeUseNativeToolbar()
   }
 
   private render(): void {
@@ -44,6 +50,9 @@ export class GeneralTab extends HTMLElement {
     this.languageSelect = this.shadowRoot?.querySelector<UISelect>('#language-select') || null
     this.closeAppToSystemTraySwitch =
       this.shadowRoot?.querySelector<UICheckbox>('#close-app-to-system-tray-switch') || null
+    this.useNativeToolbarSwitch =
+      this.shadowRoot?.querySelector<UICheckbox>('#use-native-toolbar-switch') || null
+    this.restartBtn = this.shadowRoot?.querySelector<UIButton>('#restart-app-button') || null
   }
 
   private syncTheme(): void {
@@ -57,19 +66,6 @@ export class GeneralTab extends HTMLElement {
       this.themeSelect.innerHTML = options.join('')
       this.themeSelect.setAttribute('value', theme)
     }
-    // Apply theme on load
-    if (theme === 'system') {
-      this.applySystemTheme()
-    } else if (theme === 'light') {
-      this.teardownSystemTheme()
-      document.documentElement.classList.remove('dark')
-    } else if (theme === 'dark') {
-      this.teardownSystemTheme()
-      document.documentElement.classList.add('dark')
-    } else {
-      this.teardownSystemTheme()
-      document.documentElement.classList.remove(theme)
-    }
   }
 
   private changeTheme(): void {
@@ -78,60 +74,35 @@ export class GeneralTab extends HTMLElement {
       const select = e.target as UISelect
       const value = select.value
       if (!value) return
-      window.api?.config?.updateConfig({ general: { theme: value } }).catch(() => {})
-      const x = window.innerWidth
-      const y = 0
-      const maxRadius = Math.hypot(window.innerWidth, window.innerHeight)
-      const transition = document.startViewTransition(() => {
-        if (value === 'system') {
-          this.applySystemTheme()
-        } else if (value === 'light') {
-          this.teardownSystemTheme()
-          document.documentElement.classList.remove('dark')
-        } else if (value === 'dark') {
-          this.teardownSystemTheme()
-          document.documentElement.classList.add('dark')
-        } else {
-          this.teardownSystemTheme()
-          // any other theme is a custom css class
-          document.documentElement.classList.add(value)
-        }
+      // Wait for actual config update before animating for accurate visual change
+      const unsubscribe = window.api?.config.onUpdated?.((cfg) => {
+        if (cfg.general.theme !== value) return
+        if (unsubscribe) unsubscribe()
+        const x = window.innerWidth
+        const y = 0
+        const maxRadius = Math.hypot(window.innerWidth, window.innerHeight)
+        const transition = document.startViewTransition(() => {
+          import('@renderer/lib/theme').then(({ applyThemeValue }) =>
+            applyThemeValue(cfg.general.theme)
+          )
+        })
+        transition.ready.then(() => {
+          document.documentElement.animate(
+            {
+              clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${maxRadius}px at ${x}px ${y}px)`]
+            },
+            {
+              duration: 1100,
+              easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+              pseudoElement: '::view-transition-new(root)'
+            }
+          )
+        })
       })
-      transition.ready.then(() => {
-        document.documentElement.animate(
-          {
-            clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${maxRadius}px at ${x}px ${y}px)`]
-          },
-          {
-            duration: 1100,
-            easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-            pseudoElement: '::view-transition-new(root)'
-          }
-        )
+      window.api?.config?.updateConfig({ general: { theme: value } }).catch(() => {
+        if (unsubscribe) unsubscribe()
       })
     })
-  }
-
-  private applySystemTheme(): void {
-    if (!this._systemMql) {
-      this._systemMql = window.matchMedia('(prefers-color-scheme: dark)')
-    }
-    const apply = (isDark: boolean): void => {
-      if (isDark) document.documentElement.classList.add('dark')
-      else document.documentElement.classList.remove('dark')
-    }
-    apply(this._systemMql.matches)
-    if (!this._systemMqlHandler) {
-      this._systemMqlHandler = (e: MediaQueryListEvent) => apply(e.matches)
-      this._systemMql.addEventListener('change', this._systemMqlHandler)
-    }
-  }
-
-  private teardownSystemTheme(): void {
-    if (this._systemMql && this._systemMqlHandler) {
-      this._systemMql.removeEventListener('change', this._systemMqlHandler)
-    }
-    this._systemMqlHandler = null
   }
 
   private syncLanguage(): void {
@@ -152,7 +123,15 @@ export class GeneralTab extends HTMLElement {
       const sel = e.target as UISelect
       const value = sel.value
       if (!value) return
-      window.api?.config?.updateConfig({ general: { language: value } }).catch(() => {})
+      // Persist and update internal state
+      window.api?.config
+        ?.updateConfig({ general: { language: value } })
+        .then(() => {
+          if (this.config) this.config.general.language = value
+        })
+        .catch(() => {})
+      // Mark reload required only if changed from initial
+      this.needsReload = value !== this.initialConfig?.general.language
     })
   }
 
@@ -173,12 +152,13 @@ export class GeneralTab extends HTMLElement {
   }
 
   private wireRestartButton(): void {
-    const root = this.shadowRoot
-    if (!root) return
-    const btn = root.querySelector<UIButton>('#restart-app-button')
-    if (!btn) return
-    btn.addEventListener('click', () => {
-      window.api?.window?.reload()
+    if (!this.restartBtn) return
+    this.restartBtn.addEventListener('click', () => {
+      if (this.needsRelaunch) {
+        window.api?.app?.relaunch()
+      } else if (this.needsReload) {
+        window.api?.window?.reload()
+      }
     })
   }
 
@@ -194,6 +174,28 @@ export class GeneralTab extends HTMLElement {
       const checkbox = e.target as UICheckbox
       const value = checkbox.checked
       window.api?.config?.updateConfig({ general: { closeToTray: value } }).catch(() => {})
+    })
+  }
+
+  private async syncUseNativeToolbar(): Promise<void> {
+    if (!this.useNativeToolbarSwitch) return
+    const useNativeToolbar = this.config?.general.useNativeToolbar
+    this.useNativeToolbarSwitch.toggleAttribute('checked', useNativeToolbar)
+  }
+
+  private changeUseNativeToolbar(): void {
+    if (!this.useNativeToolbarSwitch) return
+    this.useNativeToolbarSwitch.addEventListener('change', (e) => {
+      const checkbox = e.target as UICheckbox
+      const value = checkbox.checked
+      window.api?.config
+        ?.updateConfig({ general: { useNativeToolbar: value } })
+        .then(() => {
+          if (this.config) this.config.general.useNativeToolbar = value
+        })
+        .catch(() => {})
+      // Mark relaunch required only if changed from initial
+      this.needsRelaunch = value !== this.initialConfig?.general.useNativeToolbar
     })
   }
 }

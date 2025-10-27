@@ -97,7 +97,7 @@ export class DownloadsTab extends HTMLElement {
   }
 
   private setupListeners(): void {
-    window.api?.generalPreferences?.changedDownloadPath((location: string | string[]) => {
+    window.api?.downloadsPreferences?.changedDownloadPath((location: string | string[]) => {
       this.handleChangedDownloadPath(location)
     })
   }
@@ -108,7 +108,6 @@ export class DownloadsTab extends HTMLElement {
     if (!path) return
     this.downloadPathDisplay.textContent = path
     this.downloadPathDisplay.setAttribute('title', path)
-    window.api?.config?.updateConfig({ downloads: { downloadDir: path } }).catch(() => {})
   }
 
   private async syncDownloadPath(): Promise<void> {
@@ -128,7 +127,7 @@ export class DownloadsTab extends HTMLElement {
     const button = this.shadowRoot?.querySelector<UIButton>('#change-download-path-button') || null
     if (!button) return
     button.addEventListener('click', () => {
-      window.api?.generalPreferences?.changeDownloadPath()
+      window.api?.downloadsPreferences?.changeDownloadPath()
     })
   }
 

@@ -23,7 +23,8 @@
   },
   "generic": {
     "actions": {
-      "reset": "Reset"
+      "reset": "Reset",
+      "requireStartAlert": "Changes here require app restart."
     }
   },
   "pref": {
@@ -37,11 +38,14 @@
         "userInterface": "User Interface",
         "application": "Application"
       },
+      "useNativeToolbar": {
+        "title": "Use Native Toolbar"
+      },
       "closeAppToSystemTray": {
         "title": "Close App To System Tray"
       },
       "restartApp": {
-        "title": "Apply System Locale",
+        "title": "Restart App",
         "button": "Restart App"
       },
       "theme": {
@@ -141,13 +145,45 @@
       "ready": "yt-dlp is ready.",
       "env_missing": "The configured yt-dlp path does not exist.",
       "not_found_freebsd": "No yt-dlp found in PATH on FreeBSD. Please install it.",
-      "download_failed": "Failed to download yt-dlp."
+      "download_failed": "Failed to download yt-dlp.",
+      "fetching_info": "Fetching media info…",
+      "info_ready": "Media info is ready.",
+      "info_failed": "Failed to fetch media info."
     },
     "ffmpeg": {
       "checking": "Checking FFmpeg…",
       "ready": "FFmpeg is ready.",
       "env_missing": "The configured FFmpeg path does not exist.",
       "not_found_freebsd": "FFmpeg is not found on FreeBSD."
+    },
+    "config": {
+      "downloadDir": {
+        "writable": "Download directory is writable.",
+        "notWritable": "Download directory is not writable."
+      },
+      "tray": {
+        "enabled": "Tray is enabled.",
+        "disabled": "Tray is disabled."
+      }
+    },
+    "configYtdlp": {
+      "picking": "Start picking ytdlp config file.",
+      "canceled": "Picking ytdlp config file was canceled.",
+      "copy_failed": "Copying ytdlp config file was failed.",
+      "ready": "Ytdlp Config file was copied successfully."
+    },
+    "configDownloadDir": {
+      "picking": "Start picking download path.",
+      "canceled": "Picking download path was canceled.",
+      "invalid": "Invalid directory.",
+      "not_writable": "Download directory is not writable.",
+      "ready": "Download directory was picked successfully."
     }
+  },
+  "home": {
+    "pageTitle": "Home",
+    "cardTitle": "Download Media",
+    "cardMessage": "Add video, audio, or playlist URL to start downloading",
+    "cardButtonTitle": "Add Download"
   }
 }

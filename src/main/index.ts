@@ -8,18 +8,24 @@ import { handleChangeDownloadPath } from './preferences'
 import { handleI18nIpc } from './i18n'
 import { getIsQuitting, isTrayEnabled } from './tray'
 import { initConfig } from './app-config/init-config'
+import { readConfig } from './app-config/config-api'
 import { registerConfigIpc } from './app-config/config-listeners'
 import { setupAppInternals } from './setup'
 import { registerStatusIpc } from './status-bus'
+import { handleAppControlsIpc } from './app-controls'
+import { registerDownloadsIpc } from './downloads-ipc'
 
 function createWindow(): void {
+  const cfg = readConfig()
+  const useNativeToolbar = Boolean(cfg?.general?.useNativeToolbar)
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
     autoHideMenuBar: true,
-    frame: false,
-    titleBarStyle: process.platform === 'darwin' ? 'hidden' : undefined,
+    frame: useNativeToolbar ? true : false,
+    titleBarStyle:
+      process.platform === 'darwin' ? (useNativeToolbar ? 'default' : 'hidden') : undefined,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -87,11 +93,13 @@ app.whenReady().then(() => {
   })
 
   handleWindowControlsIpc()
+  handleAppControlsIpc()
   handleNavigationIpc()
   handleChangeDownloadPath()
   handleI18nIpc()
   registerConfigIpc()
   registerStatusIpc()
+  registerDownloadsIpc()
   setupAppInternals()
   initConfig()
 

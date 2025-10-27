@@ -1,10 +1,20 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { clipboard, contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { EVENTS } from '../shared/events'
 import { t } from './i18n'
 import { AppConfig, DeepPartial } from '../shared/types'
 
 const api = {
+  app: {
+    relaunch: (): void => ipcRenderer.send(EVENTS.APP.RELAUNCH)
+  },
+  downloads: {
+    getInfo: async (url: string) => ipcRenderer.invoke(EVENTS.DOWNLOADS.GET_INFO, url)
+  },
+  clipboard: {
+    readText: async (): Promise<string> => clipboard.readText(),
+    writeText: async (text: string): Promise<void> => clipboard.writeText(text)
+  },
   window: {
     minimize: (): void => ipcRenderer.send(EVENTS.WINDOW.MINIMIZE),
     toggleMaximize: (): void => ipcRenderer.send(EVENTS.WINDOW.MAXIMIZE),
@@ -14,12 +24,18 @@ const api = {
   navigation: {
     navigate: (page: string): void => ipcRenderer.send(EVENTS.NAVIGATE, page)
   },
-  generalPreferences: {
+  downloadsPreferences: {
     changeDownloadPath: (): void => ipcRenderer.send(EVENTS.DOWNLOAD_PATH.CHANGE),
-    changedDownloadPath: (callback: (location: string) => void): void => {
-      ipcRenderer.on(EVENTS.DOWNLOAD_PATH.CHANGED, (_event, location) => {
-        callback(location)
-      })
+    changedDownloadPath: (callback: (location: string) => void): (() => void) => {
+      const handler = (_e: unknown, location: string): void => callback(location)
+      ipcRenderer.on(EVENTS.DOWNLOAD_PATH.CHANGED, handler)
+      return () => ipcRenderer.removeListener(EVENTS.DOWNLOAD_PATH.CHANGED, handler)
+    },
+    changeYtdlpConfigPath: (): void => ipcRenderer.send(EVENTS.CONFIG_PATH.CHANGE),
+    changedYtdlpConfigPath: (callback: (location: string) => void): (() => void) => {
+      const handler = (_e: unknown, location: string): void => callback(location)
+      ipcRenderer.on(EVENTS.CONFIG_PATH.CHANGED, handler)
+      return () => ipcRenderer.removeListener(EVENTS.CONFIG_PATH.CHANGED, handler)
     }
   },
   config: {
@@ -27,7 +43,12 @@ const api = {
       ipcRenderer.invoke(EVENTS.CONFIG.GET_APP_DEFAULTS),
     getConfig: async (): Promise<AppConfig> => ipcRenderer.invoke(EVENTS.CONFIG.GET),
     updateConfig: async (patch: DeepPartial<AppConfig>): Promise<AppConfig> =>
-      ipcRenderer.invoke(EVENTS.CONFIG.UPDATE, patch)
+      ipcRenderer.invoke(EVENTS.CONFIG.UPDATE, patch),
+    onUpdated: (cb: (cfg: AppConfig) => void): (() => void) => {
+      const handler = (_: unknown, cfg: AppConfig): void => cb(cfg)
+      ipcRenderer.on(EVENTS.CONFIG.UPDATED, handler)
+      return () => ipcRenderer.removeListener(EVENTS.CONFIG.UPDATED, handler)
+    }
   },
   i18n: {
     loadLocale: async (locale: string): Promise<Record<string, unknown>> =>

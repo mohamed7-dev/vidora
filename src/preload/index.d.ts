@@ -6,6 +6,16 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
+      downloads: {
+        getInfo: (url: string) => Promise<import('../shared/downloads').YtdlpInfo>
+      }
+      clipboard?: {
+        readText: () => Promise<string>
+        writeText: (text: string) => Promise<void>
+      }
+      app: {
+        relaunch: () => void
+      }
       window: {
         minimize: () => void
         toggleMaximize: () => void
@@ -15,15 +25,17 @@ declare global {
       navigation: {
         navigate: (page: string) => void
       }
-      generalPreferences: {
+      downloadsPreferences: {
         changeDownloadPath: () => void
-        changedDownloadPath: (callback: (location: string) => void) => void
+        changedDownloadPath: (callback: (location: string) => void) => () => void
+        changeYtdlpConfigPath: () => void
+        changedYtdlpConfigPath: (callback: (location: string) => void) => () => void
       }
       config: {
         getAppDefaults: () => Promise<AppConfig>
         getConfig: () => Promise<AppConfig>
-        // TODO: apply deep partial
         updateConfig: (patch: DeepPartial<AppConfig>) => Promise<AppConfig>
+        onUpdated: (cb: (cfg: AppConfig) => void) => () => void
       }
       i18n?: {
         loadLocale: (locale: string) => Promise<Record<string, unknown>>

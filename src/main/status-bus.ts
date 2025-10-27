@@ -6,7 +6,10 @@ const snapshot: StatusSnapshot = {
   ytdlp: undefined,
   ffmpeg: undefined,
   appUpdate: undefined,
-  download: undefined
+  download: undefined,
+  configDownloadDir: undefined,
+  configTray: undefined,
+  configYtDlp: undefined
 }
 const listeners = (): BrowserWindow[] => BrowserWindow.getAllWindows()
 

@@ -1,3 +1,86 @@
 :host([hide-trigger]) .trigger-button {
   display: none;
 }
+/* header  */
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* dialog  */
+
+:host ui-dialog::part(panel) {
+  width: 28.25rem;
+  height: 15rem;
+}
+
+/* content */
+
+.media-screen {
+  display: none;
+}
+
+ui-dialog[data-active-screen='media-url'] .media-url-screen {
+  display: flex;
+}
+
+ui-dialog[data-active-screen='media-info'] .media-info-screen {
+  display: flex;
+}
+
+ui-dialog[data-active-screen='media-loading'] .media-loading-screen {
+  display: flex;
+}
+
+/* media url screen  */
+.media-url-screen {
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.media-url-screen label {
+  align-self: start;
+}
+
+.media-url-screen ui-input {
+  width: 100%;
+}
+
+/* media loading screen  */
+.media-loading-screen {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* loader */
+.loader {
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  border: 3px solid var(--primary, #6b7280);
+  border-right-color: transparent;
+  animation: ui-spin 700ms linear infinite;
+}
+
+.loader__text {
+  font-size: 0.875rem;
+  color: var(--muted-foreground, #6b7280);
+}
+
+@keyframes ui-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader {
+    animation: none;
+  }
+}

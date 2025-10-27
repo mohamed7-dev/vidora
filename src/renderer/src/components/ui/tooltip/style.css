@@ -1,0 +1,126 @@
+:host {
+  position: relative;
+  display: inline-flex;
+  --ui-tooltip-bg: var(--color-surface-elevated, --popover);
+  --ui-tooltip-fg: var(--color-on-surface, --popover-foreground);
+  --ui-tooltip-radius: var(--radius-sm, 6px);
+  --ui-tooltip-padding: var(--space-2, 6px) var(--space-3, 10px);
+  --ui-tooltip-shadow: var(--shadow-lg,);
+  --ui-tooltip-border: var(--border, 1px solid rgba(255, 255, 255, 0.08));
+  --ui-tooltip-offset: 8px;
+  --ui-tooltip-z: 1000;
+  --ui-tooltip-arrow-size: 8px;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: var(--ui-tooltip-z);
+  background: var(--ui-tooltip-bg);
+  color: var(--ui-tooltip-fg);
+  border-radius: var(--ui-tooltip-radius);
+  padding: var(--ui-tooltip-padding);
+  box-shadow: var(--ui-tooltip-shadow);
+  border: var(--ui-tooltip-border);
+  font: inherit;
+  line-height: 1.2;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(0);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+/* Show on hover/focus */
+:host(:hover) .tooltip,
+:host(:focus-within) .tooltip,
+:host([data-open='true']) .tooltip {
+  opacity: 1;
+}
+
+.tooltip__content {
+  position: relative;
+}
+
+.tooltip__arrow {
+  position: absolute;
+  width: var(--ui-tooltip-arrow-size);
+  height: var(--ui-tooltip-arrow-size);
+  background: var(--ui-tooltip-bg);
+  border-left: var(--ui-tooltip-border);
+  border-top: var(--ui-tooltip-border);
+  transform: rotate(45deg);
+}
+
+/* Alignments */
+/* Placement by side */
+.tooltip[data-side='top'],
+.tooltip:not([data-side]) {
+  bottom: calc(100% + var(--ui-tooltip-offset));
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tooltip[data-side='top'] .tooltip__arrow,
+.tooltip:not([data-side]) .tooltip__arrow {
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.tooltip[data-side='bottom'] {
+  top: calc(100% + var(--ui-tooltip-offset));
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tooltip[data-side='bottom'] .tooltip__arrow {
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, 50%) rotate(45deg);
+}
+
+.tooltip[data-side='left'] {
+  right: calc(100% + var(--ui-tooltip-offset));
+  top: 50%;
+  transform: translateY(-50%);
+}
+.tooltip[data-side='left'] .tooltip__arrow {
+  left: 100%;
+  top: 50%;
+  transform: translate(0, -50%) rotate(45deg);
+}
+
+.tooltip[data-side='right'] {
+  left: calc(100% + var(--ui-tooltip-offset));
+  top: 50%;
+  transform: translateY(-50%);
+}
+.tooltip[data-side='right'] .tooltip__arrow {
+  right: 100%;
+  top: 50%;
+  transform: translate(0, -50%) rotate(45deg);
+}
+
+/* Cross-axis alignment: start|center|end */
+.tooltip[data-side='top'][data-align='start'],
+.tooltip[data-side='bottom'][data-align='start'] {
+  left: 0;
+  transform: none;
+}
+.tooltip[data-side='top'][data-align='end'],
+.tooltip[data-side='bottom'][data-align='end'] {
+  left: 100%;
+  transform: translateX(-100%);
+}
+
+.tooltip[data-side='left'][data-align='start'],
+.tooltip[data-side='right'][data-align='start'] {
+  top: 0;
+  transform: none;
+}
+.tooltip[data-side='left'][data-align='end'],
+.tooltip[data-side='right'][data-align='end'] {
+  top: 100%;
+  transform: translateY(-100%);
+}
+
+/* Parts: style via ::part(container|content|arrow) from consumers */

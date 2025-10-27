@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { ipcMain, BrowserWindow } from 'electron'
 import { readConfig as readAppConfig, updateConfig } from './config-api'
 import { EVENTS } from '../../shared/events'
 import { DEFAULT_CONFIG } from './default-config'
@@ -15,6 +15,8 @@ export function registerConfigIpc(): void {
 
   ipcMain.handle(EVENTS.CONFIG.UPDATE, (_e, patch: DeepPartial<AppConfig>) => {
     const updated = updateConfig(patch)
+    // broadcast updated config to all windows
+    BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(EVENTS.CONFIG.UPDATED, updated))
     return updated
   })
 }

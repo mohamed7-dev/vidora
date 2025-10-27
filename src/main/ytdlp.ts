@@ -4,8 +4,10 @@ import cp from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import YTDlpWrapImport from 'yt-dlp-wrap-plus'
+import type { YtdlpInfo } from '../shared/downloads'
 import { DEFAULT_INTERNAL_CONFIG } from './app-config/default-config'
 import { begin, fail, success } from './status-bus'
+import { readConfig } from './app-config/config-api'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImport
@@ -21,6 +23,58 @@ function ensureBinDir(): void {
   if (!fs.existsSync(DEFAULT_INTERNAL_CONFIG.ytDlpPath)) {
     fs.mkdirSync(DEFAULT_INTERNAL_CONFIG.ytDlpPath)
   }
+}
+
+/**
+ * @description
+ * Get media info from url.
+ */
+export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
+  return new Promise((resolve, reject) => {
+    const {
+      downloader: { proxyServerUrl, cookiesFromBrowser, configPath }
+    } = readConfig()
+    // -J dumps full JSON for single videos and playlists (with entries)
+    const args: string[] = ['-J', '--no-warnings']
+    if (proxyServerUrl) args.push('--proxy', proxyServerUrl)
+    if (cookiesFromBrowser && cookiesFromBrowser !== 'none') {
+      args.push('--cookies-from-browser', cookiesFromBrowser)
+    }
+    if (configPath) args.push('--config-locations', configPath)
+    args.push(url)
+
+    begin('ytdlp', 'status.ytdlp.fetching_info', { url })
+
+    const ytdlp = new YTDlpWrap() as YTDlpWrapImport
+    const ytdlpProcess = ytdlp.exec(args, { shell: true })
+    let stdout = ''
+    let stderr = ''
+    ytdlpProcess.ytDlpProcess?.stdout.on('data', (data) => (stdout += data))
+    ytdlpProcess.ytDlpProcess?.stderr.on('data', (data) => (stderr += data))
+    ytdlpProcess.on('close', () => {
+      if (stdout) {
+        try {
+          const payload = JSON.parse(stdout)
+          success('ytdlp', 'status.ytdlp.info_ready')
+          resolve(payload)
+        } catch (e) {
+          const err = new Error(
+            'Failed to parse yt-dlp JSON output: ' + (stderr || (e as Error).message)
+          )
+          fail('ytdlp', err, 'status.ytdlp.info_failed')
+          reject(err)
+        }
+      } else {
+        const err = new Error(stderr || `yt-dlp exited with a non-zero code.`)
+        fail('ytdlp', err, 'status.ytdlp.info_failed')
+        reject(err)
+      }
+    })
+    ytdlpProcess.on('error', (err) => {
+      fail('ytdlp', err, 'status.ytdlp.info_failed')
+      reject(err)
+    })
+  })
 }
 
 /**

@@ -5,21 +5,30 @@ export const EVENTS = {
     CLOSE: 'window:close',
     RELOAD: 'window:reload'
   },
+  APP: {
+    RELAUNCH: 'app:relaunch'
+  },
   NAVIGATE: 'navigate:to',
   DOWNLOAD_PATH: {
-    CHANGE: 'general-preferences:change-download-path',
-    CHANGED: 'general-preferences:download-path-changed'
+    CHANGE: 'download-preferences:change-download-path',
+    CHANGED: 'download-preferences:download-path-changed'
+  },
+  CONFIG_PATH: {
+    CHANGE: 'download-preferences:change-config-path',
+    CHANGED: 'download-preferences:config-path-changed'
   },
   I18N: {
     LOAD_LOCALE: 'i18n:load-locale',
     LOCALE_CHANGED: 'i18n:locale-changed'
   },
   CONFIG: {
-    GET_STATUS: 'config:get-status',
-    STATUS: 'config:status',
     GET: 'config:get',
     UPDATE: 'config:update',
-    GET_APP_DEFAULTS: 'config:get-defaults'
+    GET_APP_DEFAULTS: 'config:get-defaults',
+    UPDATED: 'config:updated'
+  },
+  DOWNLOADS: {
+    GET_INFO: 'downloads:get-info'
   },
   STATUS: {
     UPDATE: 'status:update', // renderer listens

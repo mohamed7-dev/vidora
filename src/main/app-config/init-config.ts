@@ -1,10 +1,9 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
 import fs from 'node:fs'
-import { EVENTS } from '../../shared/events'
 import { DEFAULT_CONFIG } from './default-config'
 import { readConfig } from './config-api'
 import { useTray } from '../tray'
 import { AppConfig } from '../../shared/types'
+import { success, fail } from '../status-bus'
 
 export type ConfigStatus = {
   downloadDir: {
@@ -50,31 +49,30 @@ const computeStatus = (config: AppConfig): ConfigStatus => ({
   tray: computeTrayStatus(config)
 })
 
-const broadcastStatus = (status: ConfigStatus): void => {
-  BrowserWindow.getAllWindows().forEach((win) => {
-    win.webContents.send(EVENTS.CONFIG.STATUS, status)
-  })
-}
-
 const syncTrayFromConfig = (config: AppConfig): void => {
   useTray(Boolean(config.general.closeToTray))
 }
 
-export const initConfig = (): { getStatus: () => ConfigStatus } => {
+export const initConfig = (): void => {
   const config = readConfig()
   const status = computeStatus(config)
   syncTrayFromConfig(config)
-  // TODO: check settings for auto-update and start update if needed
-
-  // broadcast current status and for future windows
-  broadcastStatus(status)
-  app.on('browser-window-created', (_e, win) => {
-    win.webContents.once('dom-ready', () => {
-      win.webContents.send(EVENTS.CONFIG.STATUS, status)
+  // Publish status-bus entries
+  if (status.downloadDir.writable) {
+    success('configDownloadDir', 'status.config.downloadDir.writable', {
+      path: status.downloadDir.path
     })
-  })
-
-  ipcMain.handle(EVENTS.CONFIG.GET_STATUS, () => status)
-
-  return { getStatus: () => status }
+  } else {
+    fail(
+      'configDownloadDir',
+      new Error(status.downloadDir.reason || 'Download directory not writable'),
+      'status.config.downloadDir.notWritable',
+      { path: status.downloadDir.path }
+    )
+  }
+  success(
+    'configTray',
+    status.tray.isEnabled ? 'status.config.tray.enabled' : 'status.config.tray.disabled'
+  )
+  // TODO: check settings for auto-update and start update if needed
 }

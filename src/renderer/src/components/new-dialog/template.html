@@ -1,5 +1,5 @@
 <template id="new-dialog-template">
-  <ui-dialog show-x-button alert>
+  <ui-dialog show-x-button alert data-active-screen="media-url">
     <ui-button
       class="trigger-button"
       id="trigger-button"
@@ -9,11 +9,22 @@
       style="--ui-button-icon-size: 22px"
     >
     </ui-button>
-    <div slot="header">New</div>
-    <div slot="content">content goes here</div>
-    <div slot="footer">
-      <ui-button slot="cancel" variant="secondary" size="sm">Cancel</ui-button>
-      <ui-button variant="default" size="sm">Create</ui-button>
-    </div>
+    <header slot="header" class="header">
+      <h2>Add download</h2>
+    </header>
+    <section aria-label="content" slot="content" class="content">
+      <article class="media-screen media-url-screen" data-screen="media-url">
+        <label for="media-url"> Media URL </label>
+        <ui-input id="media-url-input" placeholder="Enter media url" dir="ltr" autofocus></ui-input>
+        <ui-button size="lg" id="validate-button">Validate</ui-button>
+      </article>
+      <article class="media-screen media-loading-screen" data-screen="media-loading">
+        <div class="loader" aria-hidden="true"></div>
+        <p class="loader__text" role="status" aria-live="polite">Loading…</p>
+      </article>
+      <article class="media-screen media-info-screen" data-screen="media-info">
+        <p>info with customization</p>
+      </article>
+    </section>
   </ui-dialog>
 </template>
