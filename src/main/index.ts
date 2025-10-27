@@ -1,7 +1,6 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icons/icon-256.png?asset'
 import { handleWindowControlsIpc } from './window-controls'
 import { handleNavigationIpc } from './navigation'
 import { handleChangeDownloadPath } from './preferences'
@@ -16,6 +15,9 @@ import { handleAppControlsIpc } from './app-controls'
 import { registerDownloadsIpc } from './downloads-ipc'
 
 function createWindow(): void {
+  const iconPath = app.isPackaged
+    ? join(process.resourcesPath, 'icons', 'icon-256.png')
+    : join(__dirname, '../../resources/icons/icon-256.png')
   const cfg = readConfig()
   const useNativeToolbar = Boolean(cfg?.general?.useNativeToolbar)
   const mainWindow = new BrowserWindow({
@@ -26,7 +28,7 @@ function createWindow(): void {
     frame: useNativeToolbar ? true : false,
     titleBarStyle:
       process.platform === 'darwin' ? (useNativeToolbar ? 'default' : 'hidden') : undefined,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    ...(process.platform === 'linux' ? { icon: iconPath } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false

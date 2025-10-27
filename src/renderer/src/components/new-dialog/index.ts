@@ -10,7 +10,7 @@ export class NewDialog extends HTMLElement {
   private validateBtn: UIButton | null = null
   private mediaUrlInput: UIInput | null = null
   private _dialogEl: UIDialog | null = null
-  private mediaLoadingScreen: HTMLElement | null = null
+  // private mediaLoadingScreen: HTMLElement | null = null
   private _mounted = false
   private _listeners: AbortController | null = null
 
@@ -54,9 +54,9 @@ export class NewDialog extends HTMLElement {
     this.validateBtn = this.shadowRoot?.querySelector('#validate-button') as UIButton | null
     this.mediaUrlInput = this.shadowRoot?.querySelector('#media-url-input') as UIInput | null
     this._dialogEl = this.shadowRoot?.querySelector('ui-dialog') as UIDialog | null
-    this.mediaLoadingScreen = this.shadowRoot?.querySelector(
-      "[data-screen='media-loading']"
-    ) as HTMLElement | null
+    // this.mediaLoadingScreen = this.shadowRoot?.querySelector(
+    //   "[data-screen='media-loading']"
+    // ) as HTMLElement | null
     this._listeners = new AbortController()
     this.setupListeners(this._listeners.signal)
     this.initValidationButton()
@@ -71,7 +71,7 @@ export class NewDialog extends HTMLElement {
     this._dialogEl = null
     this.validateBtn = null
     this.mediaUrlInput = null
-    this.mediaLoadingScreen = null
+    // this.mediaLoadingScreen = null
     this._mounted = false
   }
   private initValidationButton(): void {
@@ -147,6 +147,7 @@ export class NewDialog extends HTMLElement {
     this._dialogEl.setAttribute('data-active-screen', 'media-loading')
     try {
       const info = await window.api.downloads.getInfo(text)
+      console.log(info)
       // TODO: render info into media-info-screen
       this._dialogEl.setAttribute('data-active-screen', 'media-info')
     } catch {

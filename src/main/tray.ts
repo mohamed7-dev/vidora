@@ -1,14 +1,13 @@
 import { BrowserWindow, Menu, Tray, nativeImage, app, clipboard } from 'electron'
-import icon256 from '../../resources/icons/icon-256.png?asset'
-import icon16 from '../../resources/icons/icon-16.png?asset'
+import path from 'node:path'
 import { platform } from '@electron-toolkit/utils'
 
 function getIconPath(): string {
-  if (platform.isMacOS) {
-    return icon16 as unknown as string
-  } else {
-    return icon256 as unknown as string
-  }
+  const base = app.isPackaged
+    ? path.join(process.resourcesPath, 'icons')
+    : path.join(__dirname, '../../resources/icons')
+  const file = platform.isMacOS ? 'icon-16.png' : 'icon-256.png'
+  return path.join(base, file)
 }
 
 function getWindow(): BrowserWindow | null {

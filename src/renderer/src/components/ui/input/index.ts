@@ -16,16 +16,16 @@ export class UIInput extends HTMLElement {
   private _attrObserver: MutationObserver | null = null
   private _eventsAborter: AbortController | null = null
 
-  private _internals: ElementInternals | null = null
+  // private _internals: ElementInternals | null = null
 
   constructor() {
     super()
     this.attachShadow({ mode: 'open', delegatesFocus: true })
-    if ((this as unknown as { attachInternals?: () => ElementInternals }).attachInternals) {
-      this._internals = (
-        this as unknown as { attachInternals: () => ElementInternals }
-      ).attachInternals()
-    }
+    // if ((this as unknown as { attachInternals?: () => ElementInternals }).attachInternals) {
+    //   this._internals = (
+    //     this as unknown as { attachInternals: () => ElementInternals }
+    //   ).attachInternals()
+    // }
   }
   static get observedAttributes(): string[] {
     return [VALUE_ATTR, PLACEHOLDER_ATTR, TYPE_ATTR, DISABLED_ATTR, INVALID_ATTR]

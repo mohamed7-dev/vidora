@@ -14,14 +14,18 @@ asarUnpack:
 extraResources:
   - from: resources/locales
     to: locales
+  - from: resources/icons
+    to: icons
 win:
   executableName: vidora
+  icon: resources/icons/icon-256.png
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
+  icon: resources/icons/icon-1024.png
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
@@ -36,6 +40,7 @@ linux:
     - AppImage
     - snap
     - deb
+  icon: resources/icons
   maintainer: electronjs.org
   category: Utility
 appImage:
