@@ -1,13 +1,24 @@
+:host([hide-trigger]) .new-dialog__trigger-button,
+:host([hide-trigger]) #host-trigger-button,
 :host([hide-trigger]) .trigger-button {
   display: none;
 }
+
 /* header  */
 
-.header {
+.new-dialog__header {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.new-dialog__header__wrapper {
+  display: none;
+}
+
+.new-dialog__header__wrapper--tabs {
+  width: 100%;
 }
 
 /* dialog  */
@@ -22,6 +33,8 @@
 .media-screen {
   display: none;
 }
+
+/* control content visibility  */
 
 ui-dialog[data-active-screen='media-url'] .media-url-screen {
   display: flex;
@@ -82,5 +95,20 @@ ui-dialog[data-active-screen='media-loading'] .media-loading-screen {
 @media (prefers-reduced-motion: reduce) {
   .loader {
     animation: none;
+  }
+}
+
+/* tabs buttons */
+.tab-btn__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-direction: row;
+}
+
+@media (max-width: 640px) {
+  .tab-btn__content {
+    flex-direction: column;
   }
 }

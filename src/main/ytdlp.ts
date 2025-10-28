@@ -34,46 +34,59 @@ export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
     const {
       downloader: { proxyServerUrl, cookiesFromBrowser, configPath }
     } = readConfig()
-    // -J dumps full JSON for single videos and playlists (with entries)
-    const args: string[] = ['-J', '--no-warnings']
-    if (proxyServerUrl) args.push('--proxy', proxyServerUrl)
-    if (cookiesFromBrowser && cookiesFromBrowser !== 'none') {
-      args.push('--cookies-from-browser', cookiesFromBrowser)
-    }
-    if (configPath) args.push('--config-locations', configPath)
-    args.push(url)
+    const useCookies = cookiesFromBrowser && cookiesFromBrowser !== 'none'
+    const args = [
+      '-j',
+      '--no-warnings',
+      '--no-download',
+      '--force-ipv4',
+      proxyServerUrl ? '--proxy' : '',
+      proxyServerUrl,
+      useCookies ? '--cookies-from-browser' : '',
+      useCookies ? cookiesFromBrowser : '',
+      configPath ? '--config-locations' : '',
+      configPath ? configPath : '',
+      url
+    ].filter(Boolean) as string[]
 
     begin('ytdlp', 'status.ytdlp.fetching_info', { url })
 
-    const ytdlp = new YTDlpWrap() as YTDlpWrapImport
-    const ytdlpProcess = ytdlp.exec(args, { shell: true })
-    let stdout = ''
-    let stderr = ''
-    ytdlpProcess.ytDlpProcess?.stdout.on('data', (data) => (stdout += data))
-    ytdlpProcess.ytDlpProcess?.stderr.on('data', (data) => (stderr += data))
-    ytdlpProcess.on('close', () => {
-      if (stdout) {
-        try {
-          const payload = JSON.parse(stdout)
-          success('ytdlp', 'status.ytdlp.info_ready')
-          resolve(payload)
-        } catch (e) {
-          const err = new Error(
-            'Failed to parse yt-dlp JSON output: ' + (stderr || (e as Error).message)
-          )
+    ensureYtDlpPath()
+      .then((bp) => {
+        const ytdlp = (bp ? new YTDlpWrap(bp) : new YTDlpWrap()) as YTDlpWrapImport
+        const ytdlpProcess = ytdlp.exec(args, { shell: true })
+        let stdout = ''
+        let stderr = ''
+        ytdlpProcess.ytDlpProcess?.stdout.on('data', (data) => (stdout += data))
+        ytdlpProcess.ytDlpProcess?.stderr.on('data', (data) => (stderr += data))
+        ytdlpProcess.on('close', () => {
+          if (stdout) {
+            try {
+              const payload = JSON.parse(stdout)
+              success('ytdlp', 'status.ytdlp.info_ready')
+              resolve(payload)
+            } catch (e) {
+              const err = new Error(
+                'Failed to parse yt-dlp JSON output: ' + (stderr || (e as Error).message)
+              )
+              fail('ytdlp', err, 'status.ytdlp.info_failed')
+              reject(err)
+            }
+          } else {
+            const err = new Error(stderr || `yt-dlp exited with a non-zero code.`)
+            fail('ytdlp', err, 'status.ytdlp.info_failed')
+            reject(err)
+          }
+        })
+        ytdlpProcess.on('error', (err) => {
           fail('ytdlp', err, 'status.ytdlp.info_failed')
           reject(err)
-        }
-      } else {
-        const err = new Error(stderr || `yt-dlp exited with a non-zero code.`)
-        fail('ytdlp', err, 'status.ytdlp.info_failed')
-        reject(err)
-      }
-    })
-    ytdlpProcess.on('error', (err) => {
-      fail('ytdlp', err, 'status.ytdlp.info_failed')
-      reject(err)
-    })
+        })
+      })
+      .catch((e) => {
+        fail('ytdlp', e, 'status.ytdlp.info_failed')
+        reject(e)
+      })
   })
 }
 
@@ -81,7 +94,7 @@ export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
  * Checks if yt-dlp is installed and updates it if necessary
  * @returns path to yt-dlp or null if it fails
  */
-export async function checkYtdlp(): Promise<string | null> {
+async function checkYtdlp(): Promise<string | null> {
   begin('ytdlp', 'status.ytdlp.checking')
   ensureBinDir()
 
@@ -158,4 +171,14 @@ export async function checkYtdlp(): Promise<string | null> {
       return null
     }
   }
+}
+
+let ytDlpPathPromise: Promise<string | null> | null = null
+/**
+ * Memoize the check (run once, reused)
+ * @returns Promise that resolves to the path to yt-dlp or null if it fails
+ */
+export function ensureYtDlpPath(): Promise<string | null> {
+  if (!ytDlpPathPromise) ytDlpPathPromise = checkYtdlp()
+  return ytDlpPathPromise
 }

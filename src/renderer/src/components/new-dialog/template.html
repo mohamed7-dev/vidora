@@ -1,7 +1,7 @@
 <template id="new-dialog-template">
   <ui-dialog show-x-button alert data-active-screen="media-url">
     <ui-button
-      class="trigger-button"
+      class="new-dialog__trigger-button"
       id="trigger-button"
       slot="trigger"
       variant="ghost"
@@ -9,8 +9,36 @@
       style="--ui-button-icon-size: 22px"
     >
     </ui-button>
-    <header slot="header" class="header">
-      <h2>Add download</h2>
+    <header slot="header" class="new-dialog__header">
+      <div class="new-dialog__header__wrapper media-url-screen" data-screen="media-url">
+        <h2>Add download</h2>
+      </div>
+      <div class="new-dialog__header__wrapper media-loading-screen" data-screen="media-loading">
+        <h2>Grabbing Media Info</h2>
+      </div>
+      <div
+        class="new-dialog__header__wrapper new-dialog__header__wrapper--tabs media-info-screen"
+        data-screen="media-info"
+      >
+        <ui-button
+          class="new-dialog__header__button"
+          id="video-tab-trigger"
+          variant="ghost"
+          value="video"
+          block
+        >
+          <span data-i18n="pref.tabs.general">Video</span>
+        </ui-button>
+        <ui-button
+          class="new-dialog__header__button"
+          id="audio-tab-trigger"
+          variant="ghost"
+          value="audio"
+          block
+        >
+          <span data-i18n="pref.tabs.downloads">Audio</span>
+        </ui-button>
+      </div>
     </header>
     <section aria-label="content" slot="content" class="content">
       <article class="media-screen media-url-screen" data-screen="media-url">
@@ -23,7 +51,7 @@
         <p class="loader__text" role="status" aria-live="polite">Loading…</p>
       </article>
       <article class="media-screen media-info-screen" data-screen="media-info">
-        <p>info with customization</p>
+        <media-info-screen></media-info-screen>
       </article>
     </section>
   </ui-dialog>

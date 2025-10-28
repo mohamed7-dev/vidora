@@ -1,15 +1,20 @@
+import './screens/media-info-screen/index'
 import template from './template.html?raw'
 import resetStyle from '@renderer/assets/reset.css?inline'
 import styleCss from './style.css?inline'
 import iconNewSvg from '@renderer/assets/icons/plus.svg?raw'
 import { UIButton, UIInput } from '../ui'
 import { UIDialog } from '../ui/dialog'
-
+import videoIcon from '@renderer/assets/icons/youtube.svg?raw'
+import audioIcon from '@renderer/assets/icons/audio-lines.svg?raw'
 export class NewDialog extends HTMLElement {
   private btnNew: UIButton | null = null
   private validateBtn: UIButton | null = null
   private mediaUrlInput: UIInput | null = null
   private _dialogEl: UIDialog | null = null
+  private videoTabTrigger: UIButton | null = null
+  private audioTabTrigger: UIButton | null = null
+
   // private mediaLoadingScreen: HTMLElement | null = null
   private _mounted = false
   private _listeners: AbortController | null = null
@@ -25,6 +30,14 @@ export class NewDialog extends HTMLElement {
 
   private applySvgIcons(): void {
     if (this.btnNew) this.btnNew.innerHTML = iconNewSvg
+    const wrap = (btn: UIButton | null, svg: string): void => {
+      if (!btn) return
+      if (btn.innerHTML.includes('tab-btn__content')) return
+      const label = btn.innerHTML
+      btn.innerHTML = `<span class="tab-btn__content">${svg}<span class="tab-btn__label">${label}</span></span>`
+    }
+    wrap(this.videoTabTrigger, videoIcon)
+    wrap(this.audioTabTrigger, audioIcon)
   }
 
   private renderShell(): void {
@@ -54,12 +67,15 @@ export class NewDialog extends HTMLElement {
     this.validateBtn = this.shadowRoot?.querySelector('#validate-button') as UIButton | null
     this.mediaUrlInput = this.shadowRoot?.querySelector('#media-url-input') as UIInput | null
     this._dialogEl = this.shadowRoot?.querySelector('ui-dialog') as UIDialog | null
+    this.videoTabTrigger = this.shadowRoot?.querySelector('#video-tab-trigger') as UIButton | null
+    this.audioTabTrigger = this.shadowRoot?.querySelector('#audio-tab-trigger') as UIButton | null
     // this.mediaLoadingScreen = this.shadowRoot?.querySelector(
     //   "[data-screen='media-loading']"
     // ) as HTMLElement | null
     this._listeners = new AbortController()
     this.setupListeners(this._listeners.signal)
     this.initValidationButton()
+    this.applySvgIcons()
     this._mounted = true
   }
 
