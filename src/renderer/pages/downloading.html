@@ -1,9 +1,8 @@
 <!doctype html>
-<html class=".dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Vidora</title>
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <title>Vidora | Downloading</title>
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
@@ -13,28 +12,23 @@
     <link rel="shortcut icon" href="../src/assets/meta/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="../src/assets/meta/apple-touch-icon.png" />
     <link href="../src/assets/main.css" type="text/css" rel="stylesheet" />
-    <link href="../src/assets/pages/index.css" type="text/css" rel="stylesheet" />
+    <link href="../src/assets/shared-page-style.css" type="text/css" rel="stylesheet" />
   </head>
-
   <body>
-    <script type="module" src="../src/components/app-header/index.ts"></script>
-    <script type="module" src="../src/components/app-sidebar/index.ts"></script>
-    <script type="module" src="../src/components/app-sidebar/content/index.ts"></script>
-    <script type="module" src="../src/components/home-page/index.ts"></script>
-    <script type="module" src="../src/components/app-scrim/index.ts"></script>
-
-    <script type="module">
-      import '../src/components/ui/index.ts'
-    </script>
     <app-header></app-header>
-    <app-scrim></app-scrim>
     <div class="container">
       <app-sidebar></app-sidebar>
       <main>
-        <home-page></home-page>
+        <downloading-page></downloading-page>
       </main>
     </div>
-
+    <script type="module">
+      import '../src/components/ui/index.ts'
+    </script>
+    <script type="module" src="../src/components/app-header/index.ts"></script>
+    <script type="module" src="../src/components/app-sidebar/index.ts"></script>
+    <script type="module" src="../src/components/app-sidebar/content/index.ts"></script>
+    <script type="module" src="../src/components/downloading-page/index.ts"></script>
     <script type="module" src="../src/renderer.ts"></script>
   </body>
 </html>

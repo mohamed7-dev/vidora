@@ -3,8 +3,10 @@
 }
 
 :host {
-  display: inline-block;
+  display: inline-flex;
 }
+
+/* block attribute is used to make the button take full width */
 
 :host([block]) {
   display: block;
@@ -15,44 +17,79 @@
   width: 100%;
 }
 
+/* inner button  */
+
 :host button {
   -webkit-appearance: none;
   appearance: none;
   outline: none;
   border: 1px solid transparent;
   border-radius: var(--ui-button-radius, var(--radius));
+  outline: none;
   cursor: pointer;
   font-weight: 500;
   line-height: 1;
-  transition:
-    color 0.15s ease,
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    opacity 0.15s ease;
+  white-space: no-wrap;
+  transition: all 0.15s ease;
   font-size: var(--ui-button-font-size, 0.875rem);
   padding: var(--ui-button-padding, 0.5rem 1rem);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--ui-button-gap, 0.5rem);
+  flex-direction: var(--ui-button-direction, row);
+  flex-shrink: 0;
 }
-
 :host button:focus-visible {
-  box-shadow:
-    0 0 0 2px var(--background),
-    0 0 0 4px var(--ring);
+  box-shadow: var(--focus-ring);
 }
 
-/* Icon sizing for slotted content */
-:host button ::slotted(svg),
-:host button ::slotted(img),
-:host button ::slotted(i),
-:host button ::slotted(span.icon) {
+:host([aria-invalid]) button {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 1px oklch(from var(--destructive) l calc(c / 20) h);
+}
+
+:host-context(.dark) :host([aria-invalid]) button {
+  box-shadow: 0 0 0 1px oklch(from var(--destructive) l calc(c / 40) h);
+}
+
+:host([aria-invalid]) button:focus-visible {
+  box-shadow:
+    var(--focus-ring),
+    0 0 0 1px var(--destructive);
+}
+
+/* Named slot layout */
+:host button ::slotted([slot='label']) {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Icon sizing for named slots using ui-icon */
+:host button ::slotted([slot='prefix']),
+:host button ::slotted([slot='suffix']) {
+  display: inline-flex;
+  flex-shrink: 0;
   width: var(--ui-button-icon-size, 1rem);
   height: var(--ui-button-icon-size, 1rem);
-  font-size: var(--ui-button-icon-size, 1rem);
-  display: inline-block;
+}
+
+/* Loading state: hide normal content, show spinner slot */
+:host([loading]) button ::slotted([slot='prefix']),
+:host([loading]) button ::slotted([slot='label']),
+:host([loading]) button ::slotted([slot='suffix']) {
+  visibility: hidden;
+  opacity: 0;
+}
+
+:host button ::slotted([slot='spinner']) {
+  display: none;
+}
+
+:host([loading]) button ::slotted([slot='spinner']) {
+  display: inline-flex;
+  width: var(--ui-button-icon-size, 1rem);
+  height: var(--ui-button-icon-size, 1rem);
 }
 
 /* Variants */
@@ -85,7 +122,7 @@
 }
 
 :host([variant='destructive']:hover) button {
-  background: color-mix(in oklch, var(--destructive) var(--button-hover-mix), var(--background));
+  background: oklch(from var(--destructive) calc(l + 0.2) c h);
   color: var(--destructive-foreground);
 }
 
@@ -149,4 +186,15 @@
   opacity: 0.5;
   pointer-events: none;
   cursor: not-allowed;
+}
+
+/* Force consistent disabled visuals across all variants and states */
+/* Use [disabled][variant] to raise specificity above variant :hover selectors */
+:host([disabled][variant]) button,
+:host([disabled][variant]) button:hover,
+:host([disabled][variant]) button:focus,
+:host([disabled][variant]) button:focus-visible {
+  background: var(--muted);
+  color: var(--muted-foreground);
+  border-color: var(--input);
 }

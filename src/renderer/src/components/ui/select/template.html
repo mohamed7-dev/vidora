@@ -8,24 +8,8 @@
       aria-expanded="false"
       variant="outline"
     >
-      <span class="trigger__label" data-value></span>
-      <span class="trigger__icon">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-chevrons-up-down-icon lucide-chevrons-up-down"
-        >
-          <path d="m7 15 5 5 5-5" />
-          <path d="m7 9 5-5 5 5" />
-        </svg>
-      </span>
+      <span slot="label" data-value></span>
+      <ui-icon slot="prefix" name="chevrons-up-down"></ui-icon>
     </ui-button>
     <div class="panel" data-panel role="listbox">
       <slot></slot>

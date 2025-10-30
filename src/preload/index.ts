@@ -3,8 +3,17 @@ import { electronAPI } from '@electron-toolkit/preload'
 import { EVENTS } from '../shared/events'
 import { t } from './i18n'
 import { AppConfig, DeepPartial } from '../shared/types'
+import { DownloadJobPayload } from '../shared/jobs'
 
 const api = {
+  dialog: {
+    openFolder: (): void => ipcRenderer.send(EVENTS.DIALOG.OPEN_FOLDER),
+    selectedLocation: (callback: (location: string) => void): (() => void) => {
+      const handler = (_e: unknown, location: string): void => callback(location)
+      ipcRenderer.on(EVENTS.DIALOG.SELECTED_LOCATION, handler)
+      return () => ipcRenderer.removeListener(EVENTS.DIALOG.SELECTED_LOCATION, handler)
+    }
+  },
   app: {
     relaunch: (): void => ipcRenderer.send(EVENTS.APP.RELAUNCH)
   },
@@ -68,6 +77,28 @@ const api = {
         cb(snap)
       ipcRenderer.on(EVENTS.STATUS.UPDATE, handler)
       return () => ipcRenderer.removeListener(EVENTS.STATUS.UPDATE, handler)
+    }
+  },
+  jobs: {
+    add: async (payload: DownloadJobPayload): Promise<import('../shared/jobs').Job> =>
+      ipcRenderer.invoke(EVENTS.JOBS.ADD, payload),
+    list: async (
+      params?: import('../shared/jobs').ListJobsParams
+    ): Promise<import('../shared/jobs').Job[]> => ipcRenderer.invoke(EVENTS.JOBS.LIST, params),
+    updateStatus: async (
+      id: string,
+      status: import('../shared/jobs').JobStatus
+    ): Promise<import('../shared/jobs').Job | null> =>
+      ipcRenderer.invoke(EVENTS.JOBS.UPDATE_STATUS, id, status),
+    remove: async (id: string): Promise<boolean> => ipcRenderer.invoke(EVENTS.JOBS.REMOVE, id),
+    pause: async (id: string): Promise<import('../shared/jobs').Job | null> =>
+      ipcRenderer.invoke(EVENTS.JOBS.PAUSE, id),
+    resume: async (id: string): Promise<import('../shared/jobs').Job | null> =>
+      ipcRenderer.invoke(EVENTS.JOBS.RESUME, id),
+    onUpdated: (cb: (evt: import('../shared/jobs').JobsUpdateEvent) => void): (() => void) => {
+      const handler = (_: unknown, evt: import('../shared/jobs').JobsUpdateEvent): void => cb(evt)
+      ipcRenderer.on(EVENTS.JOBS.UPDATED, handler)
+      return () => ipcRenderer.removeListener(EVENTS.JOBS.UPDATED, handler)
     }
   }
 }

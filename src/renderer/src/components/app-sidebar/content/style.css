@@ -1,3 +1,5 @@
+@import url('../../../assets/reset.css');
+
 :host {
   display: block;
 }
@@ -9,7 +11,7 @@
 
 .nav-item {
   display: block;
-  color: var(--sidebar-foreground, var(--foreground));
+  color: var(--sidebar-foreground);
   text-decoration: none;
   padding: 0.5rem 0.625rem;
   border-radius: calc(var(--radius) - 4px);
@@ -19,13 +21,13 @@
 }
 
 .nav-item:hover {
-  background: var(--sidebar-accent, var(--accent));
-  color: var(--sidebar-accent-foreground, var(--accent-foreground));
+  background: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
 }
 
 .nav-item.active {
-  background: var(--sidebar-accent, var(--accent));
-  color: var(--sidebar-accent-foreground, var(--accent-foreground));
+  background: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
 }
 
 .nav-section {
@@ -38,7 +40,7 @@
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--muted-foreground, #888);
+  color: var(--muted-foreground);
   padding: 0.25rem 0.25rem;
   margin: 0.5rem 0 0.25rem;
 }

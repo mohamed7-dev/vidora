@@ -11,7 +11,8 @@
       "title": "التحميلات",
       "items": {
         "downloading": "التحميلات",
-        "completed": "الكامل"
+        "completed": "الكامل",
+        "queued": "الانتظار"
       }
     }
   },
@@ -181,5 +182,8 @@
     "cardTitle": "تحميل الوسائط",
     "cardMessage": "أضف رابط الفيديو أو الصوت أو قائمة التشغيل لبدء التنزيل",
     "cardButtonTitle": "إضافة تحميل"
+  },
+  "downloading": {
+    "pageTitle": "التحميلات"
   }
 }

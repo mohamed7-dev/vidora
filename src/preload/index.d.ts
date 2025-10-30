@@ -1,11 +1,16 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 import { AppConfig, DeepPartial } from '@root/shared/types'
 import { StatusSnapshot } from '@root/shared/status'
+import { DownloadJobPayload } from '@root/shared/jobs'
 
 declare global {
   interface Window {
     electron: ElectronAPI
     api: {
+      dialog: {
+        openFolder: () => void
+        selectedLocation: (callback: (location: string) => void) => () => void
+      }
       downloads: {
         getInfo: (url: string) => Promise<import('../shared/downloads').YtdlpInfo>
       }
@@ -45,6 +50,20 @@ declare global {
       status: {
         getSnapshot: () => Promise<StatusSnapshot>
         onUpdate: (cb: (snap: StatusSnapshot) => void) => () => void
+      }
+      jobs: {
+        add: (payload: DownloadJobPayload) => Promise<import('../shared/jobs').Job>
+        list: (
+          params?: import('../shared/jobs').ListJobsParams
+        ) => Promise<import('../shared/jobs').Job[]>
+        updateStatus: (
+          id: string,
+          status: import('../shared/jobs').JobStatus
+        ) => Promise<import('../shared/jobs').Job | null>
+        remove: (id: string) => Promise<boolean>
+        pause: (id: string) => Promise<import('../shared/jobs').Job | null>
+        resume: (id: string) => Promise<import('../shared/jobs').Job | null>
+        onUpdated: (cb: (evt: import('../shared/jobs').JobsUpdateEvent) => void) => () => void
       }
     }
   }

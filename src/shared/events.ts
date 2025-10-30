@@ -1,4 +1,8 @@
 export const EVENTS = {
+  DIALOG: {
+    OPEN_FOLDER: 'dialog:open-folder',
+    SELECTED_LOCATION: 'dialog:selected-location'
+  },
   WINDOW: {
     MINIMIZE: 'window:minimize',
     MAXIMIZE: 'window:maximize',
@@ -26,6 +30,15 @@ export const EVENTS = {
     UPDATE: 'config:update',
     GET_APP_DEFAULTS: 'config:get-defaults',
     UPDATED: 'config:updated'
+  },
+  JOBS: {
+    ADD: 'jobs:add',
+    LIST: 'jobs:list',
+    UPDATE_STATUS: 'jobs:update-status',
+    REMOVE: 'jobs:remove',
+    PAUSE: 'jobs:pause',
+    RESUME: 'jobs:resume',
+    UPDATED: 'jobs:updated'
   },
   DOWNLOADS: {
     GET_INFO: 'downloads:get-info'

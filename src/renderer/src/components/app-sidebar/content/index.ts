@@ -4,6 +4,7 @@ import iconHouse from '@renderer/assets/icons/house.svg?raw'
 import iconHistory from '@renderer/assets/icons/history.svg?raw'
 import arrow from '@renderer/assets/icons/arrow-big-down-dash.svg?raw'
 import circleCheck from '@renderer/assets/icons/circle-check-big.svg?raw'
+import hourglass from '@renderer/assets/icons/hourglass.svg?raw'
 
 type Item = { id: string; title: string; page: string; icon: string }
 type Section = { title: string; items: Item[] }
@@ -35,6 +36,12 @@ const items: Record<string, Section> = {
         icon: arrow
       },
       {
+        id: 'app-sidebar-nav-item-queued',
+        title: 'appSidebar.downloads.items.queued',
+        page: 'queued.html',
+        icon: hourglass
+      },
+      {
         id: 'app-sidebar-nav-item-completed',
         title: 'appSidebar.downloads.items.completed',
         page: 'completed.html',
@@ -45,6 +52,21 @@ const items: Record<string, Section> = {
 }
 
 export class AppSidebarContent extends HTMLElement {
+  // Cache stylesheet and template per class for performance and to prevent FOUC
+  private static readonly sheet: CSSStyleSheet = (() => {
+    const s = new CSSStyleSheet()
+    s.replaceSync(styleCss)
+    return s
+  })()
+  private static readonly tpl: HTMLTemplateElement = (() => {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(template, 'text/html')
+    const inner = doc.querySelector('template')
+    const t = document.createElement('template')
+    t.innerHTML = inner ? inner.innerHTML : template
+    return t
+  })()
+  // states
   private t = window.api?.i18n?.t || (() => undefined)
   constructor() {
     super()
@@ -52,20 +74,19 @@ export class AppSidebarContent extends HTMLElement {
   }
 
   connectedCallback(): void {
-    const parser = new DOMParser()
-    const tree = parser.parseFromString(template, 'text/html')
-    const tpl = tree.querySelector<HTMLTemplateElement>('#app-sidebar-content-template')
-    if (!tpl) return
-    const content = tpl.content.cloneNode(true)
-    const style = document.createElement('style')
-    style.textContent = styleCss
-    this.shadowRoot?.append(style, content)
-
+    this._render()
     this._renderNav()
     this._highlightActive()
     this._bindNavigation()
   }
-
+  private _render(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    // attach cached stylesheet first to avoid FOUC
+    this.shadowRoot.adoptedStyleSheets = [AppSidebarContent.sheet]
+    // append cached template content
+    this.shadowRoot.append(AppSidebarContent.tpl.content.cloneNode(true))
+  }
   private _highlightActive(): void {
     const root = this.shadowRoot as ShadowRoot
     const items = Array.from(root.querySelectorAll<HTMLAnchorElement>('a.nav-item'))

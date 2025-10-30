@@ -1,9 +1,9 @@
-<template id="ui-tabs-template">
-  <div class="root">
-    <div class="list" role="tablist" aria-orientation="horizontal">
+<template>
+  <div part="base" class="root">
+    <div part="list" class="list" role="tablist" aria-orientation="horizontal">
       <slot name="tab"></slot>
     </div>
-    <div class="panels">
+    <div part="panels" class="panels">
       <slot name="panel"></slot>
     </div>
   </div>

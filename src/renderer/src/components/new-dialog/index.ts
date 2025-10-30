@@ -1,19 +1,31 @@
 import './screens/media-info-screen/index'
 import template from './template.html?raw'
-import resetStyle from '@renderer/assets/reset.css?inline'
 import styleCss from './style.css?inline'
-import iconNewSvg from '@renderer/assets/icons/plus.svg?raw'
 import { UIButton, UIInput } from '../ui'
 import { UIDialog } from '../ui/dialog'
-import videoIcon from '@renderer/assets/icons/youtube.svg?raw'
-import audioIcon from '@renderer/assets/icons/audio-lines.svg?raw'
+import { YtdlpInfo } from '@root/shared/downloads'
+import type { MediaInfoScreen } from './screens/media-info-screen'
 export class NewDialog extends HTMLElement {
+  // Cache stylesheet and template per class for performance and to prevent FOUC
+  private static readonly sheet: CSSStyleSheet = (() => {
+    const s = new CSSStyleSheet()
+    s.replaceSync(styleCss)
+    return s
+  })()
+  private static readonly tpl: HTMLTemplateElement = (() => {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(template, 'text/html')
+    const inner = doc.querySelector('template')
+    const t = document.createElement('template')
+    t.innerHTML = inner ? inner.innerHTML : template
+    return t
+  })()
+  // refs
   private btnNew: UIButton | null = null
   private validateBtn: UIButton | null = null
   private mediaUrlInput: UIInput | null = null
   private _dialogEl: UIDialog | null = null
-  private videoTabTrigger: UIButton | null = null
-  private audioTabTrigger: UIButton | null = null
+  private mediaInfoScreen: MediaInfoScreen | null = null
 
   // private mediaLoadingScreen: HTMLElement | null = null
   private _mounted = false
@@ -25,57 +37,41 @@ export class NewDialog extends HTMLElement {
   }
 
   connectedCallback(): void {
-    this.renderShell()
+    this._renderShell()
   }
 
-  private applySvgIcons(): void {
-    if (this.btnNew) this.btnNew.innerHTML = iconNewSvg
-    const wrap = (btn: UIButton | null, svg: string): void => {
-      if (!btn) return
-      if (btn.innerHTML.includes('tab-btn__content')) return
-      const label = btn.innerHTML
-      btn.innerHTML = `<span class="tab-btn__content">${svg}<span class="tab-btn__label">${label}</span></span>`
+  private _renderShell(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    this.shadowRoot.adoptedStyleSheets = [NewDialog.sheet]
+    // Clone from cached template and extract only the trigger button
+    const frag = NewDialog.tpl.content.cloneNode(true) as DocumentFragment
+    const btn = frag.querySelector('#trigger-button') as UIButton | null
+    if (btn) {
+      this.shadowRoot.appendChild(btn)
+      this.btnNew = btn
+      this.btnNew.addEventListener('click', () => this.open(), { once: false })
     }
-    wrap(this.videoTabTrigger, videoIcon)
-    wrap(this.audioTabTrigger, audioIcon)
-  }
-
-  private renderShell(): void {
-    const style = document.createElement('style')
-    style.textContent = resetStyle + styleCss
-    this.shadowRoot?.appendChild(style)
-    const hostBtn = document.createElement('ui-button') as UIButton
-    hostBtn.className = 'trigger-button'
-    hostBtn.id = 'host-trigger-button'
-    hostBtn.setAttribute('variant', 'ghost')
-    hostBtn.setAttribute('size', 'icon')
-    hostBtn.setAttribute('style', '--ui-button-icon-size: 22px')
-    this.shadowRoot?.appendChild(hostBtn)
-    this.btnNew = hostBtn
-    this.applySvgIcons()
-    this.btnNew.addEventListener('click', () => this.open())
   }
 
   private async mountDialog(): Promise<void> {
     if (this._mounted) return
-    const parser = new DOMParser()
-    const parsedTree = parser.parseFromString(template, 'text/html')
-    const templateElement = parsedTree.querySelector<HTMLTemplateElement>('#new-dialog-template')
-    if (!templateElement) return
-    const frag = templateElement.content.cloneNode(true)
-    this.shadowRoot?.appendChild(frag)
+    if (!this.shadowRoot) return
+    // Replace the trigger-only shell with the full dialog content
+    this.shadowRoot.innerHTML = ''
+    this.shadowRoot.adoptedStyleSheets = [NewDialog.sheet]
+    const frag = NewDialog.tpl.content.cloneNode(true) as DocumentFragment
+    this.shadowRoot.appendChild(frag)
+    // cache header tab triggers
     this.validateBtn = this.shadowRoot?.querySelector('#validate-button') as UIButton | null
     this.mediaUrlInput = this.shadowRoot?.querySelector('#media-url-input') as UIInput | null
     this._dialogEl = this.shadowRoot?.querySelector('ui-dialog') as UIDialog | null
-    this.videoTabTrigger = this.shadowRoot?.querySelector('#video-tab-trigger') as UIButton | null
-    this.audioTabTrigger = this.shadowRoot?.querySelector('#audio-tab-trigger') as UIButton | null
-    // this.mediaLoadingScreen = this.shadowRoot?.querySelector(
-    //   "[data-screen='media-loading']"
-    // ) as HTMLElement | null
+    this.mediaInfoScreen = this.shadowRoot?.querySelector(
+      'media-info-screen'
+    ) as MediaInfoScreen | null
     this._listeners = new AbortController()
     this.setupListeners(this._listeners.signal)
     this.initValidationButton()
-    this.applySvgIcons()
     this._mounted = true
   }
 
@@ -87,9 +83,12 @@ export class NewDialog extends HTMLElement {
     this._dialogEl = null
     this.validateBtn = null
     this.mediaUrlInput = null
-    // this.mediaLoadingScreen = null
+    this.mediaInfoScreen = null
     this._mounted = false
+    // Re-render the trigger-only shell after unmount
+    this._renderShell()
   }
+
   private initValidationButton(): void {
     if (!this.validateBtn) return
     const setDisabled = (disabled: boolean): void => {
@@ -150,6 +149,9 @@ export class NewDialog extends HTMLElement {
         this.close()
       }
     })
+    this.addEventListener('download:started', () => {
+      this._dialogEl?.close?.()
+    })
   }
 
   private async pasteAndGetInfo(): Promise<void> {
@@ -163,11 +165,10 @@ export class NewDialog extends HTMLElement {
     this._dialogEl.setAttribute('data-active-screen', 'media-loading')
     try {
       const info = await window.api.downloads.getInfo(text)
-      console.log(info)
-      // TODO: render info into media-info-screen
+      this.mediaInfoScreen && (this.mediaInfoScreen.info = info as YtdlpInfo)
+      this.mediaInfoScreen && (this.mediaInfoScreen.url = text)
       this._dialogEl.setAttribute('data-active-screen', 'media-info')
     } catch {
-      // TODO: surface error message to the user in the url screen
       this._dialogEl.setAttribute('data-active-screen', 'media-url')
     }
   }

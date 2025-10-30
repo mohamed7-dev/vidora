@@ -11,7 +11,8 @@
       "title": "Downloads",
       "items": {
         "downloading": "Downloading",
-        "completed": "Completed"
+        "completed": "Completed",
+        "queued": "Queued"
       }
     }
   },
@@ -185,5 +186,8 @@
     "cardTitle": "Download Media",
     "cardMessage": "Add video, audio, or playlist URL to start downloading",
     "cardButtonTitle": "Add Download"
+  },
+  "downloading": {
+    "pageTitle": "Downloading"
   }
 }

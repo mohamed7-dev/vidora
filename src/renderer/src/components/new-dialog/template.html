@@ -8,49 +8,42 @@
       size="icon"
       style="--ui-button-icon-size: 22px"
     >
+      <ui-icon slot="prefix" name="plus"></ui-icon>
     </ui-button>
     <header slot="header" class="new-dialog__header">
-      <div class="new-dialog__header__wrapper media-url-screen" data-screen="media-url">
+      <div class="new-dialog__header__wrapper media-url-screen-header" data-screen="media-url">
         <h2>Add download</h2>
       </div>
-      <div class="new-dialog__header__wrapper media-loading-screen" data-screen="media-loading">
+      <div
+        class="new-dialog__header__wrapper media-loading-screen-header"
+        data-screen="media-loading"
+      >
         <h2>Grabbing Media Info</h2>
       </div>
-      <div
-        class="new-dialog__header__wrapper new-dialog__header__wrapper--tabs media-info-screen"
-        data-screen="media-info"
-      >
-        <ui-button
-          class="new-dialog__header__button"
-          id="video-tab-trigger"
-          variant="ghost"
-          value="video"
-          block
-        >
-          <span data-i18n="pref.tabs.general">Video</span>
-        </ui-button>
-        <ui-button
-          class="new-dialog__header__button"
-          id="audio-tab-trigger"
-          variant="ghost"
-          value="audio"
-          block
-        >
-          <span data-i18n="pref.tabs.downloads">Audio</span>
-        </ui-button>
-      </div>
     </header>
-    <section aria-label="content" slot="content" class="content">
-      <article class="media-screen media-url-screen" data-screen="media-url">
+    <section aria-label="content" slot="content" class="new-dialog__content">
+      <article
+        class="new-dialog__content__article media-url-screen-content"
+        data-screen="media-url"
+      >
         <label for="media-url"> Media URL </label>
         <ui-input id="media-url-input" placeholder="Enter media url" dir="ltr" autofocus></ui-input>
-        <ui-button size="lg" id="validate-button">Validate</ui-button>
+        <ui-button size="lg" id="validate-button">
+          <span slot="label">Validate</span>
+        </ui-button>
       </article>
-      <article class="media-screen media-loading-screen" data-screen="media-loading">
-        <div class="loader" aria-hidden="true"></div>
+      <article
+        class="new-dialog__content__article media-loading-screen-content"
+        data-screen="media-loading"
+      >
+        <ui-icon style="--ui-icon-size: 2rem" name="loader-circle" spin></ui-icon>
         <p class="loader__text" role="status" aria-live="polite">Loading…</p>
       </article>
-      <article class="media-screen media-info-screen" data-screen="media-info">
+      <article
+        slot="header"
+        class="new-dialog__content__article media-info-screen-content"
+        data-screen="media-info"
+      >
         <media-info-screen></media-info-screen>
       </article>
     </section>

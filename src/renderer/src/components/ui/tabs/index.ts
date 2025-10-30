@@ -2,6 +2,21 @@ import template from './template.html?raw'
 import style from './style.css?inline'
 
 export class UITabs extends HTMLElement {
+  // Cache stylesheet and template per class for performance and to prevent FOUC
+  private static readonly sheet: CSSStyleSheet = (() => {
+    const s = new CSSStyleSheet()
+    s.replaceSync(style)
+    return s
+  })()
+  private static readonly tpl: HTMLTemplateElement = (() => {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(template, 'text/html')
+    const inner = doc.querySelector('template')
+    const t = document.createElement('template')
+    t.innerHTML = inner ? inner.innerHTML : template
+    return t
+  })()
+  // refs
   private _listEl: HTMLElement | null = null
   private _triggerSlot: HTMLSlotElement | null = null
   private _panelSlot: HTMLSlotElement | null = null
@@ -10,42 +25,6 @@ export class UITabs extends HTMLElement {
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
-  }
-
-  connectedCallback(): void {
-    const parser = new DOMParser()
-    const tree = parser.parseFromString(template, 'text/html')
-    const tpl = tree.querySelector<HTMLTemplateElement>('template')
-    if (!tpl) return
-
-    const content = tpl.content.cloneNode(true)
-    const styleEl = document.createElement('style')
-    styleEl.textContent = style
-    this.shadowRoot?.append(styleEl, content)
-
-    this._listEl = this.shadowRoot?.querySelector('[role="tablist"]') as HTMLElement | null
-    this._triggerSlot = this.shadowRoot?.querySelector('slot[name="tab"]') as HTMLSlotElement | null
-    this._panelSlot = this.shadowRoot?.querySelector('slot[name="panel"]') as HTMLSlotElement | null
-
-    this._onTriggerSlotChange()
-    this._triggerSlot?.addEventListener('slotchange', () => this._onTriggerSlotChange())
-    this._onPanelSlotChange()
-    this._panelSlot?.addEventListener('slotchange', () => this._onPanelSlotChange())
-
-    this._ensureInitialSelection()
-    this._syncSelection()
-
-    this._listEl?.addEventListener('keydown', this._onKeydown)
-  }
-
-  disconnectedCallback(): void {
-    this._listEl?.removeEventListener('keydown', this._onKeydown)
-    const triggers = this._getTriggers()
-    for (const t of triggers) {
-      const ac = this._aborters.get(t)
-      ac?.abort()
-      this._aborters.delete(t)
-    }
   }
 
   static get observedAttributes(): string[] {
@@ -60,6 +39,44 @@ export class UITabs extends HTMLElement {
         new CustomEvent('change', { detail: { value: v }, bubbles: true, composed: true })
       )
     }
+  }
+
+  connectedCallback(): void {
+    this._render()
+    this._setupListeners()
+    this._onTriggerSlotChange()
+    this._onPanelSlotChange()
+    this._ensureInitialSelection()
+    this._syncSelection()
+  }
+
+  disconnectedCallback(): void {
+    this._listEl?.removeEventListener('keydown', this._onKeydown)
+    const triggers = this._getTriggers()
+    for (const t of triggers) {
+      const ac = this._aborters.get(t)
+      ac?.abort()
+      this._aborters.delete(t)
+    }
+  }
+
+  private _render(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    // attach cached stylesheet first to avoid FOUC
+    this.shadowRoot.adoptedStyleSheets = [UITabs.sheet]
+    // append cached template content
+    this.shadowRoot.append(UITabs.tpl.content.cloneNode(true))
+    // query refs
+    this._listEl = this.shadowRoot?.querySelector('[role="tablist"]') as HTMLElement | null
+    this._triggerSlot = this.shadowRoot?.querySelector('slot[name="tab"]') as HTMLSlotElement | null
+    this._panelSlot = this.shadowRoot?.querySelector('slot[name="panel"]') as HTMLSlotElement | null
+  }
+
+  private _setupListeners(): void {
+    this._triggerSlot?.addEventListener('slotchange', () => this._onTriggerSlotChange())
+    this._panelSlot?.addEventListener('slotchange', () => this._onPanelSlotChange())
+    this._listEl?.addEventListener('keydown', this._onKeydown)
   }
 
   private _getTriggers(): HTMLElement[] {
@@ -115,7 +132,6 @@ export class UITabs extends HTMLElement {
     const value = this.value
     const triggers = this._getTriggers()
     const panels = this._getPanels()
-
     for (const t of triggers) {
       const tv = t.getAttribute('data-value') || t.getAttribute('value')
       const selected = tv === value
@@ -181,4 +197,10 @@ export class UITabs extends HTMLElement {
   }
 }
 
-customElements.define('ui-tabs', UITabs)
+if (!customElements.get('ui-tabs')) customElements.define('ui-tabs', UITabs)
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'ui-tabs': UITabs
+  }
+}

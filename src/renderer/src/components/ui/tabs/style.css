@@ -1,13 +1,19 @@
+@import url('../../../assets/reset.css');
+
 :host {
   display: block;
   height: 100%;
+  width: 100%;
 }
+
 .root {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   height: 100%;
 }
+
+/* tab trigger list  */
 .list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
@@ -16,28 +22,39 @@
   max-width: var(--ui-tabs-list-max-width, none);
   margin-inline: auto;
 }
+
 ::slotted([slot='tab']) {
   appearance: none;
   background: transparent;
-  border: none;
   color: var(--muted-foreground);
+  border: none;
   border-radius: calc(var(--radius) - 4px);
   cursor: pointer;
   width: 100%;
   text-align: center;
 }
+
 ::slotted([slot='tab'][data-selected]) {
-  color: var(--secondary-foreground);
   background: var(--secondary);
+  color: var(--secondary-foreground);
 }
+
+/* Panels container should explicitly take the width */
 .panels {
   padding: 0.75rem;
   flex: 1;
   min-height: 0;
+  width: 100%;
 }
+
+/* Slotted panel elements: hidden by default, expand when selected */
 ::slotted([slot='panel']) {
+  display: none;
+  width: 100%;
+}
+::slotted([slot='panel'][data-selected]) {
   display: block;
 }
 ::slotted([slot='panel'][hidden]) {
-  display: none;
+  display: none !important;
 }

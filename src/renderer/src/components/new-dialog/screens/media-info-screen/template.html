@@ -1,6 +1,111 @@
 <template>
   <ui-tabs value="video">
-    <video-tab-content slot="panel" value="video"></video-tab-content>
-    <audio-tab-content slot="panel" value="audio"></audio-tab-content>
+    <ui-button
+      class="media-info-tab_trigger"
+      id="video-tab-trigger"
+      variant="ghost"
+      value="video"
+      slot="tab"
+      block
+    >
+      <ui-icon slot="prefix" name="youtube"></ui-icon>
+      <span slot="label" data-i18n="pref.tabs.general">Video</span>
+    </ui-button>
+    <ui-button
+      class="media-info-tab_trigger"
+      id="audio-tab-trigger"
+      variant="ghost"
+      value="audio"
+      slot="tab"
+      block
+    >
+      <ui-icon slot="prefix" name="audio-lines"></ui-icon>
+      <span slot="label" data-i18n="pref.tabs.downloads">Audio</span>
+    </ui-button>
+    <!-- </div> -->
+    <!-- start video settings tab panel  -->
+    <div class="tab-content__sections-container" slot="panel" value="video">
+      <section part="section" class="tab-content__section">
+        <h2
+          part="section-title"
+          class="tab-content__section__title"
+          data-i18n="new-dialog.video-tab.sections.quality"
+        >
+          Quality
+        </h2>
+        <div part="section-content" class="tab-content__section__content">
+          <article part="section-content-article" class="tab-content__section__content__article">
+            <h3 data-i18n="new-dialog.video-tab.video-quality.title">Video Format</h3>
+            <ui-select
+              id="video-format-select"
+              placeholder="Select a video format"
+              aria-label="Available video formats"
+            ></ui-select>
+          </article>
+          <article part="section-content-article" class="tab-content__section__content__article">
+            <h3 data-i18n="new-dialog.video-tab.audio-quality.title">Audio Format</h3>
+            <ui-select
+              id="audio-for-video-format-select"
+              placeholder="Select an audio format"
+              aria-label="Available audio formats"
+            ></ui-select>
+          </article>
+        </div>
+      </section>
+      <section part="section" class="tab-content__section">
+        <h2
+          part="section-title"
+          class="tab-content__section__title"
+          data-i18n="new-dialog.video-tab.sections.advanced"
+        >
+          Advanced Options
+        </h2>
+        <div part="section-content" class="tab-content__section__content">
+          <article part="section-content-article" class="tab-content__section__content__article">
+            <h3 data-i18n="new-dialog.video-tab.subtitles.title">Subtitles</h3>
+            <div class="flex">
+              <label for="subtitles-checkbox">If available, download subtitles </label>
+              <ui-checkbox id="subtitles-checkbox" size="lg"></ui-checkbox>
+            </div>
+          </article>
+          <article part="section-content-article" class="tab-content__section__content__article">
+            <h3 data-i18n="new-dialog.video-tab.download-path.title">Download Path</h3>
+            <div class="flex">
+              <span class="download-path_text" id="download-path-text"></span>
+              <ui-button
+                variant="outline"
+                class="download-path_change-button"
+                id="download-path-change-btn"
+              >
+                <span slot="label">Change</span>
+              </ui-button>
+            </div>
+          </article>
+          <article part="section-content-article" class="tab-content__section__content__article">
+            <h3 data-i18n="new-dialog.video-tab.download-time-range.title">Download Time Range</h3>
+            <div class="flex">
+              <ui-input id="time-start" placeholder="0:00:00" size="sm"></ui-input>
+              <span class="sep">to</span>
+              <ui-input id="time-end" placeholder="00:05:00" size="sm"></ui-input>
+            </div>
+          </article>
+        </div>
+      </section>
+      <ui-button id="start-download-btn">
+        <span slot="label">Start Download</span>
+      </ui-button>
+    </div>
+    <!-- end video settings tab panel  -->
+    <div class="tab-content__sections-container" slot="panel" value="audio">
+      <section part="section" class="tab-content__section">
+        <h2 part="section-title" class="tab-content__section__title">Audio Options</h2>
+        <div part="section-content" class="tab-content__section__content">
+          <article part="section-content-article" class="tab-content__section__content__article">
+            <h3>Audio Quality</h3>
+            <span>options go here</span>
+          </article>
+        </div>
+      </section>
+    </div>
   </ui-tabs>
 </template>

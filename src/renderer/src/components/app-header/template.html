@@ -12,22 +12,20 @@
           size="icon"
           style="--ui-button-icon-size: 22px"
         >
+          <ui-icon slot="prefix" name="ellipsis-vertical"></ui-icon>
         </ui-button>
-        <div
+        <ui-button
           slot="menu-item"
           class="app-header__dropdown-menu-item"
           id="app-header-menu-preferences"
-          data-i18n="appHeader.actionsMenu.preferences"
+          variant="ghost"
+          block
         >
-          Preferences
-        </div>
-        <div
-          slot="menu-item"
-          class="app-header__dropdown-menu-item"
-          data-i18n="appHeader.actionsMenu.about"
-        >
-          About
-        </div>
+          <span slot="label" data-i18n="appHeader.actionsMenu.preferences"></span>
+        </ui-button>
+        <ui-button slot="menu-item" class="app-header__dropdown-menu-item" variant="ghost" block>
+          <span slot="label" data-i18n="appHeader.actionsMenu.about"></span>
+        </ui-button>
       </ui-dropdown>
       <preferences-dialog></preferences-dialog>
       <ui-sheet side="left">
@@ -39,6 +37,7 @@
           size="icon"
           style="--ui-button-icon-size: 22px"
         >
+          <ui-icon slot="prefix" name="menu"></ui-icon>
         </ui-button>
 
         <div slot="content" style="padding: 1rem">
@@ -55,6 +54,7 @@
           id="chrome-controls-minimize"
           style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px"
         >
+          <ui-icon slot="prefix" name="minus"></ui-icon>
         </ui-button>
         <ui-button
           variant="secondary"
@@ -63,6 +63,7 @@
           id="chrome-controls-maximize"
           style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px"
         >
+          <ui-icon slot="prefix" name="square"></ui-icon>
         </ui-button>
         <ui-button
           variant="secondary"
@@ -71,6 +72,7 @@
           id="chrome-controls-close"
           style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px"
         >
+          <ui-icon slot="prefix" name="x"></ui-icon>
         </ui-button>
       </div>
     </div>

@@ -1,5 +1,8 @@
-<template id="ui-button-template">
-  <button part="root">
-    <slot></slot>
+<template>
+  <button part="base">
+    <slot name="prefix" part="prefix"></slot>
+    <slot name="label" part="label"></slot>
+    <slot name="suffix" part="suffix"></slot>
+    <slot name="spinner" part="spinner"></slot>
   </button>
 </template>

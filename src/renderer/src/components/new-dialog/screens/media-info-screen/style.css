@@ -1,0 +1,23 @@
+@import url('../../../../assets/reset.css');
+@import url('../../../../assets/shared-tab-style.css');
+@import url('../../../../assets/utils.css');
+
+:host {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .media-info-tab_trigger {
+    --ui-button-direction: column;
+  }
+}
+
+.time-range_container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.time-range_container ui-input::part(base) {
+  width: 5rem;
+}

@@ -13,6 +13,8 @@ import { setupAppInternals } from './setup'
 import { registerStatusIpc } from './status-bus'
 import { handleAppControlsIpc } from './app-controls'
 import { registerDownloadsIpc } from './downloads-ipc'
+import { handleDialogIpc } from './dialog'
+import { registerJobsIpc } from './jobs-ipc'
 
 function createWindow(): void {
   const iconPath = app.isPackaged
@@ -93,7 +95,7 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
+  handleDialogIpc()
   handleWindowControlsIpc()
   handleAppControlsIpc()
   handleNavigationIpc()
@@ -102,6 +104,7 @@ app.whenReady().then(() => {
   registerConfigIpc()
   registerStatusIpc()
   registerDownloadsIpc()
+  registerJobsIpc()
   setupAppInternals()
   initConfig()
 

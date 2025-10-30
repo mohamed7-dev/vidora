@@ -4,10 +4,23 @@ import './tabs-content/downloads-tab/index'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
 import { UIDialog, UIButton, UITabs } from '../ui'
-import settingsIcon from '@renderer/assets/icons/settings.svg?raw'
-import arrowIcon from '@renderer/assets/icons/arrow-big-down-dash.svg?raw'
 
 export class PreferencesDialog extends HTMLElement {
+  // Cache stylesheet and template per class for performance and to prevent FOUC
+  private static readonly sheet: CSSStyleSheet = (() => {
+    const s = new CSSStyleSheet()
+    s.replaceSync(styleCss)
+    return s
+  })()
+  private static readonly tpl: HTMLTemplateElement = (() => {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(template, 'text/html')
+    const inner = doc.querySelector('template')
+    const t = document.createElement('template')
+    t.innerHTML = inner ? inner.innerHTML : template
+    return t
+  })()
+
   constructor() {
     super()
 
@@ -17,29 +30,29 @@ export class PreferencesDialog extends HTMLElement {
   private t = window.api?.i18n?.t || (() => '')
 
   connectedCallback(): void {
-    const parser = new DOMParser()
-    const parsedTree = parser.parseFromString(template, 'text/html')
-    const templateElement = parsedTree.querySelector<HTMLTemplateElement>(
-      '#preferences-dialog-template'
-    )
-    if (!templateElement) return
-    const content = templateElement.content.cloneNode(true)
-    const style = document.createElement('style')
-    style.textContent = styleCss
-    this.shadowRoot?.append(style, content)
-
+    this._render()
+    // handle trigger buttons active state
     this.renderTriggerButtons()
 
     // i18n init and binding
     this.applyI18n()
 
     const tabs = this.shadowRoot?.querySelector('ui-tabs') as UITabs | null
-    if (tabs) {
-      const apply = (): void => this.updateTriggerVariants(tabs.value || '')
-      tabs.addEventListener('change', apply as EventListener)
-      // initialize once after triggers rendered
-      apply()
-    }
+    // if (tabs) {
+    //   const apply = (): void => this.updateTriggerVariants(tabs.value || '')
+    //   tabs.addEventListener('change', apply as EventListener)
+    //   // initialize once after triggers rendered
+    //   apply()
+    // }
+  }
+
+  private _render(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    // attach cached stylesheet first to avoid FOUC
+    this.shadowRoot.adoptedStyleSheets = [PreferencesDialog.sheet]
+    // append cached template content
+    this.shadowRoot.append(PreferencesDialog.tpl.content.cloneNode(true))
   }
 
   private renderTriggerButtons(): void {
@@ -48,9 +61,6 @@ export class PreferencesDialog extends HTMLElement {
       '#downloader-tab-trigger'
     ) as UIButton
     const downloadsTabTrigger = this.shadowRoot?.querySelector('#downloads-tab-trigger') as UIButton
-    generalTabTrigger.innerHTML = settingsIcon + generalTabTrigger.innerHTML
-    downloaderTabTrigger.innerHTML = arrowIcon + downloaderTabTrigger.innerHTML
-    downloadsTabTrigger.innerHTML = arrowIcon + downloadsTabTrigger.innerHTML
 
     generalTabTrigger.addEventListener('click', () => {
       ;(this.shadowRoot?.querySelector('ui-tabs') as UITabs).value = 'general'

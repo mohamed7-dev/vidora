@@ -9,6 +9,7 @@ export interface InternalConfig {
   configFilePath: string
   downloadFolderPath: string
   ffmpegPath: string
+  jobsStorePath: string
 }
 const configDir = path.join(app.getPath('userData'), 'config')
 /**
@@ -20,7 +21,8 @@ export const DEFAULT_INTERNAL_CONFIG: InternalConfig = {
   configFilePath: path.join(configDir, 'config.json'),
   downloadFolderPath: app.getPath('downloads'),
   ytDlpPath: path.join(app.getPath('userData'), 'bin'),
-  ffmpegPath: path.join(app.getPath('userData'), 'bin')
+  ffmpegPath: path.join(app.getPath('userData'), 'bin'),
+  jobsStorePath: app.getPath('userData')
 }
 
 /**

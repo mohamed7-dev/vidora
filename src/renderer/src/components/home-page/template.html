@@ -3,13 +3,13 @@
     <header part="head" class="header-wrapper">
       <h1 data-i18n="home.pageTitle"></h1>
     </header>
-    <div part="content" class="content-wrapper" id="test-content">
+    <div part="content" class="content-wrapper">
       <article class="content-box">
         <img alt="logo" data-logo />
         <h2 data-i18n="home.cardTitle"></h2>
         <p data-i18n="home.cardMessage"></p>
         <ui-button size="lg" id="add-download-button">
-          <span data-i18n="home.cardButtonTitle"></span>
+          <span slot="label" data-i18n="home.cardButtonTitle"></span>
         </ui-button>
         <new-dialog hide-trigger></new-dialog>
       </article>

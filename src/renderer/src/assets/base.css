@@ -32,6 +32,16 @@
   --toolbar-right-width: 7rem;
   --toolbar-padding: 0.6rem;
   --sidebar-width: 300px;
+
+  /* Focus ring tokens (similar to Tailwind), unified into a single usable var) */
+  --focus-ring-width: 3px;
+  --focus-ring-color: var(--ring);
+  --focus-ring-offset-width: 2px;
+  --focus-ring-offset-color: var(--background);
+  /* Single variable to use across the app for focus outlines */
+  --focus-ring:
+    0 0 0 var(--focus-ring-offset-width) var(--focus-ring-offset-color),
+    0 0 0 calc(var(--focus-ring-offset-width) + var(--focus-ring-width)) var(--focus-ring-color);
 }
 .dark {
   --background: oklch(0.145 0 0);

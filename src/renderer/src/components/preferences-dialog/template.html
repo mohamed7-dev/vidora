@@ -1,4 +1,4 @@
-<template id="preferences-dialog-template">
+<template>
   <ui-dialog show-x-button alert>
     <div class="preferences-dialog__header" slot="header">
       <ui-button
@@ -8,7 +8,8 @@
         value="general"
         block
       >
-        <span data-i18n="pref.tabs.general">General</span>
+        <ui-icon slot="prefix" name="settings"></ui-icon>
+        <span slot="label" data-i18n="pref.tabs.general">General</span>
       </ui-button>
       <ui-button
         class="preferences-dialog__header__button"
@@ -17,7 +18,8 @@
         value="downloads"
         block
       >
-        <span data-i18n="pref.tabs.downloads">Downloads</span>
+        <ui-icon slot="prefix" name="arrow-big-down-dash"></ui-icon>
+        <span slot="label" data-i18n="pref.tabs.downloads">Downloads</span>
       </ui-button>
       <ui-button
         class="preferences-dialog__header__button"
@@ -26,16 +28,17 @@
         value="downloader"
         block
       >
-        <span data-i18n="pref.tabs.downloader">Downloader</span>
+        <ui-icon slot="prefix" name="arrow-big-down-dash"></ui-icon>
+        <span slot="label" data-i18n="pref.tabs.downloader">Downloader</span>
       </ui-button>
     </div>
 
-    <div slot="content" class="preferences-dialog__content">
+    <!-- <div slot="content" class="preferences-dialog__content">
       <ui-tabs value="general">
         <general-tab-content slot="panel" value="general"></general-tab-content>
         <downloads-tab-content slot="panel" value="downloads"></downloads-tab-content>
         <downloader-tab-content slot="panel" value="downloader"></downloader-tab-content>
       </ui-tabs>
-    </div>
+    </div> -->
   </ui-dialog>
 </template>

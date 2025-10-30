@@ -3,11 +3,6 @@ import '../new-dialog'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
 import resetStyle from '@renderer/assets/reset.css?inline'
-import iconMinSvg from '@renderer/assets/icons/minus.svg?raw'
-import iconMaxSvg from '@renderer/assets/icons/square.svg?raw'
-import iconCloseSvg from '@renderer/assets/icons/x.svg?raw'
-import iconDropdownSvg from '@renderer/assets/icons/ellipsis-vertical.svg?raw'
-import iconSheetSvg from '@renderer/assets/icons/menu.svg?raw'
 import { DATA } from '@root/shared/data'
 import { UIButton, UIDialog } from '../ui'
 
@@ -16,7 +11,6 @@ export class AppHeader extends HTMLElement {
   private btnMin: UIButton | null = null
   private btnMax: UIButton | null = null
   private btnClose: UIButton | null = null
-  private btnDropdown: UIButton | null = null
   private btnSheet: UIButton | null = null
   private menuPreferences: HTMLElement | null = null
   private appTitle: HTMLElement | null = null
@@ -66,7 +60,6 @@ export class AppHeader extends HTMLElement {
     this.btnMin = this.root?.querySelector('#chrome-controls-minimize') as UIButton | null
     this.btnMax = this.root?.querySelector('#chrome-controls-maximize') as UIButton | null
     this.btnClose = this.root?.querySelector('#chrome-controls-close') as UIButton | null
-    this.btnDropdown = this.root?.querySelector('#app-header-dropdown-button') as UIButton | null
     this.btnSheet = this.root?.querySelector('#app-header-sheet-button') as UIButton | null
     this.menuPreferences = this.root?.querySelector(
       '#app-header-menu-preferences'
@@ -77,11 +70,6 @@ export class AppHeader extends HTMLElement {
 
   private applySvgIcons(): void {
     if (this.appTitle) this.appTitle.textContent = DATA.appName
-    if (this.btnMin) this.btnMin.innerHTML = iconMinSvg
-    if (this.btnMax) this.btnMax.innerHTML = iconMaxSvg
-    if (this.btnClose) this.btnClose.innerHTML = iconCloseSvg
-    if (this.btnDropdown) this.btnDropdown.innerHTML = iconDropdownSvg
-    if (this.btnSheet) this.btnSheet.innerHTML = iconSheetSvg
   }
 
   private applyI18n(): void {

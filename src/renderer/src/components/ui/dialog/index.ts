@@ -2,7 +2,6 @@ import template from './template.html?raw'
 import resetStyle from '@renderer/assets/reset.css?raw'
 import style from './style.css?inline'
 import { UIButton } from '../button'
-import xIcon from '@renderer/assets/icons/x.svg?raw'
 export type UIRequestCloseDetail = {
   source: 'close-button' | 'keyboard' | 'overlay' | 'cancel'
 }
@@ -74,7 +73,7 @@ export class UIDialog extends HTMLElement {
   private _ensureInternalClose(): void {
     const closeBtn = this.shadowRoot?.querySelector('#close-btn') as UIButton | null
     if (!closeBtn) return
-    closeBtn.innerHTML = xIcon
+
     if (!this._closeBtn) {
       closeBtn.addEventListener('click', () => this.requestClose('close-button'))
       this._closeBtn = closeBtn
