@@ -216,3 +216,8 @@ body {
 *::-webkit-scrollbar-button {
   display: none;
 }
+
+/* Disable transitions for performance */
+html[data-theme-transition='off'] * {
+  transition: none !important;
+}

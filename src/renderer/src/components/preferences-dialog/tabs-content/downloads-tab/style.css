@@ -1,0 +1,27 @@
+@import url('../../../../assets/reset.css');
+@import url('../../../../assets/shared-tab-style.css');
+
+.download-path_container,
+.name-format-playlists_container,
+.max-downloads_container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .download-path_container {
+    flex: 1;
+    justify-content: space-between;
+  }
+}
+
+.name-format-playlists_container ui-input {
+  min-width: 9rem;
+}
+
+@media (max-width: 640px) {
+  .name-format-playlists_container {
+    flex: 1;
+  }
+}

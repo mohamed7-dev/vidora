@@ -12,12 +12,32 @@
   }
 }
 
-.time-range_container {
+.time-range_container,
+.subtitles_container,
+.download-path_container {
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
 
+@media (max-width: 640px) {
+  .download-path_container,
+  .subtitles_container {
+    flex: 1;
+    justify-content: space-between;
+  }
+}
+
 .time-range_container ui-input::part(base) {
   width: 5rem;
+}
+
+.tab-content__sections-container {
+  align-items: center;
+}
+
+/* subtitles  */
+.subtitles_container label {
+  word-break: break-all;
+  white-space: nowrap;
 }

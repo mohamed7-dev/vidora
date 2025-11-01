@@ -1,11 +1,12 @@
-.preferences-dialog__header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
+@import url('../../assets/reset.css');
 
 .preferences-dialog__content ui-tabs {
   flex: 1;
   height: 100%;
+}
+
+@media (max-width: 640px) {
+  .preferences-dialog__header__button {
+    --ui-button-direction: column;
+  }
 }

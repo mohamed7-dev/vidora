@@ -4,6 +4,9 @@ import { EVENTS } from '../shared/events'
 import { t } from './i18n'
 import { AppConfig, DeepPartial } from '../shared/types'
 import { DownloadJobPayload } from '../shared/jobs'
+import { applyInitialTheme } from './theme'
+
+applyInitialTheme()
 
 const api = {
   dialog: {

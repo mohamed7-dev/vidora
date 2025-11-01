@@ -12,29 +12,13 @@
   height: auto;
 }
 
-@media (max-width: 640px) {
-  :host ui-dialog::part(panel) {
-    width: 98vw;
-    height: 90vh;
-  }
-}
-
 /* header  */
-
-.new-dialog__header {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
 .new-dialog__header__wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 0.7rem;
-  font-weight: 400;
 }
 
 /* tabs buttons */

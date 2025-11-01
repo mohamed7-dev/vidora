@@ -1,76 +1,131 @@
 <template id="downloads-tab-template">
   <div class="tab-content__sections-container">
-    <section class="tab-content__section">
-      <h1 class="tab-content__section__title" data-i18n="pref.downloads.sections.downloads">
+    <section class="tab-content__section" role="region" aria-labelledby="section-downloads-title">
+      <h2
+        class="tab-content__section__title"
+        id="section-downloads-title"
+        data-i18n="pref.downloads.sections.downloads"
+      >
         Downloads
-      </h1>
+      </h2>
       <div class="tab-content__section__content">
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.downloads.downloadPath.title">Download Path</h2>
-          <div class="download-path-container">
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.downloads.downloadPath.title"
+          >
+            Download Path
+          </h3>
+          <div class="download-path_container">
             <span id="download-path-display"></span>
             <ui-button
               class="download-path-button"
               id="change-download-path-button"
               variant="outline"
-              ><span data-i18n="pref.downloads.downloadPath.change">Change</span></ui-button
+              ><span slot="label" data-i18n="pref.downloads.downloadPath.change"
+                >Change</span
+              ></ui-button
             >
           </div>
         </article>
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.downloads.maxDownloads.title">Max Number of Downloads</h2>
-          <div id="max-downloads-controls" class="max-downloads-controls">
-            <ui-button size="icon" variant="outline" data-action="decrement">-</ui-button>
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.downloads.maxDownloads.title"
+          >
+            Max Number of Downloads
+          </h3>
+          <div id="max-downloads-controls" class="max-downloads_container">
+            <ui-button size="icon" variant="outline" data-action="decrement">
+              <ui-icon slot="prefix" name="minus"></ui-icon>
+            </ui-button>
             <span id="max-downloads-display">5</span>
-            <ui-button size="icon" variant="outline" data-action="increment">+</ui-button>
+            <ui-button size="icon" variant="outline" data-action="increment">
+              <ui-icon slot="prefix" name="plus"></ui-icon>
+            </ui-button>
           </div>
         </article>
       </div>
     </section>
-    <section class="tab-content__section">
-      <h1 class="tab-content__section__title" data-i18n="pref.downloads.sections.qualityControl">
+    <section
+      class="tab-content__section"
+      role="region"
+      aria-labelledby="section-quality-control-title"
+    >
+      <h2
+        class="tab-content__section__title"
+        id="section-quality-control-title"
+        data-i18n="pref.downloads.sections.qualityControl"
+      >
         Quality Control
-      </h1>
+      </h2>
       <div class="tab-content__section__content">
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.downloads.videoQuality.title">Preferred Video Quality</h2>
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.downloads.videoQuality.title"
+          >
+            Preferred Video Quality
+          </h3>
           <ui-select id="video-quality-select" variant="outline" placeholder="Select quality">
           </ui-select>
         </article>
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.downloads.videoCodec.title">Preferred Video Codec</h2>
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.downloads.videoCodec.title"
+          >
+            Preferred Video Codec
+          </h3>
           <ui-select id="video-codec-select" variant="outline" placeholder="Select codec">
           </ui-select>
         </article>
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.downloads.audioQuality.title">Preferred Audio Quality</h2>
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.downloads.audioQuality.title"
+          >
+            Preferred Audio Quality
+          </h3>
           <ui-select id="audio-quality-select" variant="outline" placeholder="Select audio quality">
           </ui-select>
         </article>
       </div>
     </section>
-    <section class="tab-content__section">
-      <h1 class="tab-content__section__title" data-i18n="pref.downloads.sections.naming">Naming</h1>
+    <section class="tab-content__section" role="region" aria-labelledby="section-naming-title">
+      <h2
+        class="tab-content__section__title"
+        id="section-naming-title"
+        data-i18n="pref.downloads.sections.naming"
+      >
+        Naming
+      </h2>
       <div class="tab-content__section__content">
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.downloads.fileNameFormatPlaylists.title">
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.downloads.fileNameFormatPlaylists.title"
+          >
             File Name Format For Playlists
-          </h2>
-          <div class="name-format-playlists-container">
+          </h3>
+          <div class="name-format-playlists_container">
             <ui-input id="file-name-format-playlists-input" dir="ltr" type="text"></ui-input>
             <ui-button size="sm" variant="ghost" data-action="reset-file-name">
-              <span data-i18n="generic.actions.reset">Reset</span>
+              <span slot="label" data-i18n="generic.actions.reset">Reset</span>
             </ui-button>
           </div>
         </article>
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.downloads.folderNameFormatPlaylists.title">
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.downloads.folderNameFormatPlaylists.title"
+          >
             Folder Name Format For Playlists
-          </h2>
-          <div class="name-format-playlists-container">
+          </h3>
+          <div class="name-format-playlists_container">
             <ui-input id="folder-name-format-playlists-input" dir="ltr" type="text"></ui-input>
             <ui-button size="sm" variant="ghost" data-action="reset-folder-name">
-              <span data-i18n="generic.actions.reset">Reset</span>
+              <span slot="label" data-i18n="generic.actions.reset">Reset</span>
             </ui-button>
           </div>
         </article>

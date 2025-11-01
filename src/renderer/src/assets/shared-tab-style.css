@@ -9,10 +9,12 @@
   flex-direction: column;
   align-items: start;
   gap: 0.5rem;
+  width: 100%;
 }
 
 .tab-content__section__title {
-  font-size: 1rem;
+  font-size: 0.9rem;
+  font-weight: bolder;
   color: inherit;
 }
 
@@ -45,7 +47,7 @@
   border-bottom-right-radius: var(--radius);
 }
 
-.tab-content__section__content__article h3 {
+.tab-content__section__content__article__title {
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: bold;
 }

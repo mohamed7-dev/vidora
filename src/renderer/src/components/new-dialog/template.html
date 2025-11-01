@@ -1,5 +1,5 @@
 <template id="new-dialog-template">
-  <ui-dialog show-x-button alert data-active-screen="media-url">
+  <ui-dialog show-x-button alert data-active-screen="media-info">
     <ui-button
       class="new-dialog__trigger-button"
       id="trigger-button"
@@ -12,13 +12,16 @@
     </ui-button>
     <header slot="header" class="new-dialog__header">
       <div class="new-dialog__header__wrapper media-url-screen-header" data-screen="media-url">
-        <h2>Add download</h2>
+        <h1>Add download</h1>
       </div>
       <div
         class="new-dialog__header__wrapper media-loading-screen-header"
         data-screen="media-loading"
       >
-        <h2>Grabbing Media Info</h2>
+        <h1>Grabbing Media Info</h1>
+      </div>
+      <div class="new-dialog__header__wrapper media-info-screen-header" data-screen="media-info">
+        <h1>Configure Download</h1>
       </div>
     </header>
     <section aria-label="content" slot="content" class="new-dialog__content">

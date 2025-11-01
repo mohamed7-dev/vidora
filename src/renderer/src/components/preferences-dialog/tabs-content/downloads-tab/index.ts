@@ -1,13 +1,30 @@
 import template from './template.html?raw'
-import sharedStyleCss from '../shared.css?inline'
 import styleCss from './style.css?inline'
 import { AppConfig } from '@root/shared/types'
 import { UIButton, UISelect, UIInput } from '@renderer/components/ui'
 import { DATA } from '@root/shared/data'
 
 export class DownloadsTab extends HTMLElement {
+  // Cache stylesheet and template per class for performance and to prevent FOUC
+  private static readonly sheet: CSSStyleSheet = (() => {
+    const s = new CSSStyleSheet()
+    s.replaceSync(styleCss)
+    return s
+  })()
+  private static readonly tpl: HTMLTemplateElement = (() => {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(template, 'text/html')
+    const inner = doc.querySelector('template')
+    const t = document.createElement('template')
+    t.innerHTML = inner ? inner.innerHTML : template
+    return t
+  })()
+
+  // states
   private t = window.api?.i18n?.t || (() => '')
   private config: AppConfig | null = null
+
+  // refs
   private downloadPathDisplay: HTMLElement | null = null
   private maxDownloadsDisplay: HTMLElement | null = null
   private maxDownloadsControls: HTMLElement | null = null
@@ -16,13 +33,15 @@ export class DownloadsTab extends HTMLElement {
   private videoCodecSelect: UISelect | null = null
   private folderNameFormatPlaylistsInput: UIInput | null = null
   private fileNameFormatPlaylistsInput: UIInput | null = null
+
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
   }
 
   async connectedCallback(): Promise<void> {
-    this.render()
+    this._render()
+    this._cacheRefs()
     this.config = (await window.api?.config.getConfig()) || null
     this.applyI18n()
     this.setupListeners()
@@ -44,15 +63,16 @@ export class DownloadsTab extends HTMLElement {
     this.resetFileNameFormatPlaylists()
   }
 
-  private render(): void {
-    const parser = new DOMParser()
-    const tree = parser.parseFromString(template, 'text/html')
-    const tpl = tree.querySelector<HTMLTemplateElement>('#downloads-tab-template')
-    if (!tpl) return
-    const content = tpl.content.cloneNode(true)
-    const style = document.createElement('style')
-    style.textContent = sharedStyleCss + styleCss
-    this.shadowRoot?.append(style, content)
+  private _render(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    // attach cached stylesheet first to avoid FOUC
+    this.shadowRoot.adoptedStyleSheets = [DownloadsTab.sheet]
+    // append cached template content
+    this.shadowRoot.append(DownloadsTab.tpl.content.cloneNode(true))
+  }
+
+  private _cacheRefs(): void {
     this.downloadPathDisplay =
       this.shadowRoot?.querySelector<HTMLElement>('#download-path-display') || null
     this.maxDownloadsDisplay =
@@ -294,5 +314,12 @@ export class DownloadsTab extends HTMLElement {
     })
   }
 }
+if (!customElements.get('downloads-tab-content')) {
+  customElements.define('downloads-tab-content', DownloadsTab)
+}
 
-customElements.define('downloads-tab-content', DownloadsTab)
+declare global {
+  interface HTMLElementTagNameMap {
+    'downloads-tab-content': DownloadsTab
+  }
+}

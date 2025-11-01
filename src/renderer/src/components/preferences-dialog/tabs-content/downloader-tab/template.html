@@ -1,22 +1,31 @@
 <template id="downloader-tab-template">
   <div class="tab-content__sections-container">
-    <section class="tab-content__section">
-      <h1 class="tab-content__section__title" data-i18n="pref.downloader.section.downloader">
+    <section class="tab-content__section" role="region" aria-labelledby="section-downloader-title">
+      <h2
+        class="tab-content__section__title"
+        id="section-downloader-title"
+        data-i18n="pref.downloader.section.downloader"
+      >
         Downloader
-      </h1>
+      </h2>
       <div class="tab-content__section__content">
         <article class="tab-content__section__content__article">
-          <h2
+          <h3
             class="tab-content__section__content__article__title"
             data-i18n="pref.downloader.cookiesFromBrowser.title"
           >
             Cookies From Browser
-          </h2>
+          </h3>
           <ui-select id="cookies-from-browser-select" placeholder="Select" variant="outline">
           </ui-select>
         </article>
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.downloader.proxyServer.title">Proxy Server</h2>
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.downloader.proxyServer.title"
+          >
+            Proxy Server
+          </h3>
           <ui-input
             dir="ltr"
             type="text"

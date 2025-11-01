@@ -10,6 +10,7 @@ import type {
 } from '../shared/jobs'
 import { randomUUID } from 'node:crypto'
 import { DEFAULT_INTERNAL_CONFIG } from './app-config/default-config'
+import { downloadEngine } from './download-engine'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const _mod = require('electron-store')
@@ -68,6 +69,30 @@ function enqueueNextIfPossible(): void {
 }
 
 export function registerJobsIpc(): void {
+  // engine hooks -> update jobs store and broadcast
+  downloadEngine.setHooks({
+    onProgress: (jobId, progress) => {
+      const jobs = getJobs()
+      const j = jobs.find((x) => x.id === jobId)
+      if (!j) return
+      j.progress = progress
+      j.updatedAt = now()
+      saveJobs(jobs)
+      broadcastUpdate(null, { type: 'updated', job: j })
+    },
+    onDone: (jobId, ok, error) => {
+      const jobs = getJobs()
+      const j = jobs.find((x) => x.id === jobId)
+      if (!j) return
+      j.status = ok ? 'completed' : 'failed'
+      j.progress = ok ? 100 : j.progress
+      if (!ok && error) j.error = error
+      j.updatedAt = now()
+      saveJobs(jobs)
+      broadcastUpdate(null, { type: 'updated', job: j })
+      enqueueNextIfPossible()
+    }
+  })
   ipcMain.handle(EVENTS.JOBS.ADD, (_e, payload: DownloadJobPayload) => {
     const jobs = getJobs()
     const status = decideInitialStatus(jobs)
@@ -82,6 +107,10 @@ export function registerJobsIpc(): void {
     jobs.unshift(job)
     saveJobs(jobs)
     broadcastUpdate(null, { type: 'added', job })
+    if (job.status === 'downloading') {
+      // start immediately
+      downloadEngine.start(job)
+    }
     return job
   })
 
@@ -100,6 +129,12 @@ export function registerJobsIpc(): void {
     j.updatedAt = now()
     saveJobs(jobs)
     broadcastUpdate(null, { type: 'updated', job: j })
+    if (status === 'downloading') {
+      downloadEngine.start(j)
+    }
+    if (status === 'paused' || status === 'canceled') {
+      downloadEngine.stop(id)
+    }
     if (
       status === 'completed' ||
       status === 'failed' ||
@@ -115,6 +150,8 @@ export function registerJobsIpc(): void {
     const jobs = getJobs()
     const idx = jobs.findIndex((x) => x.id === id)
     if (idx === -1) return false
+    // stop if running
+    downloadEngine.stop(id)
     const [removed] = jobs.splice(idx, 1)
     saveJobs(jobs)
     broadcastUpdate(null, { type: 'removed', job: removed })
@@ -131,6 +168,7 @@ export function registerJobsIpc(): void {
       j.updatedAt = now()
       saveJobs(jobs)
       broadcastUpdate(null, { type: 'updated', job: j })
+      downloadEngine.stop(id)
       enqueueNextIfPossible()
     }
     return j
@@ -145,6 +183,9 @@ export function registerJobsIpc(): void {
       j.updatedAt = now()
       saveJobs(jobs)
       broadcastUpdate(null, { type: 'updated', job: j })
+      if (j.status === 'downloading') {
+        downloadEngine.start(j)
+      }
     }
     return j
   })

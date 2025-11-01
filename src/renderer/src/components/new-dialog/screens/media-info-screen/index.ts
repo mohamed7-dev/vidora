@@ -37,6 +37,7 @@ export class MediaInfoScreen extends HTMLElement {
   private _selectedDownloadPath: string | null = null
   private _subtitlesChecked = false
   private _url: string | null = null
+
   //refs
   private _videoFormatSelect: UISelect | null = null
   private _audioForVideoFormatSelect: UISelect | null = null
@@ -55,7 +56,6 @@ export class MediaInfoScreen extends HTMLElement {
     this._render()
     this._config = await window.api.config.getConfig()
     this._cacheRefs()
-    this._bindTimeInputEvents()
     this._initRefs()
     this._setupListeners()
   }
@@ -91,6 +91,41 @@ export class MediaInfoScreen extends HTMLElement {
     this._startDownloadBtn = this.shadowRoot.querySelector('#start-download-btn') as UIButton | null
   }
 
+  private async _initRefs(): Promise<void> {
+    if (!this._downloadPathTextEl || !this._config) return
+    this._downloadPathTextEl.textContent = this._config.downloads.downloadDir
+    this._selectedDownloadPath = this._config.downloads.downloadDir
+  }
+
+  private _setupListeners(): void {
+    // download path
+    this._downloadPathChangeBtn?.addEventListener('click', () => {
+      window.api.dialog.openFolder()
+    })
+
+    // download path change
+    window.api.dialog?.selectedLocation((path) => {
+      if (!this._downloadPathTextEl) return
+      this._downloadPathTextEl.textContent = path
+      this._selectedDownloadPath = path
+    })
+
+    // subtitles
+    this._subtitlesCheckbox?.addEventListener('change', () => {
+      this._subtitlesChecked = this._subtitlesCheckbox?.checked ?? false
+    })
+
+    // start download
+    this._startDownloadBtn?.addEventListener('click', async () => {
+      await this._startDownload().then(() => {
+        this.dispatchEvent(new CustomEvent('download:started', { bubbles: true, composed: true }))
+      })
+    })
+
+    // time inputs
+    this._bindTimeInputEvents()
+  }
+
   private _bindTimeInputEvents(): void {
     this._timeEventsAborter?.abort()
     this._timeEventsAborter = new AbortController()
@@ -105,36 +140,8 @@ export class MediaInfoScreen extends HTMLElement {
     }
   }
 
-  private async _initRefs(): Promise<void> {
-    if (!this._downloadPathTextEl || !this._config) return
-    this._downloadPathTextEl.textContent = this._config.downloads.downloadDir
-    this._selectedDownloadPath = this._config.downloads.downloadDir
-  }
-
-  private _setupListeners(): void {
-    this._downloadPathChangeBtn?.addEventListener('click', () => {
-      window.api.dialog.openFolder()
-    })
-
-    window.api.dialog?.selectedLocation((path) => {
-      if (!this._downloadPathTextEl) return
-      this._downloadPathTextEl.textContent = path
-      this._selectedDownloadPath = path
-    })
-
-    this._subtitlesCheckbox?.addEventListener('change', () => {
-      this._subtitlesChecked = this._subtitlesCheckbox?.checked ?? false
-    })
-
-    this._startDownloadBtn?.addEventListener('click', async () => {
-      await this._startDownload().then(() => {
-        this.dispatchEvent(new CustomEvent('download:started', { bubbles: true, composed: true }))
-      })
-    })
-  }
-
   private async _startDownload(): Promise<void> {
-    const duration = this._durationSec ?? this._extractDurationFromInfo() ?? 0
+    const duration = this._durationSec ?? 0
     const start = this._timeStartEl?.value ?? ''
     const end = this._timeEndEl?.value ?? ''
     const subtitles = this._subtitlesChecked
@@ -177,7 +184,7 @@ export class MediaInfoScreen extends HTMLElement {
 
   set info(value: YtdlpInfo | null) {
     this._info = value
-    this._calcVideoLength()
+    void this._ensureProcessorThenCalcVideoLength(value)
     void this._ensureProcessorThenHandleFormats(value)
   }
 
@@ -185,38 +192,24 @@ export class MediaInfoScreen extends HTMLElement {
     const prefs = await this._getPreferences()
     if (!this._processor) this._processor = new MediaInfoProcessor(prefs)
   }
+
   private async _ensureProcessorThenHandleFormats(value: YtdlpInfo | null): Promise<void> {
     if (!this._processor) await this._initMediaProcessor()
     await this._handleFormats(value)
   }
   // length
-  private _calcVideoLength(): void {
-    const duration = this._extractDurationFromInfo()
-    if (!duration) return
-    this._durationSec = duration
-    const formatted = this._formatSecondsToHMS(duration)
+  private async _ensureProcessorThenCalcVideoLength(value: YtdlpInfo | null): Promise<void> {
+    if (!this._processor) await this._initMediaProcessor()
+    this._calcVideoLength(value)
+  }
+
+  private _calcVideoLength(value: YtdlpInfo | null): void {
+    if (!this._processor || !value) return
+    const res = this._processor.processVideoLength(value)
+    if (!res) return
+    this._durationSec = res.durationSec
     if (this._timeStartEl) this._timeStartEl.setAttribute('placeholder', '0:00:00')
-    if (this._timeEndEl) this._timeEndEl.setAttribute('placeholder', `${formatted}`)
-  }
-
-  private _extractDurationFromInfo(): number | null {
-    const anyVal = (this._info as unknown as Record<string, unknown>) || null
-    const d = anyVal && (anyVal['duration'] as unknown)
-    if (typeof d === 'number' && isFinite(d)) return d
-    const ds = anyVal && (anyVal['duration_seconds'] as unknown)
-    if (typeof ds === 'number' && isFinite(ds)) return ds
-    return null
-  }
-
-  private _formatSecondsToHMS(total: number): string {
-    const sec = Math.max(0, Math.floor(total))
-    const hours = Math.floor(sec / 3600)
-    const minutes = Math.floor((sec % 3600) / 60)
-    const seconds = sec % 60
-    const h = hours > 0 ? `${hours}:` : ''
-    const mm = hours > 0 ? String(minutes).padStart(2, '0') : String(minutes)
-    const ss = String(seconds).padStart(2, '0')
-    return `${h}${mm}:${ss}`
+    if (this._timeEndEl) this._timeEndEl.setAttribute('placeholder', `${res.formatted}`)
   }
 
   private _parseTimeToSeconds(v: string | null | undefined): number | null {
@@ -241,7 +234,7 @@ export class MediaInfoScreen extends HTMLElement {
   }
 
   private _verifyAndClipRange(): void {
-    const max = this._durationSec ?? this._extractDurationFromInfo() ?? null
+    const max = this._durationSec ?? null
     if (max == null) return
     const startStr =
       (this._timeStartEl?.getAttribute('value') || '').toString() || this._timeStartEl?.value || ''
@@ -260,8 +253,9 @@ export class MediaInfoScreen extends HTMLElement {
       start = end
     }
     // Reflect corrected values back to inputs
-    const startFmt = this._formatSecondsToHMS(start)
-    const endFmt = this._formatSecondsToHMS(end)
+    if (!this._processor) return
+    const startFmt = this._processor.formatSecondsToHMS(start)
+    const endFmt = this._processor.formatSecondsToHMS(end)
     if (this._timeStartEl) {
       this._timeStartEl.setAttribute('value', startFmt)
       this._timeStartEl.value = startFmt
@@ -274,15 +268,14 @@ export class MediaInfoScreen extends HTMLElement {
 
   // formats
   private async _handleFormats(value: YtdlpInfo | null): Promise<void> {
-    if (!this._processor) return
-    const res = this._processor.process(value as unknown)
+    if (!this._processor || !value) return
+    const res = this._processor.processVideoFormats(value)
     this._videoOptions = res.video
     this._audioOptions = res.audio
     this._audioPresent = res.audioPresent
     this._isPlaylist = res.isPlaylist
     this.toggleAttribute('data-is-playlist', this._isPlaylist)
     this._renderFormatSelects()
-    // this._cacheTimeInputs()
   }
 
   private async _getPreferences(): Promise<Preferences> {

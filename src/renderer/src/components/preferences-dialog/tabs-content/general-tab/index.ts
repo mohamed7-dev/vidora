@@ -1,28 +1,46 @@
 import template from './template.html?raw'
-import sharedStyleCss from '../shared.css?inline'
 import styleCss from './style.css?inline'
 import { UIButton, UISelect, UICheckbox } from '@renderer/components/ui'
 import { DATA } from '@root/shared/data'
 import { AppConfig } from '@root/shared/types'
 
 export class GeneralTab extends HTMLElement {
+  // Cache stylesheet and template per class for performance and to prevent FOUC
+  private static readonly sheet: CSSStyleSheet = (() => {
+    const s = new CSSStyleSheet()
+    s.replaceSync(styleCss)
+    return s
+  })()
+  private static readonly tpl: HTMLTemplateElement = (() => {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(template, 'text/html')
+    const inner = doc.querySelector('template')
+    const t = document.createElement('template')
+    t.innerHTML = inner ? inner.innerHTML : template
+    return t
+  })()
+  // states
   private config: AppConfig | null = null
   private initialConfig: AppConfig | null = null
+  private t = window.api?.i18n?.t || (() => '')
+  private needsReload = false
+  private needsRelaunch = false
+
+  // refs
   private themeSelect: UISelect | null = null
   private languageSelect: UISelect | null = null
-  private t = window.api?.i18n?.t || (() => '')
   private closeAppToSystemTraySwitch: UICheckbox | null = null
   private useNativeToolbarSwitch: UICheckbox | null = null
   private restartBtn: UIButton | null = null
-  private needsReload = false
-  private needsRelaunch = false
+
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
   }
 
   async connectedCallback(): Promise<void> {
-    this.render()
+    this._render()
+    this._cacheRefs()
     this.config = (await window.api?.config.getConfig()) || null
     this.initialConfig = this.config ? JSON.parse(JSON.stringify(this.config)) : null
     this.syncTheme()
@@ -37,15 +55,16 @@ export class GeneralTab extends HTMLElement {
     this.changeUseNativeToolbar()
   }
 
-  private render(): void {
-    const parser = new DOMParser()
-    const tree = parser.parseFromString(template, 'text/html')
-    const tpl = tree.querySelector<HTMLTemplateElement>('#general-tab-template')
-    if (!tpl) return
-    const content = tpl.content.cloneNode(true)
-    const style = document.createElement('style')
-    style.textContent = sharedStyleCss + styleCss
-    this.shadowRoot?.append(style, content)
+  private _render(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    // attach cached stylesheet first to avoid FOUC
+    this.shadowRoot.adoptedStyleSheets = [GeneralTab.sheet]
+    // append cached template content
+    this.shadowRoot.append(GeneralTab.tpl.content.cloneNode(true))
+  }
+
+  private _cacheRefs(): void {
     this.themeSelect = this.shadowRoot?.querySelector<UISelect>('#theme-select') || null
     this.languageSelect = this.shadowRoot?.querySelector<UISelect>('#language-select') || null
     this.closeAppToSystemTraySwitch =
@@ -200,4 +219,11 @@ export class GeneralTab extends HTMLElement {
   }
 }
 
-customElements.define('general-tab-content', GeneralTab)
+if (!customElements.get('general-tab-content')) {
+  customElements.define('general-tab-content', GeneralTab)
+}
+declare global {
+  interface HTMLElementTagNameMap {
+    'general-tab-content': GeneralTab
+  }
+}

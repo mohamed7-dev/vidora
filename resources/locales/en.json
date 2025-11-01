@@ -29,6 +29,7 @@
     }
   },
   "pref": {
+    "title": "Preferences",
     "tabs": {
       "general": "General",
       "downloader": "Downloader",

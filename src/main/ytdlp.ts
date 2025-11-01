@@ -10,7 +10,7 @@ import { begin, fail, success } from './status-bus'
 import { readConfig } from './app-config/config-api'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImport
+export const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImport
 
 async function downloadYtdlp(path: string): Promise<void> {
   if (typeof YTDlpWrap.downloadFromGithub !== 'function') {

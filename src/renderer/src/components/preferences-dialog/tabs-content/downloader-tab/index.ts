@@ -1,21 +1,41 @@
 import template from './template.html?raw'
-import styleCss from '../shared.css?inline'
+import styleCss from './style.css?inline'
 import { UIInput, UISelect } from '@renderer/components/ui'
 import { DATA } from '@root/shared/data'
 import { AppConfig } from '@root/shared/types'
 
 export class DownloaderTab extends HTMLElement {
+  // Cache stylesheet and template per class for performance and to prevent FOUC
+  private static readonly sheet: CSSStyleSheet = (() => {
+    const s = new CSSStyleSheet()
+    s.replaceSync(styleCss)
+    return s
+  })()
+  private static readonly tpl: HTMLTemplateElement = (() => {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(template, 'text/html')
+    const inner = doc.querySelector('template')
+    const t = document.createElement('template')
+    t.innerHTML = inner ? inner.innerHTML : template
+    return t
+  })()
+
+  // states
   private config: AppConfig | null = null
+  private t = window.api?.i18n?.t ?? ((key: string) => key)
+
+  //refs
   private cookiesFromBrowserSelect: UISelect | null = null
   private proxyServerInput: UIInput | null = null
-  private t = window.api?.i18n?.t ?? ((key: string) => key)
+
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
   }
 
   async connectedCallback(): Promise<void> {
-    this.render()
+    this._render()
+    this._cacheRefs()
     this.config = (await window.api?.config.getConfig()) || null
     this.applyI18n()
     this.syncCookiesFromBrowserSelect()
@@ -25,16 +45,16 @@ export class DownloaderTab extends HTMLElement {
     this.syncCookiesFromBrowserSelect()
   }
 
-  private render(): void {
-    const parser = new DOMParser()
-    const tree = parser.parseFromString(template, 'text/html')
-    const tpl = tree.querySelector<HTMLTemplateElement>('#downloader-tab-template')
-    if (!tpl) return
-    const content = tpl.content.cloneNode(true)
-    const style = document.createElement('style')
-    style.textContent = styleCss
-    this.shadowRoot?.append(style, content)
+  private _render(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    // attach cached stylesheet first to avoid FOUC
+    this.shadowRoot.adoptedStyleSheets = [DownloaderTab.sheet]
+    // append cached template content
+    this.shadowRoot.append(DownloaderTab.tpl.content.cloneNode(true))
+  }
 
+  private _cacheRefs(): void {
     this.cookiesFromBrowserSelect =
       this.shadowRoot?.querySelector<UISelect>('#cookies-from-browser-select') ?? null
     this.proxyServerInput = this.shadowRoot?.querySelector<UIInput>('#proxy-server-input') ?? null
@@ -86,5 +106,11 @@ export class DownloaderTab extends HTMLElement {
     this.cookiesFromBrowserSelect.value = this.config?.downloader.cookiesFromBrowser ?? ''
   }
 }
+if (!customElements.get('downloader-tab-content'))
+  customElements.define('downloader-tab-content', DownloaderTab)
 
-customElements.define('downloader-tab-content', DownloaderTab)
+declare global {
+  interface HTMLElementTagNameMap {
+    'downloader-tab-content': DownloaderTab
+  }
+}

@@ -1,5 +1,7 @@
 // Utilities for processing yt-dlp formats and building options for UI rendering
 
+import { YtdlpInfo } from '@root/shared/downloads'
+
 export type YtDlpFormat = {
   format_id?: string
   ext?: string
@@ -50,7 +52,11 @@ export type ProcessResult = {
 export class MediaInfoProcessor {
   constructor(private prefs: Preferences) {}
 
-  process(info: unknown): ProcessResult {
+  /**
+   * @description
+   * Parses the formats from the info object and formats it to a string
+   */
+  public processVideoFormats(info: YtdlpInfo): ProcessResult {
     const formats = this._extractFormatsArray(info)
     const isPlaylist = this._detectPlaylist(info)
 
@@ -148,16 +154,43 @@ export class MediaInfoProcessor {
     return Array.isArray(v.formats) ? (v.formats as YtDlpFormat[]) : []
   }
 
-  private _detectPlaylist(info: unknown): boolean {
-    const anyInfo = info as Record<string, unknown>
-    if (Array.isArray((anyInfo as { entries?: unknown[] }).entries)) return true
-    if (typeof anyInfo.playlist === 'string' && anyInfo.playlist.length > 0) return true
-    if (typeof anyInfo.playlist_count === 'number' && anyInfo.playlist_count > 0) return true
-    if (
-      typeof anyInfo.extractor === 'string' &&
-      anyInfo.extractor.toLowerCase().includes('playlist')
-    )
+  private _detectPlaylist(info: YtdlpInfo): boolean {
+    if (Array.isArray(info.entries)) return true
+    if (typeof info.playlist === 'string' && info.playlist.length > 0) return true
+    if (typeof info.playlist_count === 'number' && info.playlist_count > 0) return true
+    if (typeof info.extractor === 'string' && info.extractor.toLowerCase().includes('playlist')) {
       return true
+    }
     return false
+  }
+
+  /**
+   * @description
+   * Extracts the duration from the info object and formats it to a string
+   */
+  public processVideoLength(info: YtdlpInfo): { durationSec: number; formatted: string } {
+    const duration = this._extractDurationFromInfo(info)
+    if (!duration) return { durationSec: 0, formatted: '0:00:00' }
+    const formatted = this.formatSecondsToHMS(duration)
+    return { durationSec: duration, formatted }
+  }
+
+  private _extractDurationFromInfo(info: YtdlpInfo): number | null {
+    const duration = info && (info['duration'] as unknown)
+    if (typeof duration === 'number' && isFinite(duration)) return duration
+    const durationSeconds = info && (info['duration_seconds'] as unknown)
+    if (typeof durationSeconds === 'number' && isFinite(durationSeconds)) return durationSeconds
+    return null
+  }
+
+  public formatSecondsToHMS(total: number): string {
+    const sec = Math.max(0, Math.floor(total))
+    const hours = Math.floor(sec / 3600)
+    const minutes = Math.floor((sec % 3600) / 60)
+    const seconds = sec % 60
+    const h = hours > 0 ? `${hours}:` : ''
+    const mm = hours > 0 ? String(minutes).padStart(2, '0') : String(minutes)
+    const ss = String(seconds).padStart(2, '0')
+    return `${h}${mm}:${ss}`
   }
 }

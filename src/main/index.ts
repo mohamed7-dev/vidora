@@ -8,7 +8,7 @@ import { handleI18nIpc } from './i18n'
 import { getIsQuitting, isTrayEnabled } from './tray'
 import { initConfig } from './app-config/init-config'
 import { readConfig } from './app-config/config-api'
-import { registerConfigIpc } from './app-config/config-listeners'
+import { initConfigCache, registerConfigIpc } from './app-config/config-listeners'
 import { setupAppInternals } from './setup'
 import { registerStatusIpc } from './status-bus'
 import { handleAppControlsIpc } from './app-controls'
@@ -95,6 +95,7 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+  initConfigCache()
   handleDialogIpc()
   handleWindowControlsIpc()
   handleAppControlsIpc()

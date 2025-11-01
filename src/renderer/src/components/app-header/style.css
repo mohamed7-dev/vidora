@@ -62,3 +62,13 @@ new-dialog,
     display: none;
   }
 }
+
+/* dropdown menu  */
+.app-header__dropdown-menu-item::part(base) {
+  display: flex;
+  justify-content: flex-start;
+  padding: 0 auto;
+}
+.app-header__dropdown-menu-item:hover {
+  background-color: transparent;
+}

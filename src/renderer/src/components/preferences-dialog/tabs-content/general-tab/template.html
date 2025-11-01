@@ -1,18 +1,32 @@
 <template id="general-tab-template">
   <div class="tab-content__sections-container">
-    <section class="tab-content__section">
-      <h1 class="tab-content__section__title" data-i18n="pref.general.section.application">
+    <section class="tab-content__section" role="region" aria-labelledby="section-application-title">
+      <h2
+        class="tab-content__section__title"
+        id="section-application-title"
+        data-i18n="pref.general.section.application"
+      >
         Application
-      </h1>
+      </h2>
       <div class="tab-content__section__content">
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.general.restartApp.title">Apply System Locale</h2>
-          <ui-button class="restart-app-button" id="restart-app-button" variant="outline">
-            <span data-i18n="pref.general.restartApp.button">Restart App</span>
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.general.restartApp.title"
+          >
+            Apply System Locale
+          </h3>
+          <ui-button class="restart-app_button" id="restart-app-button" variant="outline">
+            <span slot="label" data-i18n="pref.general.restartApp.button">Restart App</span>
           </ui-button>
         </article>
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.general.useNativeToolbar.title">Use Native Toolbar</h2>
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.general.useNativeToolbar.title"
+          >
+            Use Native Toolbar
+          </h3>
           <div class="native-toolbar-container">
             <ui-tooltip side="bottom" align="center" offset="8">
               <span slot="trigger" class="restart-indicator" aria-label="Requires restart">
@@ -24,23 +38,46 @@
           </div>
         </article>
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.general.closeAppToSystemTray.title">Close App To System Tray</h2>
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.general.closeAppToSystemTray.title"
+          >
+            Close App To System Tray
+          </h3>
           <ui-checkbox id="close-app-to-system-tray-switch" variant="secondary"></ui-checkbox>
         </article>
       </div>
     </section>
 
-    <section class="tab-content__section">
-      <h1 class="tab-content__section__title" data-i18n="pref.general.section.userInterface">
+    <section
+      class="tab-content__section"
+      role="region"
+      aria-labelledby="section-user-interface-title"
+    >
+      <h2
+        class="tab-content__section__title"
+        id="section-user-interface-title"
+        data-i18n="pref.general.section.userInterface"
+      >
         User Interface
-      </h1>
+      </h2>
       <div class="tab-content__section__content">
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.general.theme.title">Theme</h2>
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.general.theme.title"
+          >
+            Theme
+          </h3>
           <ui-select variant="outline" placeholder="Select" id="theme-select"> </ui-select>
         </article>
         <article class="tab-content__section__content__article">
-          <h2 data-i18n="pref.general.language.title">Language</h2>
+          <h3
+            class="tab-content__section__content__article__title"
+            data-i18n="pref.general.language.title"
+          >
+            Language
+          </h3>
           <div class="language-select-container">
             <ui-tooltip side="bottom" align="center" offset="8">
               <span slot="trigger" class="restart-indicator" aria-label="Requires restart">

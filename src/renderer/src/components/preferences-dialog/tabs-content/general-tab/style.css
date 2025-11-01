@@ -1,3 +1,6 @@
+@import url('../../../../assets/reset.css');
+@import url('../../../../assets/shared-tab-style.css');
+
 .max-downloads-controls {
   display: flex;
   align-items: center;

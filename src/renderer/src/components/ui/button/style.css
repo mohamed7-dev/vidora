@@ -133,7 +133,7 @@
 }
 
 :host([variant='outline']:hover) button {
-  background: var(--accent);
+  background: oklch(from var(--accent) calc(l + 0.2) c h);
   color: var(--accent-foreground);
 }
 
@@ -144,7 +144,7 @@
 }
 
 :host([variant='ghost']:hover) button {
-  background: var(--accent);
+  background: oklch(from var(--accent) calc(l + 0.2) c h);
   color: var(--accent-foreground);
 }
 

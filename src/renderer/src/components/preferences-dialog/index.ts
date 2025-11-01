@@ -3,7 +3,7 @@ import './tabs-content/downloader-tab/index'
 import './tabs-content/downloads-tab/index'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
-import { UIDialog, UIButton, UITabs } from '../ui'
+import { UIDialog } from '../ui'
 
 export class PreferencesDialog extends HTMLElement {
   // Cache stylesheet and template per class for performance and to prevent FOUC
@@ -31,19 +31,8 @@ export class PreferencesDialog extends HTMLElement {
 
   connectedCallback(): void {
     this._render()
-    // handle trigger buttons active state
-    this.renderTriggerButtons()
-
     // i18n init and binding
     this.applyI18n()
-
-    const tabs = this.shadowRoot?.querySelector('ui-tabs') as UITabs | null
-    // if (tabs) {
-    //   const apply = (): void => this.updateTriggerVariants(tabs.value || '')
-    //   tabs.addEventListener('change', apply as EventListener)
-    //   // initialize once after triggers rendered
-    //   apply()
-    // }
   }
 
   private _render(): void {
@@ -53,40 +42,6 @@ export class PreferencesDialog extends HTMLElement {
     this.shadowRoot.adoptedStyleSheets = [PreferencesDialog.sheet]
     // append cached template content
     this.shadowRoot.append(PreferencesDialog.tpl.content.cloneNode(true))
-  }
-
-  private renderTriggerButtons(): void {
-    const generalTabTrigger = this.shadowRoot?.querySelector('#general-tab-trigger') as UIButton
-    const downloaderTabTrigger = this.shadowRoot?.querySelector(
-      '#downloader-tab-trigger'
-    ) as UIButton
-    const downloadsTabTrigger = this.shadowRoot?.querySelector('#downloads-tab-trigger') as UIButton
-
-    generalTabTrigger.addEventListener('click', () => {
-      ;(this.shadowRoot?.querySelector('ui-tabs') as UITabs).value = 'general'
-    })
-    downloaderTabTrigger.addEventListener('click', () => {
-      ;(this.shadowRoot?.querySelector('ui-tabs') as UITabs).value = 'downloader'
-    })
-    downloadsTabTrigger.addEventListener('click', () => {
-      ;(this.shadowRoot?.querySelector('ui-tabs') as UITabs).value = 'downloads'
-    })
-  }
-
-  private updateTriggerVariants(active: string): void {
-    const general = this.shadowRoot?.querySelector('#general-tab-trigger') as UIButton | null
-    const downloader = this.shadowRoot?.querySelector('#downloader-tab-trigger') as UIButton | null
-    const downloads = this.shadowRoot?.querySelector('#downloads-tab-trigger') as UIButton | null
-    const map: Record<string, UIButton | null> = {
-      general,
-      downloader,
-      downloads
-    }
-    for (const [key, btn] of Object.entries(map)) {
-      if (!btn) continue
-      if (key === active) btn.setAttribute('variant', 'secondary')
-      else btn.setAttribute('variant', 'ghost')
-    }
   }
 
   private applyI18n(): void {

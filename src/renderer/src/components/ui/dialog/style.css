@@ -75,6 +75,13 @@
   z-index: 1002;
 }
 
+@media (max-width: 640px) {
+  :host .panel {
+    width: 98vw;
+    height: 90vh;
+  }
+}
+
 :host([data-open]) .panel {
   display: flex;
   opacity: 1;
@@ -95,6 +102,12 @@
 :host .header ::slotted([slot='header']) {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  color: currentColor;
 }
 
 :host .content {

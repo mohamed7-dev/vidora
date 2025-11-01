@@ -1,55 +1,6 @@
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
-import iconHouse from '@renderer/assets/icons/house.svg?raw'
-import iconHistory from '@renderer/assets/icons/history.svg?raw'
-import arrow from '@renderer/assets/icons/arrow-big-down-dash.svg?raw'
-import circleCheck from '@renderer/assets/icons/circle-check-big.svg?raw'
-import hourglass from '@renderer/assets/icons/hourglass.svg?raw'
-
-type Item = { id: string; title: string; page: string; icon: string }
-type Section = { title: string; items: Item[] }
-const items: Record<string, Section> = {
-  ['first-section']: {
-    title: 'appSidebar.general.title',
-    items: [
-      {
-        id: 'app-sidebar-nav-item-index',
-        title: 'appSidebar.general.items.home',
-        page: 'index.html',
-        icon: iconHouse
-      },
-      {
-        id: 'app-sidebar-nav-item-history',
-        title: 'appSidebar.general.items.history',
-        page: 'history.html',
-        icon: iconHistory
-      }
-    ]
-  },
-  ['second-section']: {
-    title: 'appSidebar.downloads.title',
-    items: [
-      {
-        id: 'app-sidebar-nav-item-downloading',
-        title: 'appSidebar.downloads.items.downloading',
-        page: 'downloading.html',
-        icon: arrow
-      },
-      {
-        id: 'app-sidebar-nav-item-queued',
-        title: 'appSidebar.downloads.items.queued',
-        page: 'queued.html',
-        icon: hourglass
-      },
-      {
-        id: 'app-sidebar-nav-item-completed',
-        title: 'appSidebar.downloads.items.completed',
-        page: 'completed.html',
-        icon: circleCheck
-      }
-    ]
-  }
-}
+import { SIDEBAR_ITEMS } from './data'
 
 export class AppSidebarContent extends HTMLElement {
   // Cache stylesheet and template per class for performance and to prevent FOUC
@@ -125,8 +76,8 @@ export class AppSidebarContent extends HTMLElement {
     if (!nav) return
 
     nav.innerHTML = ''
-    for (const sectionKey in items) {
-      const section = items[sectionKey]
+    for (const sectionKey in SIDEBAR_ITEMS) {
+      const section = SIDEBAR_ITEMS[sectionKey]
       const group = document.createElement('div')
       group.className = 'nav-section'
 
@@ -144,7 +95,7 @@ export class AppSidebarContent extends HTMLElement {
         a.href = `../../pages/${item.page}`
         const labelSpan = document.createElement('span')
         labelSpan.textContent = this.t(item.title) ?? ''
-        a.innerHTML = item.icon
+        a.innerHTML = `<ui-icon name="${item.icon}"></ui-icon>`
         a.append(labelSpan)
         group.appendChild(a)
       }

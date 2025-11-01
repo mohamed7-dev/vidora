@@ -9,3 +9,22 @@
 ul {
   list-style: none;
 }
+
+/* Disable selection globally */
+html,
+body,
+* {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Allow selection where appropriate */
+input,
+textarea,
+select,
+[contenteditable='true'],
+.selectable {
+  -webkit-user-select: text;
+  user-select: text;
+}

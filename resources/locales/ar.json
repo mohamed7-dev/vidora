@@ -29,6 +29,7 @@
     }
   },
   "pref": {
+    "title": "الإعدادات",
     "tabs": {
       "general": "عام",
       "downloader": "التحميل",

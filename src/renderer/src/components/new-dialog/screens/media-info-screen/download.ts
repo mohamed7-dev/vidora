@@ -1,9 +1,10 @@
+import { YtdlpInfo } from '@root/shared/downloads'
 import { DownloadArgs, DownloadJobPayload } from '@root/shared/jobs'
 
 type ConstructorOpts = {
   type: 'Video' | 'Audio'
   url: string
-  info: import('@root/shared/downloads').YtdlpInfo
+  info: YtdlpInfo
   duration: number
   startInput?: string | null
   endInput?: string | null
@@ -17,7 +18,7 @@ type ConstructorOpts = {
 export class DownloadProcessor {
   private readonly url: string
   private readonly type: 'Video' | 'Audio'
-  private readonly info: import('@root/shared/downloads').YtdlpInfo
+  private readonly info: YtdlpInfo
   private readonly duration: number
   private readonly startInput: string
   private readonly endInput: string
