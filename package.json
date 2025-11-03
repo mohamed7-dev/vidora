@@ -19,7 +19,8 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
-    "icons:gen": "node scripts/gen-icons.mjs"
+    "icons:gen": "node scripts/gen-icons.mjs",
+    "ffmpeg:download": "bash scripts/linux.sh && mkdir -p \"$HOME/.config/vidora/bin\" && mv -f ./ffmpeg \"$HOME/.config/vidora/bin/ffmpeg\" && chmod +x \"$HOME/.config/vidora/bin/ffmpeg\""
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",

@@ -4,6 +4,7 @@ import { readConfig } from './config-api'
 import { useTray } from '../tray'
 import { AppConfig } from '../../shared/types'
 import { success, fail } from '../status-bus'
+import { readInternalConfig } from './internal-config-api'
 
 export type ConfigStatus = {
   downloadDir: {
@@ -54,6 +55,8 @@ const syncTrayFromConfig = (config: AppConfig): void => {
 }
 
 export const initConfig = (): void => {
+  // ensure internal config is setup
+  readInternalConfig()
   const config = readConfig()
   const status = computeStatus(config)
   syncTrayFromConfig(config)

@@ -13,14 +13,14 @@ import { begin, fail, success } from './status-bus'
 export async function checkFFmpeg(): Promise<string | null> {
   begin('ffmpeg', 'status.ffmpeg.checking')
   // if env variable exist, prioritize it
-  if (process.env.TANZIL_FFMPEG_PATH) {
-    if (fs.existsSync(process.env.TANZIL_FFMPEG_PATH)) {
+  if (process.env.VIDORA_FFMPEG_PATH) {
+    if (fs.existsSync(process.env.VIDORA_FFMPEG_PATH)) {
       success('ffmpeg', 'status.ffmpeg.ready')
-      return String(process.env.TANZIL_FFMPEG_PATH)
+      return String(process.env.VIDORA_FFMPEG_PATH)
     }
     fail(
       'ffmpeg',
-      "TANZIL_FFMPEG_PATH ENV variable is used, but the file doesn't exist there.",
+      "VIDORA_FFMPEG_PATH ENV variable is used, but the file doesn't exist there.",
       'status.ffmpeg.env_missing'
     )
     return null

@@ -14,7 +14,7 @@ import { registerStatusIpc } from './status-bus'
 import { handleAppControlsIpc } from './app-controls'
 import { registerDownloadsIpc } from './downloads-ipc'
 import { handleDialogIpc } from './dialog'
-import { registerJobsIpc } from './jobs-ipc'
+import { registerJobsIpc, pauseAllIncompletedJobs } from './jobs-ipc'
 
 function createWindow(): void {
   const iconPath = app.isPackaged
@@ -131,5 +131,14 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
+  }
+})
+
+// Ensure incomplete jobs are paused on app shutdown
+app.on('before-quit', () => {
+  try {
+    pauseAllIncompletedJobs()
+  } catch {
+    // swallow errors to not block quit
   }
 })

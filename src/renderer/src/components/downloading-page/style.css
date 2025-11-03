@@ -5,13 +5,18 @@
 :host {
   display: block;
   height: 100%;
+  width: 100%;
+}
+
+.content-wrapper {
+  width: 100%;
 }
 
 .jobs-list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  width: 100%;
+  min-width: 100%;
 }
 
 .job-item {
@@ -41,7 +46,11 @@
   white-space: nowrap;
 }
 
-.job-sub {
+.no-active-downloads_container {
+  justify-content: center;
+}
+
+.no-active-downloads_sub {
   font-size: 0.8rem;
   color: var(--muted-foreground);
 }
@@ -59,7 +68,7 @@
 .progress {
   height: 6px;
   width: 100%;
-  background: color-mix(in oklab, var(--muted) 80%, var(--foreground));
+  background: color-mix(in oklch, var(--muted) 80%, var(--foreground));
   border-radius: 999px;
   overflow: hidden;
 }

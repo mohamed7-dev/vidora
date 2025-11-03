@@ -26,6 +26,7 @@ export class DownloadingPage extends HTMLElement {
   //Refs
   private _jobsList: HTMLDivElement | null = null
   private _jobItemTemplate: HTMLTemplateElement | null = null
+  private _noActiveDownloadsTemplate: HTMLTemplateElement | null = null
 
   constructor() {
     super()
@@ -44,6 +45,9 @@ export class DownloadingPage extends HTMLElement {
     if (!this.shadowRoot) return
     this._jobsList = this.shadowRoot.querySelector<HTMLDivElement>('#jobs-list')
     this._jobItemTemplate = this.shadowRoot.querySelector<HTMLTemplateElement>('#job-item-template')
+    this._noActiveDownloadsTemplate = this.shadowRoot.querySelector<HTMLTemplateElement>(
+      '#no-active-downloads-template'
+    )
   }
 
   disconnectedCallback(): void {
@@ -72,12 +76,10 @@ export class DownloadingPage extends HTMLElement {
   }
 
   private _renderJobs(jobs: Array<Job>): void {
-    if (!this._jobsList || !this._jobItemTemplate) return
+    if (!this._jobsList || !this._jobItemTemplate || !this._noActiveDownloadsTemplate) return
     this._jobsList.innerHTML = ''
     if (!jobs.length) {
-      const empty = document.createElement('p')
-      empty.textContent = 'No active downloads'
-      empty.className = 'job-sub'
+      const empty = this._noActiveDownloadsTemplate?.content.cloneNode(true) as DocumentFragment
       this._jobsList.appendChild(empty)
       return
     }

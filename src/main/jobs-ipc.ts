@@ -1,5 +1,4 @@
 import { ipcMain, BrowserWindow } from 'electron'
-// import Store from 'electron-store'
 import { EVENTS } from '../shared/events'
 import type {
   DownloadJobPayload,
@@ -11,12 +10,11 @@ import type {
 import { randomUUID } from 'node:crypto'
 import { DEFAULT_INTERNAL_CONFIG } from './app-config/default-config'
 import { downloadEngine } from './download-engine'
+import { readConfig } from './app-config/config-api'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const _mod = require('electron-store')
 const ElectronStore = _mod.default ?? _mod
-
-const MAX_CONCURRENT_DEFAULT = 2
 
 const store = new ElectronStore({
   name: 'jobs',
@@ -36,13 +34,31 @@ function getJobs(): Job[] {
   return store.get('jobs') || []
 }
 
+export function pauseAllIncompletedJobs(): void {
+  const jobs = getJobs()
+  let changed = false
+  for (const j of jobs) {
+    if (j.status === 'downloading') {
+      j.status = 'paused'
+      j.updatedAt = now()
+      downloadEngine.stop(j.id)
+      changed = true
+    } else if (j.status === 'queued' || j.status === 'pending') {
+      j.status = 'paused'
+      j.updatedAt = now()
+      changed = true
+    }
+  }
+  if (changed) saveJobs(jobs)
+}
+
 function countActive(jobs: Job[]): number {
   return jobs.filter((j) => j.status === 'downloading').length
 }
 
 function maxConcurrent(): number {
-  // In the future, read from config. For now, default.
-  return MAX_CONCURRENT_DEFAULT
+  const config = readConfig()
+  return config.downloads.maxDownloads
 }
 
 function decideInitialStatus(jobs: Job[]): JobStatus {
@@ -86,7 +102,8 @@ export function registerJobsIpc(): void {
       if (!j) return
       j.status = ok ? 'completed' : 'failed'
       j.progress = ok ? 100 : j.progress
-      if (!ok && error) j.error = error
+      if (ok) delete j.error
+      else if (error) j.error = error
       j.updatedAt = now()
       saveJobs(jobs)
       broadcastUpdate(null, { type: 'updated', job: j })
@@ -130,6 +147,8 @@ export function registerJobsIpc(): void {
     saveJobs(jobs)
     broadcastUpdate(null, { type: 'updated', job: j })
     if (status === 'downloading') {
+      // clear any stale error before starting
+      if (j.error) delete j.error
       downloadEngine.start(j)
     }
     if (status === 'paused' || status === 'canceled') {
