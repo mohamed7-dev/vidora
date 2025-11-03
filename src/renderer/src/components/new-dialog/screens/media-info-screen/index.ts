@@ -29,7 +29,7 @@ export class MediaInfoScreen extends HTMLElement {
   private _info: YtdlpInfo | null = null
   private _videoOptions: VideoOption[] = []
   private _audioOptions: AudioOption[] = []
-  private _audioPresent = false
+  // private _audioPresent = false
   private _isPlaylist = false
   private _processor: MediaInfoProcessor | null = null
   private _durationSec: number | null = null
@@ -272,7 +272,7 @@ export class MediaInfoScreen extends HTMLElement {
     const res = this._processor.processVideoFormats(value)
     this._videoOptions = res.video
     this._audioOptions = res.audio
-    this._audioPresent = res.audioPresent
+    // this._audioPresent = res.audioPresent
     this._isPlaylist = res.isPlaylist
     this.toggleAttribute('data-is-playlist', this._isPlaylist)
     this._renderFormatSelects()

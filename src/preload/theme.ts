@@ -51,6 +51,59 @@ export function applyInitialTheme(): void {
   }
 }
 
+export function startThemeWatcher(): void {
+  // React to config updates
+  ipcRenderer.on(EVENTS.CONFIG.UPDATED, (_e, cfg: AppConfig) => {
+    try {
+      const themeName = cfg?.general?.theme || 'system'
+      const mode = resolveThemeMode(themeName)
+      const systemDark =
+        typeof window !== 'undefined' && window.matchMedia
+          ? window.matchMedia('(prefers-color-scheme: dark)').matches
+          : false
+      const isDark = mode === 'dark' || (mode === 'system' && systemDark)
+      applyThemeToRoot(themeName, isDark)
+      setupSystemWatcherIfNeeded(themeName)
+    } catch {
+      // no-op
+    }
+  })
+
+  // Also listen to system changes when theme is system
+  setupSystemWatcherIfNeeded(safeGetConfigThemeName())
+}
+
+let systemWatcher: MediaQueryList | null = null
+function setupSystemWatcherIfNeeded(themeName: string): void {
+  if (systemWatcher) {
+    try {
+      systemWatcher.removeEventListener('change', onSystemChange)
+    } catch {
+      // no-op
+    }
+    systemWatcher = null
+  }
+  if (themeName !== 'system') return
+  if (!(typeof window !== 'undefined' && window.matchMedia)) return
+  systemWatcher = window.matchMedia('(prefers-color-scheme: dark)')
+  try {
+    systemWatcher.addEventListener('change', onSystemChange)
+  } catch {
+    // no-op
+  }
+}
+
+function onSystemChange(): void {
+  const themeName = safeGetConfigThemeName()
+  const mode = resolveThemeMode(themeName)
+  const systemDark =
+    typeof window !== 'undefined' && window.matchMedia
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : false
+  const isDark = mode === 'dark' || (mode === 'system' && systemDark)
+  applyThemeToRoot(themeName, isDark)
+}
+
 function safeGetConfigThemeName(): string {
   try {
     const v = ipcRenderer.sendSync(EVENTS.CONFIG.GET) as AppConfig

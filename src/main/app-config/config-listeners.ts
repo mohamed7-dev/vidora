@@ -38,6 +38,7 @@ export function registerConfigIpc(): void {
 
   ipcMain.handle(EVENTS.CONFIG.UPDATE, (_e, patch: DeepPartial<AppConfig>) => {
     const updated = updateConfig(patch)
+    cachedConfig = updated
     // broadcast updated config to all windows
     BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(EVENTS.CONFIG.UPDATED, updated))
     return updated

@@ -60,9 +60,9 @@ function createWindow(): void {
   const devUrl = process.env['ELECTRON_RENDERER_URL']
   if (is.dev && devUrl) {
     // mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-    mainWindow.loadURL(`${devUrl}/pages/index.html`)
+    mainWindow.loadURL(`${devUrl}/index.html`)
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/pages/index.html'))
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
 

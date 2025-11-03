@@ -1,3 +1,4 @@
+// TODO: delete if not used
 import { DATA } from '@root/shared/data'
 
 let mql: MediaQueryList | null = null

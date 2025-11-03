@@ -3,6 +3,8 @@ import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { EVENTS } from '../shared/events'
 
+// TODO: Delete this module if not needed, SPA is now used
+
 export function handleNavigationIpc(): void {
   ipcMain.on(EVENTS.NAVIGATE, (event, page: string) => {
     const win = BrowserWindow.fromWebContents(event.sender)

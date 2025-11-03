@@ -4,9 +4,10 @@ import { EVENTS } from '../shared/events'
 import { t } from './i18n'
 import { AppConfig, DeepPartial } from '../shared/types'
 import { DownloadJobPayload } from '../shared/jobs'
-import { applyInitialTheme } from './theme'
+import { applyInitialTheme, startThemeWatcher } from './theme'
 
 applyInitialTheme()
+startThemeWatcher()
 
 const api = {
   dialog: {
@@ -34,7 +35,15 @@ const api = {
     reload: (): void => ipcRenderer.send(EVENTS.WINDOW.RELOAD)
   },
   navigation: {
-    navigate: (page: string): void => ipcRenderer.send(EVENTS.NAVIGATE, page)
+    navigate: (page: string): void => {
+      // Broadcast to the renderer world for SPA routing (no full reload)
+      try {
+        const ev = new CustomEvent('spa:navigate', { detail: { page } })
+        window.dispatchEvent(ev)
+      } catch {
+        void 0
+      }
+    }
   },
   downloadsPreferences: {
     changeDownloadPath: (): void => ipcRenderer.send(EVENTS.DOWNLOAD_PATH.CHANGE),

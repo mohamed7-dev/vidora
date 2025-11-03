@@ -101,9 +101,7 @@ export class GeneralTab extends HTMLElement {
         const y = 0
         const maxRadius = Math.hypot(window.innerWidth, window.innerHeight)
         const transition = document.startViewTransition(() => {
-          import('@renderer/lib/theme').then(({ applyThemeValue }) =>
-            applyThemeValue(cfg.general.theme)
-          )
+          // preload already syncs theme
         })
         transition.ready.then(() => {
           document.documentElement.animate(

@@ -11,7 +11,6 @@ export class AppHeader extends HTMLElement {
   private btnMin: UIButton | null = null
   private btnMax: UIButton | null = null
   private btnClose: UIButton | null = null
-  private btnSheet: UIButton | null = null
   private menuPreferences: HTMLElement | null = null
   private appTitle: HTMLElement | null = null
   private prefsDialog: UIDialog | null = null
@@ -60,7 +59,6 @@ export class AppHeader extends HTMLElement {
     this.btnMin = this.root?.querySelector('#chrome-controls-minimize') as UIButton | null
     this.btnMax = this.root?.querySelector('#chrome-controls-maximize') as UIButton | null
     this.btnClose = this.root?.querySelector('#chrome-controls-close') as UIButton | null
-    this.btnSheet = this.root?.querySelector('#app-header-sheet-button') as UIButton | null
     this.menuPreferences = this.root?.querySelector(
       '#app-header-menu-preferences'
     ) as HTMLElement | null

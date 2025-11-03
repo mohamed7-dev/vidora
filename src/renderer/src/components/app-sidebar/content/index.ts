@@ -29,6 +29,7 @@ export class AppSidebarContent extends HTMLElement {
     this._renderNav()
     this._highlightActive()
     this._bindNavigation()
+    this._setupListeners()
   }
   private _render(): void {
     if (!this.shadowRoot) return
@@ -38,36 +39,38 @@ export class AppSidebarContent extends HTMLElement {
     // append cached template content
     this.shadowRoot.append(AppSidebarContent.tpl.content.cloneNode(true))
   }
+
   private _highlightActive(): void {
     const root = this.shadowRoot as ShadowRoot
     const items = Array.from(root.querySelectorAll<HTMLAnchorElement>('a.nav-item'))
-    const path = window.location.pathname
-    // Simple heuristic: check if href filename is a suffix of current path
+    // Read current route from location.hash (e.g., #/downloading)
+    const hash = (window.location.hash || '').replace(/^#\/?/, '')
+    const current = (hash || 'index').trim().replace(/\.html$/i, '')
     for (const a of items) {
-      const href = a.getAttribute('href') ?? ''
-      const url = new URL(href, window.location.href)
-      const hrefFile = url.pathname.split('/').pop()
-      const curFile = path.split('/').pop()
-      if (hrefFile && curFile && hrefFile === curFile) {
-        a.classList.add('active')
-      }
+      const page = (a.dataset.page || '').trim().replace(/\.html$/i, '') || 'index'
+      if (page === current) a.classList.add('active')
+      else a.classList.remove('active')
     }
   }
 
   private _bindNavigation(): void {
     const root = this.shadowRoot as ShadowRoot
-    root.addEventListener('click', (e) => {
+    const handler = (e: Event): void => {
       const target = e.target as HTMLElement
       const anchor = target.closest('a.nav-item') as HTMLAnchorElement | null
       if (!anchor) return
-      const href = anchor.getAttribute('href') ?? ''
-      const url = new URL(href, window.location.href)
-      const page = url.pathname.split('/').pop()
-      if (page) {
-        e.preventDefault()
-        window.api?.navigation?.navigate(page)
-      }
-    })
+      const page = (anchor.dataset.page || '').trim()
+      if (!page) return
+      e.preventDefault()
+      window.api?.navigation?.navigate(page)
+    }
+    root.addEventListener('click', handler)
+    root.addEventListener('auxclick', handler)
+    root.addEventListener('keydown', ((e: Event) => {
+      const ke = e as KeyboardEvent
+      if (ke.key !== 'Enter' && ke.key !== ' ') return
+      handler(e)
+    }) as EventListener)
   }
 
   private _renderNav(): void {
@@ -92,7 +95,8 @@ export class AppSidebarContent extends HTMLElement {
         const a = document.createElement('a')
         a.className = 'nav-item'
         a.id = item.id
-        a.href = `../../pages/${item.page}`
+        a.href = '#'
+        a.dataset.page = item.page
         const labelSpan = document.createElement('span')
         labelSpan.textContent = this.t(item.title) ?? ''
         a.innerHTML = `<ui-icon name="${item.icon}"></ui-icon>`
@@ -103,6 +107,17 @@ export class AppSidebarContent extends HTMLElement {
       nav.appendChild(group)
     }
   }
-}
 
-customElements.define('app-sidebar-content', AppSidebarContent)
+  private _setupListeners(): void {
+    window.addEventListener('spa:routed', (() => this._highlightActive()) as EventListener)
+    window.addEventListener('popstate', (() => this._highlightActive()) as EventListener)
+  }
+}
+if (!customElements.get('app-sidebar-content'))
+  customElements.define('app-sidebar-content', AppSidebarContent)
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'app-sidebar-content': AppSidebarContent
+  }
+}

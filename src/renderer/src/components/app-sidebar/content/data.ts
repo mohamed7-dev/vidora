@@ -7,13 +7,13 @@ export const SIDEBAR_ITEMS: Record<string, Section> = {
       {
         id: 'app-sidebar-nav-item-index',
         title: 'appSidebar.general.items.home',
-        page: 'index.html',
+        page: 'index',
         icon: 'house'
       },
       {
         id: 'app-sidebar-nav-item-history',
         title: 'appSidebar.general.items.history',
-        page: 'history.html',
+        page: 'history',
         icon: 'history'
       }
     ]
@@ -24,19 +24,19 @@ export const SIDEBAR_ITEMS: Record<string, Section> = {
       {
         id: 'app-sidebar-nav-item-downloading',
         title: 'appSidebar.downloads.items.downloading',
-        page: 'downloading.html',
+        page: 'downloading',
         icon: 'arrow-big-down-dash'
       },
       {
         id: 'app-sidebar-nav-item-queued',
         title: 'appSidebar.downloads.items.queued',
-        page: 'queued.html',
+        page: 'queued ',
         icon: 'hour-glass'
       },
       {
         id: 'app-sidebar-nav-item-completed',
         title: 'appSidebar.downloads.items.completed',
-        page: 'completed.html',
+        page: 'completed',
         icon: 'circle-check-big'
       }
     ]
