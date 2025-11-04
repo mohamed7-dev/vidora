@@ -1,9 +1,8 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { electronApp, optimizer, is, platform } from '@electron-toolkit/utils'
 import { handleWindowControlsIpc } from './window-controls'
-import { handleNavigationIpc } from './navigation'
-import { handleChangeDownloadPath } from './preferences'
+import { initChangeDownloadPathIpc, initChangeYtdlpConfigPathIpc } from './preferences'
 import { handleI18nIpc } from './i18n'
 import { getIsQuitting, isTrayEnabled } from './tray'
 import { initConfig } from './app-config/init-config'
@@ -12,25 +11,23 @@ import { initConfigCache, registerConfigIpc } from './app-config/config-listener
 import { setupAppInternals } from './setup'
 import { registerStatusIpc } from './status-bus'
 import { handleAppControlsIpc } from './app-controls'
-import { registerDownloadsIpc } from './downloads-ipc'
-import { handleDialogIpc } from './dialog'
 import { registerJobsIpc, pauseAllIncompletedJobs } from './jobs-ipc'
+import { registerYtdlpIpc } from './ytdlp'
 
 function createWindow(): void {
   const iconPath = app.isPackaged
     ? join(process.resourcesPath, 'icons', 'icon-256.png')
     : join(__dirname, '../../resources/icons/icon-256.png')
   const cfg = readConfig()
-  const useNativeToolbar = Boolean(cfg?.general?.useNativeToolbar)
+  const useNativeToolbar = Boolean(cfg.general.useNativeToolbar)
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
     autoHideMenuBar: true,
     frame: useNativeToolbar ? true : false,
-    titleBarStyle:
-      process.platform === 'darwin' ? (useNativeToolbar ? 'default' : 'hidden') : undefined,
-    ...(process.platform === 'linux' ? { icon: iconPath } : {}),
+    titleBarStyle: platform.isMacOS ? (useNativeToolbar ? 'default' : 'hidden') : undefined,
+    ...(platform.isLinux ? { icon: iconPath } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -42,6 +39,8 @@ function createWindow(): void {
   })
 
   mainWindow.on('close', (e) => {
+    // if tray is enabled, then hide the window instead of quitting
+    // unless quit action is triggered from the tray
     if (!getIsQuitting() && isTrayEnabled()) {
       e.preventDefault()
       mainWindow.hide()
@@ -59,7 +58,6 @@ function createWindow(): void {
   // Load the remote URL for development or the local html file for production.
   const devUrl = process.env['ELECTRON_RENDERER_URL']
   if (is.dev && devUrl) {
-    // mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
     mainWindow.loadURL(`${devUrl}/index.html`)
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
@@ -95,19 +93,29 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+  // init config cache and config
   initConfigCache()
-  handleDialogIpc()
-  handleWindowControlsIpc()
-  handleAppControlsIpc()
-  handleNavigationIpc()
-  handleChangeDownloadPath()
-  handleI18nIpc()
-  registerConfigIpc()
-  registerStatusIpc()
-  registerDownloadsIpc()
-  registerJobsIpc()
-  setupAppInternals()
   initConfig()
+  // setup app internals
+  setupAppInternals()
+  // register config file related ipc
+  registerConfigIpc()
+  // init window controls ipc
+  handleWindowControlsIpc()
+  // init app controls ipc
+  handleAppControlsIpc()
+  // init download dir path change ipc
+  initChangeDownloadPathIpc()
+  // init config file path change ipc
+  initChangeYtdlpConfigPathIpc()
+  // init i18n ipc
+  handleI18nIpc()
+  // init status ipc
+  registerStatusIpc()
+  // init ytdlp ipc
+  registerYtdlpIpc()
+  // init download jobs ipc
+  registerJobsIpc()
 
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
@@ -129,7 +137,7 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  if (!platform.isMacOS) {
     app.quit()
   }
 })

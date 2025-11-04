@@ -4,7 +4,7 @@ import { updateInternalConfig } from './app-config/internal-config-api'
 
 /**
  * @description
- * This function sets up app internal such as yt-dlp and ffmpeg
+ * This function sets up app internals such as yt-dlp and ffmpeg
  */
 export async function setupAppInternals(): Promise<void> {
   await Promise.all([

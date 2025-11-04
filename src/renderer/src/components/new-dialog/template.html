@@ -1,5 +1,5 @@
 <template id="new-dialog-template">
-  <ui-dialog show-x-button alert data-active-screen="media-url">
+  <ui-dialog show-x-button alert data-active-screen="media-info">
     <ui-button
       class="new-dialog__trigger-button"
       id="trigger-button"
@@ -12,16 +12,16 @@
     </ui-button>
     <header slot="header" class="new-dialog__header">
       <div class="new-dialog__header__wrapper media-url-screen-header" data-screen="media-url">
-        <h1>Add download</h1>
+        <h1 data-i18n="newDownload.mediaUrlScreen.title"></h1>
       </div>
       <div
         class="new-dialog__header__wrapper media-loading-screen-header"
         data-screen="media-loading"
       >
-        <h1>Grabbing Media Info</h1>
+        <h1 data-i18n="newDownload.mediaLoadingScreen.title"></h1>
       </div>
       <div class="new-dialog__header__wrapper media-info-screen-header" data-screen="media-info">
-        <h1>Configure Download</h1>
+        <h1 data-i18n="newDownload.mediaInfoScreen.title"></h1>
       </div>
     </header>
     <section aria-label="content" slot="content" class="new-dialog__content">
@@ -29,10 +29,15 @@
         class="new-dialog__content__article media-url-screen-content"
         data-screen="media-url"
       >
-        <label for="media-url"> Media URL </label>
-        <ui-input id="media-url-input" placeholder="Enter media url" dir="ltr" autofocus></ui-input>
+        <label for="media-url-input" data-i18n="newDownload.mediaUrlScreen.label"></label>
+        <ui-input
+          id="media-url-input"
+          placeholder="newDownload.mediaUrlScreen.placeholder"
+          dir="ltr"
+          autofocus
+        ></ui-input>
         <ui-button size="lg" id="validate-button">
-          <span slot="label">Validate</span>
+          <span slot="label" data-i18n="newDownload.mediaUrlScreen.validateButton"></span>
         </ui-button>
       </article>
       <article
@@ -40,7 +45,12 @@
         data-screen="media-loading"
       >
         <ui-icon style="--ui-icon-size: 2rem" name="loader-circle" spin></ui-icon>
-        <p class="loader__text" role="status" aria-live="polite">Loading…</p>
+        <p
+          class="loader__text"
+          role="status"
+          aria-live="polite"
+          data-i18n="newDownload.mediaLoadingScreen.loadingText"
+        ></p>
       </article>
       <article
         slot="header"

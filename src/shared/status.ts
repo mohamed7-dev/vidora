@@ -2,10 +2,9 @@ export type TaskKind =
   | 'ytdlp'
   | 'ffmpeg'
   | 'appUpdate'
-  | 'download'
   | 'configDownloadDir'
   | 'configTray'
-  | 'configYtDlp'
+  | 'configYtDlpFile'
 
 export type TaskState = 'idle' | 'pending' | 'success' | 'error'
 
@@ -13,8 +12,7 @@ export interface TaskStatus {
   id: string
   kind: TaskKind
   state: TaskState
-  // keep raw message for fallback/debug
-  message?: string
+  message?: string // fallback in case messageKey didn't work
   messageKey?: string
   messageParams?: Record<string, string | number>
   progress?: number

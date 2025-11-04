@@ -5,9 +5,11 @@ import fs from 'node:fs'
 import os from 'node:os'
 import YTDlpWrapImport from 'yt-dlp-wrap-plus'
 import type { YtdlpInfo } from '../shared/downloads'
-import { DEFAULT_INTERNAL_CONFIG } from './app-config/default-config'
 import { begin, fail, success } from './status-bus'
 import { readConfig } from './app-config/config-api'
+import { ipcMain } from 'electron'
+import { EVENTS } from '../shared/events'
+import { readInternalConfig } from './app-config/internal-config-api'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImport
@@ -19,10 +21,12 @@ async function downloadYtdlp(path: string): Promise<void> {
   await YTDlpWrap?.downloadFromGithub(path)
 }
 
-function ensureBinDir(): void {
-  if (!fs.existsSync(DEFAULT_INTERNAL_CONFIG.ytDlpPath)) {
-    fs.mkdirSync(DEFAULT_INTERNAL_CONFIG.ytDlpPath)
+function ensureBinDir(): string {
+  const ytDlpPath = readInternalConfig().ytDlpPath
+  if (!fs.existsSync(ytDlpPath)) {
+    fs.mkdirSync(ytDlpPath)
   }
+  return ytDlpPath
 }
 
 /**
@@ -37,6 +41,7 @@ export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
     const useCookies = cookiesFromBrowser && cookiesFromBrowser !== 'none'
     const args = [
       '-j',
+      '--no-playlist',
       '--no-warnings',
       '--no-download',
       '--force-ipv4',
@@ -96,20 +101,21 @@ export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
  */
 async function checkYtdlp(): Promise<string | null> {
   begin('ytdlp', 'status.ytdlp.checking')
-  ensureBinDir()
+  const ytDlpPath = ensureBinDir()
 
   const defaultYtDlpName = platform.isWindows ? 'ytdlp.exe' : 'ytdlp'
-  const defaultYtDlpPath = path.join(DEFAULT_INTERNAL_CONFIG.ytDlpPath, defaultYtDlpName)
-
+  const defaultYtDlpPath = defaultYtDlpName.match(/ytdlp/)
+    ? ytDlpPath
+    : path.join(ytDlpPath, defaultYtDlpName)
   // prioritize env variable
-  if (process.env.TANZIL_YTDLP_PATH) {
-    if (fs.existsSync(process.env.TANZIL_YTDLP_PATH)) {
+  if (process.env.VIDORA_YTDLP_PATH) {
+    if (fs.existsSync(process.env.VIDORA_YTDLP_PATH)) {
       success('ytdlp', 'status.ytdlp.ready')
-      return String(process.env.TANZIL_YTDLP_PATH)
+      return String(process.env.VIDORA_YTDLP_PATH)
     }
     fail(
       'ytdlp',
-      "TANZIL_YTDLP_PATH ENV variable is used, but the file doesn't exist there.",
+      "VIDORA_YTDLP_PATH ENV variable is used, but the file doesn't exist there.",
       'status.ytdlp.env_missing'
     )
     return null
@@ -181,4 +187,17 @@ let ytDlpPathPromise: Promise<string | null> | null = null
 export function ensureYtDlpPath(): Promise<string | null> {
   if (!ytDlpPathPromise) ytDlpPathPromise = checkYtdlp()
   return ytDlpPathPromise
+}
+
+/**
+ * @description
+ * This function registers the ipc listeners for downloads.
+ * it registers a handler for the get_info event.
+ */
+export function registerYtdlpIpc(): void {
+  ipcMain.handle(EVENTS.DOWNLOADS.GET_INFO, async (_e, url: string) => {
+    if (!url || typeof url !== 'string') throw new Error('Invalid URL')
+    const info = await getMediaInfo(url)
+    return info
+  })
 }

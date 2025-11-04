@@ -41,6 +41,7 @@ export async function checkFFmpeg(): Promise<string | null> {
   }
 
   // if platform is windows,mac, or linux then use ffmpeg from the user data folder
+  // bundled with the app
   success('ffmpeg', 'status.ffmpeg.ready')
   return path.join(DEFAULT_INTERNAL_CONFIG.ffmpegPath, platform.isWindows ? 'ffmpeg.exe' : 'ffmpeg')
 }

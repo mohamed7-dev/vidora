@@ -7,10 +7,6 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
-      dialog: {
-        openFolder: () => void
-        selectedLocation: (callback: (location: string) => void) => () => void
-      }
       downloads: {
         getInfo: (url: string) => Promise<import('../shared/downloads').YtdlpInfo>
       }
@@ -35,6 +31,10 @@ declare global {
         changedDownloadPath: (callback: (location: string) => void) => () => void
         changeYtdlpConfigPath: () => void
         changedYtdlpConfigPath: (callback: (location: string) => void) => () => void
+      }
+      mediaPreferences: {
+        changeMediaDownloadPath: () => void
+        changedMediaDownloadPath: (callback: (location: string) => void) => () => void
       }
       config: {
         getAppDefaults: () => Promise<AppConfig>

@@ -46,6 +46,8 @@ export class DownloadEngine {
       this.procs.set(job.id, proc)
 
       let errBuf = ''
+      let outBuf = ''
+      let completed = false
 
       const spawned = proc.ytDlpProcess
 
@@ -65,14 +67,20 @@ export class DownloadEngine {
         // no-op here; renderer already shows state
       })
 
-      // Collect stderr for error reporting
+      // Collect stdio for error reporting
+      spawned?.stdout?.setEncoding?.('utf8')
+      spawned?.stdout?.on?.('data', (chunk: string) => {
+        outBuf += chunk
+      })
       spawned?.stderr?.setEncoding?.('utf8')
       spawned?.stderr?.on?.('data', (chunk: string) => {
         errBuf += chunk
       })
 
-      // Close/completion
-      proc.once('close', (code: number | null) => {
+      // Close/completion: prefer child process event to get signal as well
+      spawned?.once?.('close', (code: number | null, signal: NodeJS.Signals | null) => {
+        if (completed) return
+        completed = true
         this.procs.delete(job.id)
         this.controllers.delete(job.id)
         const ok = code === 0
@@ -84,7 +92,33 @@ export class DownloadEngine {
             .filter((l) => !l.trim().startsWith('WARNING:'))
             .join('\n')
             .trim()
-          const msg = cleaned || `yt-dlp exited with code ${code ?? 'unknown'}`
+          // fallback to raw stderr or stdout snippets if cleaned is empty
+          const fallback = (errBuf || outBuf).trim()
+          const base = cleaned || fallback
+          const reason = code !== null ? `code ${code}` : signal ? `signal ${signal}` : 'unknown'
+          const msg = base ? `${base}\n[exit ${reason}]` : `yt-dlp exited with ${reason}`
+          this.hooks.onDone?.(job.id, false, msg)
+        }
+      })
+      // Fallback: wrapper-level close (in case spawned is unavailable)
+      proc.once('close', (code: number | null) => {
+        if (completed) return
+        completed = true
+        this.procs.delete(job.id)
+        this.controllers.delete(job.id)
+        const ok = code === 0
+        if (ok) {
+          this.hooks.onDone?.(job.id, true, undefined)
+        } else {
+          const cleaned = errBuf
+            .split('\n')
+            .filter((l) => !l.trim().startsWith('WARNING:'))
+            .join('\n')
+            .trim()
+          const fallback = (errBuf || outBuf).trim()
+          const base = cleaned || fallback
+          const reason = code !== null ? `code ${code}` : 'unknown'
+          const msg = base ? `${base}\n[exit ${reason}]` : `yt-dlp exited with ${reason}`
           this.hooks.onDone?.(job.id, false, msg)
         }
       })
@@ -155,7 +189,8 @@ export class DownloadEngine {
           ? 'mkv'
           : videoExt
 
-      audioFormatSuffix = audioForVideoFormatId === 'none' ? '' : `+${audioForVideoFormatId}`
+      audioFormatSuffix =
+        audioForVideoFormatId && audioForVideoFormatId !== 'none' ? `+${audioForVideoFormatId}` : ''
     } else if (type === 'Audio') {
       const [fid, aext] = userOptionsSnapshot.audioFormat.split('|')
       formatId = fid

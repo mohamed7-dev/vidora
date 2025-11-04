@@ -27,9 +27,11 @@ export class NewDialog extends HTMLElement {
   private _dialogEl: UIDialog | null = null
   private mediaInfoScreen: MediaInfoScreen | null = null
 
+  // states
   // private mediaLoadingScreen: HTMLElement | null = null
   private _mounted = false
   private _listeners: AbortController | null = null
+  private t = window.api.i18n?.t ?? (() => '')
 
   constructor() {
     super()
@@ -70,8 +72,10 @@ export class NewDialog extends HTMLElement {
       'media-info-screen'
     ) as MediaInfoScreen | null
     this._listeners = new AbortController()
+    this._applyI18n()
     this.setupListeners(this._listeners.signal)
     this.initValidationButton()
+
     this._mounted = true
   }
 
@@ -87,6 +91,16 @@ export class NewDialog extends HTMLElement {
     this._mounted = false
     // Re-render the trigger-only shell after unmount
     this._renderShell()
+  }
+
+  private _applyI18n(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.querySelectorAll('[data-i18n]').forEach((el) => {
+      const key = el.getAttribute('data-i18n')
+      if (key) {
+        el.textContent = this.t(key)
+      }
+    })
   }
 
   private initValidationButton(): void {

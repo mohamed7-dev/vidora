@@ -12,6 +12,9 @@ import { DEFAULT_INTERNAL_CONFIG } from './app-config/default-config'
 import { downloadEngine } from './download-engine'
 import { readConfig } from './app-config/config-api'
 
+/*
+  we need to use require here because electron-store is not a typescript module
+*/
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const _mod = require('electron-store')
 const ElectronStore = _mod.default ?? _mod
@@ -84,6 +87,11 @@ function enqueueNextIfPossible(): void {
   broadcastUpdate(null, { type: 'updated', job: next })
 }
 
+/**
+ * @description
+ * This function registers the ipc listeners for jobs.
+ * it registers handlers for the add, list, update_status, remove, pause, resume events.
+ */
 export function registerJobsIpc(): void {
   // engine hooks -> update jobs store and broadcast
   downloadEngine.setHooks({

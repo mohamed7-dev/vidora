@@ -10,14 +10,6 @@ applyInitialTheme()
 startThemeWatcher()
 
 const api = {
-  dialog: {
-    openFolder: (): void => ipcRenderer.send(EVENTS.DIALOG.OPEN_FOLDER),
-    selectedLocation: (callback: (location: string) => void): (() => void) => {
-      const handler = (_e: unknown, location: string): void => callback(location)
-      ipcRenderer.on(EVENTS.DIALOG.SELECTED_LOCATION, handler)
-      return () => ipcRenderer.removeListener(EVENTS.DIALOG.SELECTED_LOCATION, handler)
-    }
-  },
   app: {
     relaunch: (): void => ipcRenderer.send(EVENTS.APP.RELAUNCH)
   },
@@ -57,6 +49,17 @@ const api = {
       const handler = (_e: unknown, location: string): void => callback(location)
       ipcRenderer.on(EVENTS.CONFIG_PATH.CHANGED, handler)
       return () => ipcRenderer.removeListener(EVENTS.CONFIG_PATH.CHANGED, handler)
+    }
+  },
+  /**
+   * local changes when downloading media
+   */
+  mediaPreferences: {
+    changeMediaDownloadPath: (): void => ipcRenderer.send(EVENTS.MEDIA_DOWNLOAD_PATH.CHANGE),
+    changedMediaDownloadPath: (callback: (location: string) => void): (() => void) => {
+      const handler = (_e: unknown, location: string): void => callback(location)
+      ipcRenderer.on(EVENTS.MEDIA_DOWNLOAD_PATH.CHANGED, handler)
+      return () => ipcRenderer.removeListener(EVENTS.MEDIA_DOWNLOAD_PATH.CHANGED, handler)
     }
   },
   config: {

@@ -5,6 +5,7 @@ const VALUE_ATTR = 'value'
 const DISABLED_ATTR = 'disabled'
 const SELECTED_ATTR = 'data-selected'
 const OPTION_TAG = 'ui-option'
+const PLACEHOLDER_ATTR = 'placeholder'
 
 export class UISelect extends HTMLElement {
   private _triggerBtn: HTMLButtonElement | null = null
@@ -18,6 +19,24 @@ export class UISelect extends HTMLElement {
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
+  }
+
+  static get observedAttributes(): string[] {
+    return [VALUE_ATTR, DISABLED_ATTR, PLACEHOLDER_ATTR]
+  }
+
+  attributeChangedCallback(name: string): void {
+    if (name === VALUE_ATTR) this._syncFromValue()
+    if (name === DISABLED_ATTR) this._syncDisabled()
+    if (name === PLACEHOLDER_ATTR) this._syncPlaceholder()
+  }
+
+  private _syncPlaceholder(): void {
+    const placeholder = this.getAttribute(PLACEHOLDER_ATTR)
+    if (this._valueSpan) {
+      const hasValue = this.getAttribute(VALUE_ATTR)
+      if (!hasValue) this._valueSpan.textContent = placeholder
+    }
   }
 
   connectedCallback(): void {
@@ -46,21 +65,13 @@ export class UISelect extends HTMLElement {
     this._bindOptions()
     this._syncFromValue()
     this._syncDisabled()
+    this._syncPlaceholder()
   }
 
   disconnectedCallback(): void {
     this._slotEl?.removeEventListener('slotchange', this._handleSlotChange)
     this._unbindOptions()
     document.removeEventListener('mousedown', this._handleOutsideClick, { capture: true })
-  }
-
-  static get observedAttributes(): string[] {
-    return [VALUE_ATTR, DISABLED_ATTR]
-  }
-
-  attributeChangedCallback(name: string): void {
-    if (name === VALUE_ATTR) this._syncFromValue()
-    if (name === DISABLED_ATTR) this._syncDisabled()
   }
 
   private _bindTrigger(): void {

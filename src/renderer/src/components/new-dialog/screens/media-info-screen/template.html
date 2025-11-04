@@ -9,7 +9,7 @@
       block
     >
       <ui-icon slot="prefix" name="youtube"></ui-icon>
-      <span slot="label" data-i18n="pref.tabs.general">Video</span>
+      <span slot="label" data-i18n="newDownload.mediaInfoScreen.videoTabTrigger"></span>
     </ui-button>
     <ui-button
       class="media-info-tab_trigger"
@@ -20,7 +20,7 @@
       block
     >
       <ui-icon slot="prefix" name="audio-lines"></ui-icon>
-      <span slot="label" data-i18n="pref.tabs.downloads">Audio</span>
+      <span slot="label" data-i18n="newDownload.mediaInfoScreen.audioTabTrigger"></span>
     </ui-button>
     <!-- </div> -->
     <!-- start video settings tab panel  -->
@@ -35,35 +35,29 @@
           part="section-title"
           class="tab-content__section__title"
           id="quality-section-title"
-          data-i18n="new-dialog.video-tab.sections.quality"
-        >
-          Quality
-        </h2>
+          data-i18n="newDownload.mediaInfoScreen.sections.quality"
+        ></h2>
         <div part="section-content" class="tab-content__section__content">
           <article part="section-content-article" class="tab-content__section__content__article">
             <h3
               class="tab-content__section__content__article__title"
-              data-i18n="new-dialog.video-tab.video-quality.title"
-            >
-              Video Format
-            </h3>
+              data-i18n="newDownload.mediaInfoScreen.videoFormat.title"
+            ></h3>
             <ui-select
               id="video-format-select"
-              placeholder="Select a video format"
-              aria-label="Available video formats"
+              data-i18n-placeholder="newDownload.mediaInfoScreen.videoFormat.placeholder"
+              data-i18n-aria-label="newDownload.mediaInfoScreen.videoFormat.placeholder"
             ></ui-select>
           </article>
           <article part="section-content-article" class="tab-content__section__content__article">
             <h3
               class="tab-content__section__content__article__title"
-              data-i18n="new-dialog.video-tab.audio-quality.title"
-            >
-              Audio Format
-            </h3>
+              data-i18n="newDownload.mediaInfoScreen.audioFormatForVideo.title"
+            ></h3>
             <ui-select
               id="audio-for-video-format-select"
-              placeholder="Select an audio format"
-              aria-label="Available audio formats"
+              data-i18n-placeholder="newDownload.mediaInfoScreen.audioFormatForVideo.placeholder"
+              data-i18n-aria-label="newDownload.mediaInfoScreen.audioFormatForVideo.placeholder"
             ></ui-select>
           </article>
         </div>
@@ -78,30 +72,27 @@
           part="section-title"
           class="tab-content__section__title"
           id="advanced-section-title"
-          data-i18n="new-dialog.video-tab.sections.advanced"
-        >
-          Advanced Options
-        </h2>
+          data-i18n="newDownload.mediaInfoScreen.sections.advanced"
+        ></h2>
         <div part="section-content" class="tab-content__section__content">
           <article part="section-content-article" class="tab-content__section__content__article">
             <h3
               class="tab-content__section__content__article__title"
-              data-i18n="new-dialog.video-tab.subtitles.title"
-            >
-              Subtitles
-            </h3>
+              data-i18n="newDownload.mediaInfoScreen.subtitles.title"
+            ></h3>
             <div class="subtitles_container">
-              <label for="subtitles-checkbox">If available, download subtitles </label>
+              <label
+                for="subtitles-checkbox"
+                data-i18n="newDownload.mediaInfoScreen.subtitles.label"
+              ></label>
               <ui-checkbox id="subtitles-checkbox" size="lg"></ui-checkbox>
             </div>
           </article>
           <article part="section-content-article" class="tab-content__section__content__article">
             <h3
               class="tab-content__section__content__article__title"
-              data-i18n="new-dialog.video-tab.download-path.title"
-            >
-              Download Path
-            </h3>
+              data-i18n="newDownload.mediaInfoScreen.downloadPath.title"
+            ></h3>
             <div class="download-path_container">
               <span class="download-path_text" id="download-path-text"></span>
               <ui-button
@@ -109,27 +100,31 @@
                 class="download-path_change-button"
                 id="download-path-change-btn"
               >
-                <span slot="label">Change</span>
+                <span
+                  slot="label"
+                  data-i18n="newDownload.mediaInfoScreen.downloadPath.changeButton"
+                ></span>
               </ui-button>
             </div>
           </article>
           <article part="section-content-article" class="tab-content__section__content__article">
             <h3
               class="tab-content__section__content__article__title"
-              data-i18n="new-dialog.video-tab.download-time-range.title"
-            >
-              Download Time Range
-            </h3>
+              data-i18n="newDownload.mediaInfoScreen.downloadTimeRange.title"
+            ></h3>
             <div class="time-range_container">
               <ui-input id="time-start" placeholder="0:00:00" size="sm"></ui-input>
-              <span class="sep">to</span>
+              <span
+                class="sep"
+                data-i18n="newDownload.mediaInfoScreen.downloadTimeRange.sep"
+              ></span>
               <ui-input id="time-end" placeholder="00:05:00" size="sm"></ui-input>
             </div>
           </article>
         </div>
       </section>
       <ui-button class="tab-content__start-download-btn" id="start-download-btn">
-        <span slot="label">Start Download</span>
+        <span slot="label" data-i18n="newDownload.mediaInfoScreen.startDownloadBtn"></span>
       </ui-button>
     </div>
     <!-- end video settings tab panel  -->
@@ -144,18 +139,11 @@
           part="section-title"
           class="tab-content__section__title"
           id="audio-options-section-title"
-        >
-          Audio Options
-        </h2>
+          data-i18n="newDownload.mediaInfoScreen.sections.audioOptions"
+        ></h2>
         <div part="section-content" class="tab-content__section__content">
           <article part="section-content-article" class="tab-content__section__content__article">
-            <h3
-              class="tab-content__section__content__article__title"
-              data-i18n="new-dialog.audio-tab.audio-quality.title"
-            >
-              Audio Quality
-            </h3>
-            <span>options go here</span>
+            content goes here
           </article>
         </div>
       </section>

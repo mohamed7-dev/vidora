@@ -6,10 +6,9 @@ const snapshot: StatusSnapshot = {
   ytdlp: undefined,
   ffmpeg: undefined,
   appUpdate: undefined,
-  download: undefined,
   configDownloadDir: undefined,
-  configTray: undefined,
-  configYtDlp: undefined
+  configYtDlpFile: undefined,
+  configTray: undefined
 }
 const listeners = (): BrowserWindow[] => BrowserWindow.getAllWindows()
 
@@ -90,6 +89,11 @@ export function getSnapshot(): StatusSnapshot {
   return { ...snapshot }
 }
 
+/**
+ * @description
+ * This function registers the ipc listeners for status.
+ * it registers a handler for the snapshot event.
+ */
 export function registerStatusIpc(): void {
   ipcMain.handle(EVENTS.STATUS.SNAPSHOT, () => getSnapshot())
 }

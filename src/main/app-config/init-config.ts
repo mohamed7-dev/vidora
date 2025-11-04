@@ -1,5 +1,4 @@
 import fs from 'node:fs'
-import { DEFAULT_CONFIG } from './default-config'
 import { readConfig } from './config-api'
 import { useTray } from '../tray'
 import { AppConfig } from '../../shared/types'
@@ -17,13 +16,10 @@ export type ConfigStatus = {
   }
 }
 
-const ensureDir = (dir: string): void => {
-  fs.mkdirSync(dir, { recursive: true })
-}
-
 const isWritable = (dir: string): boolean => {
   try {
-    ensureDir(dir)
+    // ensure dir exists
+    fs.mkdirSync(dir, { recursive: true })
     fs.accessSync(dir, fs.constants.W_OK)
     return true
   } catch {
@@ -31,35 +27,47 @@ const isWritable = (dir: string): boolean => {
   }
 }
 
-const computeDownloadDirStatus = (config: AppConfig): ConfigStatus['downloadDir'] => {
-  const dir = config.downloads.downloadDir || DEFAULT_CONFIG.downloads.downloadDir
-  const writable = isWritable(dir)
+const computeDownloadDirStatus = (
+  downloadDir: AppConfig['downloads']['downloadDir']
+): ConfigStatus['downloadDir'] => {
+  // make sure download dir is exists, and writable
+  const writable = isWritable(downloadDir)
   return {
-    path: dir,
+    path: downloadDir,
     writable,
     reason: writable ? undefined : 'Default downloads path is not writable.'
   }
 }
 
-const computeTrayStatus = (config: AppConfig): ConfigStatus['tray'] => ({
-  isEnabled: Boolean(config.general.closeToTray)
+const computeTrayStatus = (
+  closeToTray: AppConfig['general']['closeToTray']
+): ConfigStatus['tray'] => ({
+  isEnabled: Boolean(closeToTray)
 })
 
 const computeStatus = (config: AppConfig): ConfigStatus => ({
-  downloadDir: computeDownloadDirStatus(config),
-  tray: computeTrayStatus(config)
+  downloadDir: computeDownloadDirStatus(config.downloads.downloadDir),
+  tray: computeTrayStatus(config.general.closeToTray)
 })
 
-const syncTrayFromConfig = (config: AppConfig): void => {
-  useTray(Boolean(config.general.closeToTray))
+const syncTrayFromConfig = (closeToTray: AppConfig['general']['closeToTray']): void => {
+  useTray(Boolean(closeToTray))
 }
 
+/**
+ * @description
+ * Initialize user personalizations, and the internal system configs.
+ */
 export const initConfig = (): void => {
-  // ensure internal config is setup
+  // ensure internal config file is setup, and read it
   readInternalConfig()
+  // ensure user config file is setup, and read it
   const config = readConfig()
+  // sync tray state in tray menu based on config option
+  syncTrayFromConfig(config.general.closeToTray)
+  // compute config status
   const status = computeStatus(config)
-  syncTrayFromConfig(config)
+
   // Publish status-bus entries
   if (status.downloadDir.writable) {
     success('configDownloadDir', 'status.config.downloadDir.writable', {

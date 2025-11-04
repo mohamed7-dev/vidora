@@ -1,6 +1,6 @@
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
-import { UIInput, UISelect } from '@renderer/components/ui'
+import { UIInput, UISelect, UIButton } from '@renderer/components/ui'
 import { DATA } from '@root/shared/data'
 import { AppConfig } from '@root/shared/types'
 
@@ -27,6 +27,8 @@ export class DownloaderTab extends HTMLElement {
   //refs
   private cookiesFromBrowserSelect: UISelect | null = null
   private proxyServerInput: UIInput | null = null
+  private changeYtdlpConfigPathButton: UIButton | null = null
+  private ytdlpConfigPathDisplay: HTMLElement | null = null
 
   constructor() {
     super()
@@ -36,8 +38,10 @@ export class DownloaderTab extends HTMLElement {
   async connectedCallback(): Promise<void> {
     this._render()
     this._cacheRefs()
-    this.config = (await window.api?.config.getConfig()) || null
+    this.config = await window.api?.config.getConfig()
     this.applyI18n()
+    this._syncYtdlpConfigPath()
+    this._changeYtdlpConfigPath()
     this.syncCookiesFromBrowserSelect()
     this.changeProxyServerInput()
     this.syncProxyServerInput()
@@ -58,17 +62,47 @@ export class DownloaderTab extends HTMLElement {
     this.cookiesFromBrowserSelect =
       this.shadowRoot?.querySelector<UISelect>('#cookies-from-browser-select') ?? null
     this.proxyServerInput = this.shadowRoot?.querySelector<UIInput>('#proxy-server-input') ?? null
+    this.changeYtdlpConfigPathButton =
+      this.shadowRoot?.querySelector<UIButton>('#change-ytdlp-config-path-button') ?? null
+    this.ytdlpConfigPathDisplay =
+      this.shadowRoot?.querySelector<HTMLElement>('#ytdlp-config-path-display') ?? null
+  }
+
+  private _syncYtdlpConfigPath(location?: string): void {
+    if (!this.ytdlpConfigPathDisplay) return
+    const path = location ?? this.config?.downloader.configPath ?? ''
+    this.ytdlpConfigPathDisplay.textContent = path
+    this.ytdlpConfigPathDisplay.setAttribute('title', path)
+  }
+
+  private _changeYtdlpConfigPath(): void {
+    if (!this.changeYtdlpConfigPathButton) return
+    this.changeYtdlpConfigPathButton.addEventListener('click', () => {
+      window.api?.downloadsPreferences.changeYtdlpConfigPath()
+    })
+    window.api?.downloadsPreferences.changedYtdlpConfigPath((location: string | string[]) => {
+      this._syncYtdlpConfigPath(Array.isArray(location) ? (location[0] ?? '') : location)
+    })
   }
 
   private applyI18n(): void {
-    this.shadowRoot?.querySelectorAll('[data-i18n]').forEach((el) => {
+    if (!this.shadowRoot) return
+
+    // text content translations
+    this.shadowRoot.querySelectorAll('[data-i18n]').forEach((el) => {
       el.textContent = this.t(el.getAttribute('data-i18n') as string)
     })
-    if (this.cookiesFromBrowserSelect)
-      this.cookiesFromBrowserSelect.setAttribute(
-        'placeholder',
-        this.t('pref.downloader.cookiesFromBrowser.placeholder')
-      )
+    // placeholder translations
+    this.shadowRoot.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+      const key = el.getAttribute('data-i18n-placeholder')
+      if (key) el.setAttribute('placeholder', this.t(key))
+    })
+
+    // aria-label translations
+    this.shadowRoot.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
+      const key = el.getAttribute('data-i18n-aria-label')
+      if (key) el.setAttribute('aria-label', this.t(key))
+    })
   }
 
   private changeProxyServerInput(): void {
@@ -100,7 +134,7 @@ export class DownloaderTab extends HTMLElement {
   private syncCookiesFromBrowserSelect(): void {
     if (!this.cookiesFromBrowserSelect) return
     const options = DATA.cookiesFromBrowser.map((cookie) => {
-      return `<ui-option value="${cookie.value}">${cookie.label}</ui-option>`
+      return `<ui-option value="${cookie.value}">${cookie.label.toLowerCase() === 'none' ? this.t('pref.downloader.cookiesFromBrowser.options.none') : cookie.label}</ui-option>`
     })
     this.cookiesFromBrowserSelect.innerHTML = options.join('')
     this.cookiesFromBrowserSelect.value = this.config?.downloader.cookiesFromBrowser ?? ''

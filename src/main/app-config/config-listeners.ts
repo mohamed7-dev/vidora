@@ -6,6 +6,10 @@ import { AppConfig, DeepPartial } from '../../shared/types'
 
 let cachedConfig: AppConfig | null = null
 
+/**
+ * @description
+ * This function caches the config file in memory for faster access.
+ */
 export function initConfigCache(): void {
   try {
     cachedConfig = readAppConfig()
@@ -14,6 +18,11 @@ export function initConfigCache(): void {
   }
 }
 
+/**
+ * @description
+ * This function registers the ipc listeners for config file.
+ * it supports both sync and async calls.
+ */
 export function registerConfigIpc(): void {
   ipcMain.handle(EVENTS.CONFIG.GET_APP_DEFAULTS, () => {
     return DEFAULT_CONFIG

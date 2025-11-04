@@ -25,10 +25,12 @@ export class MediaInfoScreen extends HTMLElement {
   })()
 
   // State
+  private t = window.api.i18n?.t ?? (() => '')
   private _config: AppConfig | null = null
   private _info: YtdlpInfo | null = null
   private _videoOptions: VideoOption[] = []
   private _audioOptions: AudioOption[] = []
+
   // private _audioPresent = false
   private _isPlaylist = false
   private _processor: MediaInfoProcessor | null = null
@@ -57,6 +59,7 @@ export class MediaInfoScreen extends HTMLElement {
     this._config = await window.api.config.getConfig()
     this._cacheRefs()
     this._initRefs()
+    this._applyI18n()
     this._setupListeners()
   }
 
@@ -91,6 +94,32 @@ export class MediaInfoScreen extends HTMLElement {
     this._startDownloadBtn = this.shadowRoot.querySelector('#start-download-btn') as UIButton | null
   }
 
+  private _applyI18n(): void {
+    if (!this.shadowRoot) return
+    // text content translations
+    this.shadowRoot.querySelectorAll('[data-i18n]').forEach((el) => {
+      const key = el.getAttribute('data-i18n')
+      if (key) {
+        el.textContent = this.t(key)
+      }
+      const placeholder = el.getAttribute('placeholder')
+      if (placeholder) {
+        el.setAttribute('placeholder', this.t(placeholder))
+      }
+    })
+    // placeholder translations
+    this.shadowRoot.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+      const key = el.getAttribute('data-i18n-placeholder')
+      if (key) el.setAttribute('placeholder', this.t(key))
+    })
+
+    // aria-label translations
+    this.shadowRoot.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
+      const key = el.getAttribute('data-i18n-aria-label')
+      if (key) el.setAttribute('aria-label', this.t(key))
+    })
+  }
+
   private async _initRefs(): Promise<void> {
     if (!this._downloadPathTextEl || !this._config) return
     this._downloadPathTextEl.textContent = this._config.downloads.downloadDir
@@ -100,11 +129,11 @@ export class MediaInfoScreen extends HTMLElement {
   private _setupListeners(): void {
     // download path
     this._downloadPathChangeBtn?.addEventListener('click', () => {
-      window.api.dialog.openFolder()
+      window.api.mediaPreferences.changeMediaDownloadPath()
     })
 
     // download path change
-    window.api.dialog?.selectedLocation((path) => {
+    window.api.mediaPreferences.changedMediaDownloadPath((path) => {
       if (!this._downloadPathTextEl) return
       this._downloadPathTextEl.textContent = path
       this._selectedDownloadPath = path

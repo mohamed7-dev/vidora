@@ -1,4 +1,15 @@
 {
+  "tray": {
+    "openApp": {
+      "title": "فتح التطبيق"
+    },
+    "pasteVideoLink": {
+      "title": "لصق رابط الفيديو"
+    },
+    "quit": {
+      "title": "خروج"
+    }
+  },
   "appSidebar": {
     "general": {
       "title": "العام",
@@ -25,7 +36,8 @@
   "generic": {
     "actions": {
       "reset": "إعادة التعيين",
-      "requireStartAlert": "تغيير هذه الاعدادت يتطلب اعادة تشغيل التطبيق."
+      "requireStartAlert": "تغيير هذه الاعدادت يتطلب اعادة تشغيل التطبيق.",
+      "change": "تغيير"
     }
   },
   "pref": {
@@ -128,7 +140,54 @@
       "proxyServer": {
         "title": "(Proxy) خادم الوكالات",
         "placeholder": "أدخل خادم الوكالات"
+      },
+      "ytdlpConfigPath": {
+        "title": "(ytdlp) مسار التكوين",
+        "tooltip": "(ytdlp) مسار التكوين واللذي يمكن استخدامه اثناء التحميل"
       }
+    }
+  },
+  "newDownload": {
+    "mediaUrlScreen": {
+      "title": "إضافة تحميل",
+      "label": "رابط الوسائط",
+      "placeholder": "أدخل رابط الوسائط",
+      "validateButton": "تحقق"
+    },
+    "mediaLoadingScreen": {
+      "title": "جاري جلب معلومات الفيديو",
+      "loadingText": "جاري التحميل..."
+    },
+    "mediaInfoScreen": {
+      "title": "إعداد التحميل",
+      "videoTabTrigger": "فيديو",
+      "audioTabTrigger": "صوت",
+      "sections": {
+        "quality": "جودة",
+        "advanced": "خيارات متقدمة",
+        "audioOptions": "خيارات الصوت"
+      },
+      "videoFormat": {
+        "title": "تنسيق الفيديو",
+        "placeholder": "اختر تنسيق الفيديو"
+      },
+      "audioFormatForVideo": {
+        "title": "تنسيق الصوت",
+        "placeholder": "اختر تنسيق الصوت"
+      },
+      "subtitles": {
+        "title": "الترجمات",
+        "label": "إذا كانت متاحة، قم بتحميل الترجمات"
+      },
+      "downloadPath": {
+        "title": "مسار التحميل",
+        "changeButton": "تغيير"
+      },
+      "downloadTimeRange": {
+        "title": "مدة التحميل",
+        "sep": "إلى"
+      },
+      "startDownloadBtn": "بدء التحميل"
     }
   },
   "scrim": {
@@ -164,7 +223,7 @@
         "disabled": "تم إلغاء تفعيل التطبيق في شريط النظام."
       }
     },
-    "configYtdlp": {
+    "configYtdlpFile": {
       "picking": "(ytdlp) جاري اختيار ملف",
       "canceled": "(ytdlp) تم الغاء اختيار ملف",
       "copy_failed": "(ytdlp) فشل نسخ ملف",

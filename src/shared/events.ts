@@ -1,4 +1,5 @@
 export const EVENTS = {
+  PASTE_LINK: 'paste-link',
   DIALOG: {
     OPEN_FOLDER: 'dialog:open-folder',
     SELECTED_LOCATION: 'dialog:selected-location'
@@ -16,6 +17,10 @@ export const EVENTS = {
   DOWNLOAD_PATH: {
     CHANGE: 'download-preferences:change-download-path',
     CHANGED: 'download-preferences:download-path-changed'
+  },
+  MEDIA_DOWNLOAD_PATH: {
+    CHANGE: 'download-media:change-download-path',
+    CHANGED: 'download-media:download-path-changed'
   },
   CONFIG_PATH: {
     CHANGE: 'download-preferences:change-config-path',

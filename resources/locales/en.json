@@ -1,4 +1,15 @@
 {
+  "tray": {
+    "openApp": {
+      "title": "Open App"
+    },
+    "pasteVideoLink": {
+      "title": "Paste Video Link"
+    },
+    "quit": {
+      "title": "Quit"
+    }
+  },
   "appSidebar": {
     "general": {
       "title": "General",
@@ -25,7 +36,8 @@
   "generic": {
     "actions": {
       "reset": "Reset",
-      "requireStartAlert": "Changes here require app restart."
+      "requireStartAlert": "Changes here require app restart.",
+      "change": "Change"
     }
   },
   "pref": {
@@ -132,7 +144,54 @@
       "proxyServer": {
         "title": "Proxy Server",
         "placeholder": "Enter proxy server"
+      },
+      "ytdlpConfigPath": {
+        "title": "Ytdlp Config Path",
+        "tooltip": "Ytdlp config file used to configure yt-dlp when downloading media"
       }
+    }
+  },
+  "newDownload": {
+    "mediaUrlScreen": {
+      "title": "Add Download",
+      "label": "Media URL",
+      "placeholder": "Enter media url",
+      "validateButton": "Validate"
+    },
+    "mediaLoadingScreen": {
+      "title": "Grabbing Media Info",
+      "loadingText": "Loading..."
+    },
+    "mediaInfoScreen": {
+      "title": "Configure Download",
+      "videoTabTrigger": "Video",
+      "audioTabTrigger": "Audio",
+      "sections": {
+        "quality": "Quality",
+        "advanced": "Advanced Options",
+        "audioOptions": "Audio Options"
+      },
+      "videoFormat": {
+        "title": "Video Format",
+        "placeholder": "Select a video format"
+      },
+      "audioFormatForVideo": {
+        "title": "Audio Format",
+        "placeholder": "Select an audio format"
+      },
+      "subtitles": {
+        "title": "Subtitles",
+        "label": "If available, download subtitles"
+      },
+      "downloadPath": {
+        "title": "Download Path",
+        "changeButton": "Change"
+      },
+      "downloadTimeRange": {
+        "title": "Download Time Range",
+        "sep": "to"
+      },
+      "startDownloadBtn": "Start Download"
     }
   },
   "scrim": {
@@ -168,7 +227,7 @@
         "disabled": "Tray is disabled."
       }
     },
-    "configYtdlp": {
+    "configYtdlpFile": {
       "picking": "Start picking ytdlp config file.",
       "canceled": "Picking ytdlp config file was canceled.",
       "copy_failed": "Copying ytdlp config file was failed.",

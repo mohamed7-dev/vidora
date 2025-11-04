@@ -49,6 +49,7 @@ export const DEFAULT_CONFIG: AppConfig = {
     audioQuality: 'mp3'
   },
   downloader: {
+    configPath: '',
     proxyServerUrl: '',
     cookiesFromBrowser:
       DATA.cookiesFromBrowser.find((cookie) => cookie.value === 'none')?.value ?? 'none'

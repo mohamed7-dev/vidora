@@ -1,6 +1,23 @@
 import { BrowserWindow, Menu, Tray, nativeImage, app, clipboard } from 'electron'
 import path from 'node:path'
 import { platform } from '@electron-toolkit/utils'
+import { EVENTS } from '../shared/events'
+import { readLocaleFile } from './i18n'
+import { readConfig } from './app-config/config-api'
+
+type TrayDict = {
+  tray: {
+    openApp: {
+      title: string
+    }
+    pasteVideoLink: {
+      title: string
+    }
+    quit: {
+      title: string
+    }
+  }
+}
 
 function getIconPath(): string {
   const base = app.isPackaged
@@ -19,14 +36,16 @@ let trayRef: Tray | null = null
 let quitting = false
 let enabled = false
 
-function init(): void {
+async function init(): Promise<void> {
   if (trayRef) return
   const image = nativeImage.createFromPath(getIconPath())
   trayRef = new Tray(image)
   trayRef.setToolTip(app.name)
+  const config = readConfig()
+  const dict = (await readLocaleFile(config.general.language)) as TrayDict
   const menu = Menu.buildFromTemplate([
     {
-      label: 'Open App',
+      label: dict.tray?.openApp?.title ?? 'Open App',
       click: () => {
         const win = getWindow()
         if (win) {
@@ -38,18 +57,18 @@ function init(): void {
       }
     },
     {
-      label: 'Paste video link',
+      label: dict.tray?.pasteVideoLink?.title ?? 'Paste video link',
       click: () => {
         const text = clipboard.readText()
         const win = getWindow()
         if (!win) return
         win.show()
         if (app.dock) app.dock.show()
-        win.webContents.send('link', text)
+        win.webContents.send(EVENTS.PASTE_LINK, text)
       }
     },
     {
-      label: 'Quit',
+      label: dict.tray?.quit?.title ?? 'Quit',
       role: 'quit',
       click: () => {
         quitting = true
