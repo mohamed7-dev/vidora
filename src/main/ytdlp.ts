@@ -1,5 +1,4 @@
 import { platform } from '@electron-toolkit/utils'
-import path from 'node:path'
 import cp from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -19,14 +18,6 @@ async function downloadYtdlp(path: string): Promise<void> {
     throw new Error('downloadFromGithub is not available on YTDlpWrap export')
   }
   await YTDlpWrap?.downloadFromGithub(path)
-}
-
-function ensureBinDir(): string {
-  const ytDlpPath = readInternalConfig().ytDlpPath
-  if (!fs.existsSync(ytDlpPath)) {
-    fs.mkdirSync(ytDlpPath)
-  }
-  return ytDlpPath
 }
 
 /**
@@ -101,12 +92,8 @@ export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
  */
 async function checkYtdlp(): Promise<string | null> {
   begin('ytdlp', 'status.ytdlp.checking')
-  const ytDlpPath = ensureBinDir()
+  const ytDlpPath = readInternalConfig().ytDlpPath
 
-  const defaultYtDlpName = platform.isWindows ? 'ytdlp.exe' : 'ytdlp'
-  const defaultYtDlpPath = defaultYtDlpName.match(/ytdlp/)
-    ? ytDlpPath
-    : path.join(ytDlpPath, defaultYtDlpName)
   // prioritize env variable
   if (process.env.VIDORA_YTDLP_PATH) {
     if (fs.existsSync(process.env.VIDORA_YTDLP_PATH)) {
@@ -146,8 +133,8 @@ async function checkYtdlp(): Promise<string | null> {
   }
 
   // update ytdlp binaries if they exist
-  if (defaultYtDlpName && fs.existsSync(defaultYtDlpPath)) {
-    cp.spawn(`"${defaultYtDlpPath}"`, ['-U'], { shell: true })
+  if (ytDlpPath && fs.existsSync(ytDlpPath)) {
+    cp.spawn(`"${ytDlpPath}"`, ['-U'], { shell: true })
       .on('error', (err) => {
         // don't fail the process when update goes wrong
         success('ytdlp', 'status.ytdlp.ready')
@@ -157,20 +144,20 @@ async function checkYtdlp(): Promise<string | null> {
         success('ytdlp', 'status.ytdlp.ready')
         console.log('yt-dlp update check:', data.toString())
       })
-    return defaultYtDlpPath
+    return ytDlpPath
   }
 
   // if binaries are not found in the default path, download it
   try {
-    await fs.promises.access(defaultYtDlpPath)
+    await fs.promises.access(ytDlpPath)
     success('ytdlp', 'status.ytdlp.ready')
-    return defaultYtDlpPath
+    return ytDlpPath
   } catch {
     // if not found, download it into user data folder
     try {
-      await downloadYtdlp(defaultYtDlpPath)
+      await downloadYtdlp(ytDlpPath)
       success('ytdlp', 'status.ytdlp.ready')
-      return defaultYtDlpPath
+      return ytDlpPath
     } catch (e) {
       console.error('Failed to download yt-dlp', e)
       fail('ytdlp', 'Failed to download yt-dlp', 'status.ytdlp.download_failed')

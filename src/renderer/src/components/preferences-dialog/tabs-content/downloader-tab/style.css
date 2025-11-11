@@ -1,5 +1,4 @@
 @import url('../../../../assets/reset.css');
-@import url('../../../../assets/shared-tab-style.css');
 
 .ytdlp-config-path_container {
   display: flex;
@@ -14,9 +13,7 @@
   }
 }
 
-ui-tooltip::part(container) {
-  background: var(--primary);
-  color: var(--primary-foreground);
+ui-tooltip::part(base) {
   width: 10rem;
 }
 
@@ -34,4 +31,8 @@ ui-tooltip::part(container) {
   margin-inline-start: 0.5rem;
   user-select: none;
   cursor: help;
+}
+
+area-section::part(base) {
+  gap: 1rem;
 }

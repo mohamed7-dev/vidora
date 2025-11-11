@@ -1,43 +1,12 @@
 <template id="downloading-page-template">
   <div part="base" class="root">
     <header part="head" class="header-wrapper">
-      <h1 class="page-title" data-i18n="downloading.pageTitle">Downloading</h1>
+      <h1 class="page-title" data-i18n="downloading.pageTitle"></h1>
     </header>
     <div part="content" class="content-wrapper">
-      <section class="tab-content__section">
-        <h2 class="tab-content__section__title">Active Downloads</h2>
-        <div class="tab-content__section__content jobs-list" id="jobs-list">
-          <!-- Job item template -->
-          <template id="job-item-template">
-            <div class="tab-content__section__content__article job-item">
-              <div class="job-meta">
-                <p class="job-title" data-el="title"></p>
-                <p class="job-sub" data-el="subtitle"></p>
-                <div class="progress" data-el="progress">
-                  <div class="bar" data-el="bar" style="width: 0%"></div>
-                </div>
-              </div>
-              <div class="job-controls">
-                <ui-button data-el="pauseBtn" variant="secondary">
-                  <span slot="label">Pause</span>
-                </ui-button>
-                <ui-button data-el="resumeBtn" variant="default">
-                  <span slot="label">Resume</span>
-                </ui-button>
-                <ui-button data-el="deleteBtn" variant="destructive">
-                  <span slot="label">Delete</span>
-                </ui-button>
-              </div>
-            </div>
-          </template>
-          <!-- No active downloads template -->
-          <template id="no-active-downloads-template">
-            <div class="tab-content__section__content__article no-active-downloads_container">
-              <p class="no-active-downloads_sub">No Active Downloads</p>
-            </div>
-          </template>
-        </div>
-      </section>
+      <area-section label="downloading.sectionTitle">
+        <div slot="articles" class="jobs-list" data-el="jobs-list"></div>
+      </area-section>
     </div>
   </div>
 </template>

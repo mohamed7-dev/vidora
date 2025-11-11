@@ -1,3 +1,5 @@
+import '../../../area-article/index'
+import '../../../area-section/index'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
 import { AppConfig } from '@root/shared/types'
@@ -91,6 +93,13 @@ export class DownloadsTab extends HTMLElement {
   }
 
   private applyI18n(): void {
+    // label translations
+    this.shadowRoot?.querySelectorAll<HTMLElement>('[label]').forEach((el) => {
+      const key = el.getAttribute('label') || ''
+      if (!key) return
+      el.setAttribute('label', this.t(key))
+    })
+
     this.shadowRoot?.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
       const key = el.getAttribute('data-i18n') || ''
       if (!key) return

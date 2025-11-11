@@ -1,3 +1,5 @@
+import '../../../area-article/index'
+import '../../../area-section/index'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
 import { UIInput, UISelect, UIButton } from '@renderer/components/ui'
@@ -87,6 +89,10 @@ export class DownloaderTab extends HTMLElement {
 
   private applyI18n(): void {
     if (!this.shadowRoot) return
+    // titles translations
+    this.shadowRoot.querySelectorAll('[label]').forEach((el) => {
+      el.setAttribute('label', this.t(el.getAttribute('label') ?? ''))
+    })
 
     // text content translations
     this.shadowRoot.querySelectorAll('[data-i18n]').forEach((el) => {

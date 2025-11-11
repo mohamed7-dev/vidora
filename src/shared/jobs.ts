@@ -6,6 +6,7 @@ export type JobStatus =
   | 'completed'
   | 'failed'
   | 'canceled'
+
 type DownloadJobType = 'Video' | 'Audio'
 
 export type DownloadArgs = {

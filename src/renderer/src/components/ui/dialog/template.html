@@ -1,8 +1,15 @@
 <template id="ui-dialog-template">
-  <div part="base" class="dialog" data-base>
-    <div part="overlay" class="overlay" data-overlay></div>
-    <div part="panel" class="panel" role="alertdialog" aria-modal="true" tabindex="-1" data-panel>
-      <header part="header" class="header">
+  <div part="base" class="dialog" data-el="base">
+    <div part="overlay" class="overlay" data-el="overlay"></div>
+    <div
+      part="panel"
+      class="panel"
+      role="alertdialog"
+      aria-modal="true"
+      tabindex="-1"
+      data-el="panel"
+    >
+      <header part="header" class="header" data-el="header">
         <slot name="header"></slot>
         <ui-button
           class="close-btn"
@@ -11,14 +18,15 @@
           size="icon"
           style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px"
           part="close"
+          data-el="x-btn"
         >
           <ui-icon slot="prefix" name="x"></ui-icon>
         </ui-button>
       </header>
-      <div part="content" class="content">
+      <div part="content" class="content" data-el="content">
         <slot name="content"></slot>
       </div>
-      <footer part="footer" class="footer">
+      <footer part="footer" class="footer" data-el="footer">
         <slot name="cancel"></slot>
         <slot name="footer"></slot>
       </footer>

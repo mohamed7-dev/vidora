@@ -1,63 +1,43 @@
 <template id="downloader-tab-template">
-  <div class="tab-content__sections-container">
-    <section class="tab-content__section" role="region" aria-labelledby="section-downloader-title">
-      <h2
-        class="tab-content__section__title"
-        id="section-downloader-title"
-        data-i18n="pref.downloader.section.downloader"
-      ></h2>
-      <div class="tab-content__section__content">
-        <article class="tab-content__section__content__article">
-          <h3
-            class="tab-content__section__content__article__title"
-            data-i18n="pref.downloader.cookiesFromBrowser.title"
-          ></h3>
-          <ui-select
-            id="cookies-from-browser-select"
-            data-i18n-placeholder="pref.downloader.cookiesFromBrowser.placeholder"
-            data-i18n-aria-label="pref.downloader.cookiesFromBrowser.title"
+  <area-section label="pref.downloader.section.downloader">
+    <div slot="articles">
+      <area-article label="pref.downloader.cookiesFromBrowser.title" first>
+        <ui-select
+          slot="content"
+          id="cookies-from-browser-select"
+          data-i18n-placeholder="pref.downloader.cookiesFromBrowser.placeholder"
+          data-i18n-aria-label="pref.downloader.cookiesFromBrowser.title"
+          variant="outline"
+        >
+        </ui-select>
+      </area-article>
+      <area-article label="pref.downloader.proxyServer.title">
+        <ui-input
+          slot="content"
+          dir="ltr"
+          type="text"
+          placeholder="http://localhost:8080"
+          id="proxy-server-input"
+        />
+      </area-article>
+      <area-article label="pref.downloader.ytdlpConfigPath.title" last>
+        <div class="ytdlp-config-path_container" slot="content">
+          <ui-tooltip side="bottom" align="center" offset="8">
+            <span slot="trigger" class="ytdlp-config-path-indicator" aria-label="ytdlp config file">
+              !
+            </span>
+            <div slot="content" data-i18n="pref.downloader.ytdlpConfigPath.tooltip"></div>
+          </ui-tooltip>
+          <span id="ytdlp-config-path-display"></span>
+          <ui-button
+            class="ytdlp-config-path-button"
+            id="change-ytdlp-config-path-button"
             variant="outline"
           >
-          </ui-select>
-        </article>
-        <article class="tab-content__section__content__article">
-          <h3
-            class="tab-content__section__content__article__title"
-            data-i18n="pref.downloader.proxyServer.title"
-          ></h3>
-          <ui-input
-            dir="ltr"
-            type="text"
-            placeholder="http://localhost:8080"
-            id="proxy-server-input"
-          />
-        </article>
-        <article class="tab-content__section__content__article">
-          <h3
-            class="tab-content__section__content__article__title"
-            data-i18n="pref.downloader.ytdlpConfigPath.title"
-          ></h3>
-          <div class="ytdlp-config-path_container">
-            <ui-tooltip side="bottom" align="center" offset="8">
-              <span
-                slot="trigger"
-                class="ytdlp-config-path-indicator"
-                aria-label="ytdlp config file"
-              >
-                !
-              </span>
-              <div slot="content" data-i18n="pref.downloader.ytdlpConfigPath.tooltip"></div>
-            </ui-tooltip>
-            <span id="ytdlp-config-path-display"></span>
-            <ui-button
-              class="ytdlp-config-path-button"
-              id="change-ytdlp-config-path-button"
-              variant="outline"
-              ><span slot="label" data-i18n="generic.actions.change"></span
-            ></ui-button>
-          </div>
-        </article>
-      </div>
-    </section>
-  </div>
+            <span slot="label" data-i18n="generic.actions.change"></span>
+          </ui-button>
+        </div>
+      </area-article>
+    </div>
+  </area-section>
 </template>

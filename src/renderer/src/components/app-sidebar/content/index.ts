@@ -2,6 +2,10 @@ import template from './template.html?raw'
 import styleCss from './style.css?inline'
 import { SIDEBAR_ITEMS } from './data'
 
+type NavItemClickDetail = {
+  page: string
+}
+
 export class AppSidebarContent extends HTMLElement {
   // Cache stylesheet and template per class for performance and to prevent FOUC
   private static readonly sheet: CSSStyleSheet = (() => {
@@ -19,6 +23,7 @@ export class AppSidebarContent extends HTMLElement {
   })()
   // states
   private t = window.api?.i18n?.t || (() => undefined)
+
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
@@ -61,8 +66,16 @@ export class AppSidebarContent extends HTMLElement {
       if (!anchor) return
       const page = (anchor.dataset.page || '').trim()
       if (!page) return
-      e.preventDefault()
-      window.api?.navigation?.navigate(page)
+      const ev = new CustomEvent<NavItemClickDetail>('nav-item-click', {
+        bubbles: true,
+        cancelable: true,
+        detail: { page }
+      })
+      const notPrevented = this.dispatchEvent(ev)
+      if (notPrevented) {
+        e.preventDefault()
+        window.api?.navigation?.navigate(page)
+      }
     }
     root.addEventListener('click', handler)
     root.addEventListener('auxclick', handler)

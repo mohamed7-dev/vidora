@@ -244,6 +244,14 @@
     "cardButtonTitle": "إضافة تحميل"
   },
   "downloading": {
-    "pageTitle": "التحميلات"
+    "pageTitle": "التحميلات",
+    "sectionTitle": "التحميلات النشطة"
+  },
+  "jobItem": {
+    "controls": {
+      "pause": "إيقاف",
+      "resume": "استئناف",
+      "delete": "حذف"
+    }
   }
 }

@@ -1,3 +1,6 @@
+import '../area-section/index'
+import '../job-item/index'
+import '../nodata-placeholder/index'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
 import { DownloadJobPayload, Job } from '@root/shared/jobs'
@@ -25,8 +28,6 @@ export class DownloadingPage extends HTMLElement {
 
   //Refs
   private _jobsList: HTMLDivElement | null = null
-  private _jobItemTemplate: HTMLTemplateElement | null = null
-  private _noActiveDownloadsTemplate: HTMLTemplateElement | null = null
 
   constructor() {
     super()
@@ -43,11 +44,7 @@ export class DownloadingPage extends HTMLElement {
 
   private _cacheRefs(): void {
     if (!this.shadowRoot) return
-    this._jobsList = this.shadowRoot.querySelector<HTMLDivElement>('#jobs-list')
-    this._jobItemTemplate = this.shadowRoot.querySelector<HTMLTemplateElement>('#job-item-template')
-    this._noActiveDownloadsTemplate = this.shadowRoot.querySelector<HTMLTemplateElement>(
-      '#no-active-downloads-template'
-    )
+    this._jobsList = this.shadowRoot.querySelector<HTMLDivElement>('[data-el="jobs-list"]')
   }
 
   disconnectedCallback(): void {
@@ -76,55 +73,63 @@ export class DownloadingPage extends HTMLElement {
   }
 
   private _renderJobs(jobs: Array<Job>): void {
-    if (!this._jobsList || !this._jobItemTemplate || !this._noActiveDownloadsTemplate) return
+    if (!this._jobsList) return
     this._jobsList.innerHTML = ''
+    const mockJob = {
+      id: 'mock',
+      status: 'downloading',
+      progress: 50,
+      error: '',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      payload: {
+        thumbnail: 'https://i.ytimg.com/vi/U_oag1vungQ/maxresdefault.jpg'
+      }
+    }
+    jobs.push(mockJob)
     if (!jobs.length) {
-      const empty = this._noActiveDownloadsTemplate?.content.cloneNode(true) as DocumentFragment
-      this._jobsList.appendChild(empty)
+      const placeholder = document.createElement('nodata-placeholder')
+      placeholder.setAttribute('message', 'No active downloads') // TODO: use locale token
+      this._jobsList.appendChild(placeholder)
       return
     }
     for (const j of jobs) {
-      const fragment = this._jobItemTemplate.content.cloneNode(true) as DocumentFragment
-      const item = fragment.firstElementChild as HTMLElement
-      // refs inside item
-      const titleEl = item.querySelector<HTMLElement>('[data-el="title"]')
-      const subEl = item.querySelector<HTMLElement>('[data-el="subtitle"]')
-      const barEl = item.querySelector<HTMLElement>('[data-el="bar"]')
-      const pauseBtn = item.querySelector<HTMLElement>('[data-el="pauseBtn"]')
-      const resumeBtn = item.querySelector<HTMLElement>('[data-el="resumeBtn"]')
-      const deleteBtn = item.querySelector<HTMLElement>('[data-el="deleteBtn"]')
-
       const payload = j.payload as DownloadJobPayload
-      if (titleEl) titleEl.textContent = payload?.title || payload?.url || 'Untitled'
+      const title = payload?.title || payload?.url || 'Untitled'
       const pct =
         typeof j.progress === 'number'
           ? `${Math.max(0, Math.min(100, Math.round(j.progress)))}%`
           : '0%'
-      if (subEl) subEl.textContent = `${j.status} • ${pct}`
-      if (barEl)
-        barEl.style.width =
-          typeof j.progress === 'number' ? `${Math.max(0, Math.min(100, j.progress))}%` : '0%'
-
-      // toggle controls visibility
-      if (pauseBtn) pauseBtn.style.display = j.status === 'downloading' ? '' : 'none'
-      if (resumeBtn) resumeBtn.style.display = j.status === 'paused' ? '' : 'none'
-
-      // bind events
-      pauseBtn?.addEventListener('click', async () => {
+      const subtitle = `${j.status} • ${pct}`
+      const jobItem = document.createElement('job-item')
+      jobItem.setAttribute('title', title)
+      jobItem.setAttribute('subtitle', subtitle)
+      jobItem.setAttribute('thumbnail', payload.thumbnail || '')
+      jobItem.setAttribute('state', j.status)
+      jobItem.addEventListener('pause', async () => {
         await window.api.jobs.pause(j.id)
       })
-      resumeBtn?.addEventListener('click', async () => {
+      jobItem.addEventListener('resume', async () => {
         await window.api.jobs.resume(j.id)
       })
-      deleteBtn?.addEventListener('click', async () => {
+      jobItem.addEventListener('delete', async () => {
         await window.api.jobs.remove(j.id)
       })
+      const progress =
+        typeof j.progress === 'number' ? `${Math.max(0, Math.min(100, j.progress))}%` : '0%'
+      jobItem.setAttribute('progress', progress)
 
-      this._jobsList.appendChild(fragment)
+      this._jobsList.appendChild(jobItem)
     }
   }
 
   private _applyI18n(): void {
+    // labels translation
+    this.shadowRoot?.querySelectorAll('[label]').forEach((e) => {
+      const key = e.getAttribute('label')
+      if (!key) return
+      e.setAttribute('label', this._t(key))
+    })
     const elements = this.shadowRoot?.querySelectorAll('[data-i18n]')
     if (!elements) return
     elements.forEach((e) => {

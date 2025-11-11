@@ -2,6 +2,7 @@ import path from 'node:path'
 import { DATA } from '../../shared/data'
 import { AppConfig } from '../../shared/types'
 import { app } from 'electron'
+import os from 'node:os'
 
 export interface InternalConfig {
   ytDlpPath: string
@@ -22,8 +23,16 @@ export const DEFAULT_INTERNAL_CONFIG: InternalConfig = {
   configFilePath: path.join(configDir, 'config.json'),
   internalConfigFilePath: path.join(configDir, 'internal-config.json'),
   downloadFolderPath: app.getPath('downloads'),
-  ytDlpPath: path.join(app.getPath('userData'), 'bin'),
-  ffmpegPath: path.join(app.getPath('userData'), 'bin'),
+  ytDlpPath: path.join(
+    app.getPath('userData'),
+    'bin',
+    os.platform() === 'win32' ? 'ytdlp.exe' : 'ytdlp'
+  ),
+  ffmpegPath: path.join(
+    app.getPath('userData'),
+    'bin',
+    os.platform() === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
+  ),
   jobsStorePath: path.join(app.getPath('userData'), 'jobs')
 }
 

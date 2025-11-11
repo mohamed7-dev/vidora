@@ -1,3 +1,5 @@
+@import url('../../../assets/reset.css');
+
 :host {
   display: inline-block;
   position: relative;
@@ -59,7 +61,7 @@
 }
 
 /* Arrow */
-.arrow[data-arrow] {
+.arrow {
   position: absolute;
   top: -6px; /* sits above panel edge */
   width: 12px;

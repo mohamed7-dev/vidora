@@ -20,28 +20,57 @@ export class PreferencesDialog extends HTMLElement {
     t.innerHTML = inner ? inner.innerHTML : template
     return t
   })()
+  // states
+  private _mounted = false
+  private _listeners: AbortController | null = null
+  // refs
+  private _dialogEl: UIDialog | null = null
 
   constructor() {
     super()
-
     this.attachShadow({ mode: 'open' })
   }
 
   private t = window.api?.i18n?.t || (() => '')
 
   connectedCallback(): void {
-    this._render()
-    // i18n init and binding
-    this.applyI18n()
+    this._renderShell()
   }
 
-  private _render(): void {
+  private _renderShell(): void {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = ''
     // attach cached stylesheet first to avoid FOUC
     this.shadowRoot.adoptedStyleSheets = [PreferencesDialog.sheet]
-    // append cached template content
-    this.shadowRoot.append(PreferencesDialog.tpl.content.cloneNode(true))
+  }
+
+  private _mount(): void {
+    if (this._mounted || !this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    this.shadowRoot.adoptedStyleSheets = [PreferencesDialog.sheet]
+    const frag = PreferencesDialog.tpl.content.cloneNode(true) as DocumentFragment
+    this.shadowRoot.append(frag)
+    this._dialogEl = this.shadowRoot.querySelector('ui-dialog') as UIDialog | null
+    this._listeners = new AbortController()
+    this._dialogEl?.addEventListener(
+      'ui-after-hide',
+      () => {
+        this._unmount()
+      },
+      { signal: this._listeners.signal }
+    )
+    this.applyI18n()
+    this._mounted = true
+  }
+
+  private _unmount(): void {
+    if (!this._mounted) return
+    this._listeners?.abort()
+    this._listeners = null
+    this._dialogEl?.remove()
+    this._dialogEl = null
+    this._mounted = false
+    this._renderShell()
   }
 
   private applyI18n(): void {
@@ -56,7 +85,13 @@ export class PreferencesDialog extends HTMLElement {
   }
 
   openDialog(): void {
-    ;(this.shadowRoot?.querySelector('ui-dialog') as UIDialog)?.openDialog()
+    this._mount()
+    this._dialogEl?.openDialog()
+  }
+
+  close(): void {
+    if (this._dialogEl) this._dialogEl.close()
+    this._unmount()
   }
 }
 

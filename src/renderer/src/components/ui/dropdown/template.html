@@ -1,12 +1,12 @@
-<template id="ui-dropdown-template">
-  <div class="root">
+<template>
+  <div part="base" class="root" data-el="base">
     <slot name="trigger"></slot>
-    <div class="panel" part="panel" data-panel>
-      <div class="arrow" data-arrow aria-hidden="true"></div>
+    <div part="panel" class="panel" data-el="panel">
+      <div part="arrow" class="arrow" aria-hidden="true" data-el="arrow"></div>
       <!-- Content container; users can provide a wrapper and items with slot="menu-item" -->
-      <div class="content">
+      <div part="content" class="content">
         <slot name="content"></slot>
-        <div class="menu-group">
+        <div part="menu-group" class="menu-group">
           <slot name="menu-item"></slot>
         </div>
       </div>

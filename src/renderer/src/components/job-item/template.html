@@ -1,0 +1,35 @@
+<template id="job-item-template">
+  <div part="base" class="job-item">
+    <div part="thumbnail" class="job-thumb">
+      <slot name="thumbnail">
+        <img part="thumbnail" class="job-thumb__img" data-el="thumbnail" />
+      </slot>
+    </div>
+    <div part="meta" class="job-meta">
+      <slot name="title">
+        <p part="title" class="job-title" data-el="title"></p>
+      </slot>
+      <slot name="subtitle">
+        <p part="subtitle" class="job-sub" data-el="subtitle"></p>
+      </slot>
+      <slot name="progress">
+        <div part="progress" class="progress" data-el="progress">
+          <div part="progress-bar" class="bar" data-el="bar" style="width: 0%"></div>
+        </div>
+      </slot>
+    </div>
+    <slot name="controls">
+      <div part="controls" class="job-controls">
+        <ui-button data-el="pauseBtn" variant="secondary">
+          <span slot="label" data-i18n="jobItem.controls.pause"></span>
+        </ui-button>
+        <ui-button data-el="resumeBtn" variant="default">
+          <span slot="label" data-i18n="jobItem.controls.resume"></span>
+        </ui-button>
+        <ui-button data-el="deleteBtn" variant="destructive">
+          <span slot="label" data-i18n="jobItem.controls.delete"></span>
+        </ui-button>
+      </div>
+    </slot>
+  </div>
+</template>

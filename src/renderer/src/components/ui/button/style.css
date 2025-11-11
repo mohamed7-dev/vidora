@@ -100,7 +100,7 @@
 }
 
 :host([variant='default']:hover) button {
-  background: oklch(from var(--primary) calc(l + 0.2) c h);
+  background: oklch(from var(--primary) calc(l / 1.2) c h);
   color: var(--primary-foreground);
 }
 
@@ -111,7 +111,7 @@
 }
 
 :host([variant='secondary']:hover) button {
-  background: oklch(from var(--secondary) calc(l + 0.2) c h);
+  background: oklch(from var(--secondary) calc(l / 1.2) c h);
   color: var(--secondary-foreground);
 }
 
@@ -122,7 +122,7 @@
 }
 
 :host([variant='destructive']:hover) button {
-  background: oklch(from var(--destructive) calc(l + 0.2) c h);
+  background: oklch(from var(--destructive) calc(l / 1.2) c h);
   color: var(--destructive-foreground);
 }
 
@@ -133,7 +133,7 @@
 }
 
 :host([variant='outline']:hover) button {
-  background: oklch(from var(--accent) calc(l + 0.2) c h);
+  background: oklch(from var(--accent) calc(l / 1.2) c h);
   color: var(--accent-foreground);
 }
 
@@ -144,7 +144,7 @@
 }
 
 :host([variant='ghost']:hover) button {
-  background: oklch(from var(--accent) calc(l + 0.2) c h);
+  background: oklch(from var(--accent) calc(l / 1.2) c h);
   color: var(--accent-foreground);
 }
 

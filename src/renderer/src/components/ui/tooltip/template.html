@@ -1,9 +1,9 @@
-<template id="ui-tooltip-template">
-  <div class="tooltip" part="container" role="tooltip" aria-hidden="true">
-    <div class="tooltip__content" part="content">
+<template>
+  <div part="base" class="base" role="tooltip" aria-hidden="true" data-el="base">
+    <div part="content" class="content">
       <slot name="content"></slot>
     </div>
-    <div class="tooltip__arrow" part="arrow"></div>
+    <div part="arrow" class="arrow" data-el="arrow"></div>
   </div>
   <slot name="trigger"></slot>
 </template>

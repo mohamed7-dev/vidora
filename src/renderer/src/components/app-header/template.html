@@ -14,6 +14,8 @@
         >
           <ui-icon slot="prefix" name="ellipsis-vertical"></ui-icon>
         </ui-button>
+      </ui-dropdown>
+      <template id="app-header-dropdown-menu-tpl">
         <ui-button
           slot="menu-item"
           class="app-header__dropdown-menu-item"
@@ -26,9 +28,9 @@
         <ui-button slot="menu-item" class="app-header__dropdown-menu-item" variant="ghost" block>
           <span slot="label" data-i18n="appHeader.actionsMenu.about"></span>
         </ui-button>
-      </ui-dropdown>
+      </template>
       <preferences-dialog></preferences-dialog>
-      <ui-sheet side="left">
+      <ui-sheet side="left" show-x-button>
         <ui-button
           class="app-header__sheet-button"
           id="app-header-sheet-button"
@@ -39,11 +41,12 @@
         >
           <ui-icon slot="prefix" name="menu"></ui-icon>
         </ui-button>
-
+      </ui-sheet>
+      <template id="app-header-navsheet-content-tpl">
         <div slot="content" style="padding: 1rem">
           <app-sidebar-content></app-sidebar-content>
         </div>
-      </ui-sheet>
+      </template>
     </div>
     <div class="app-header__right">
       <div class="app-header__chrome-controls" id="chrome-controls">

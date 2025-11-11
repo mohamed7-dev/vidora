@@ -1,73 +1,89 @@
 import template from './template.html?raw'
-import styleCss from './style.css?inline'
+import style from './style.css?inline'
 
 export class UITooltip extends HTMLElement {
-  static get observedAttributes(): string[] {
-    return ['side', 'align', 'offset']
-  }
-
-  private root: ShadowRoot | null = null
-  private container: HTMLElement | null = null
+  // Cache stylesheet and template per class for performance and to prevent FOUC
+  private static readonly sheet: CSSStyleSheet = (() => {
+    const s = new CSSStyleSheet()
+    s.replaceSync(style)
+    return s
+  })()
+  private static readonly tpl: HTMLTemplateElement = (() => {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(template, 'text/html')
+    const inner = doc.querySelector('template')
+    const t = document.createElement('template')
+    t.innerHTML = inner ? inner.innerHTML : template
+    return t
+  })()
+  // refs
+  private _baseEl: HTMLElement | null = null
 
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
   }
 
-  connectedCallback(): void {
-    this.root = this.shadowRoot
-    if (!this.root) return
-
-    const parser = new DOMParser()
-    const tree = parser.parseFromString(template, 'text/html')
-    const tpl = tree.querySelector<HTMLTemplateElement>('#ui-tooltip-template')
-    if (!tpl) return
-    const content = tpl.content.cloneNode(true)
-    const style = document.createElement('style')
-    style.textContent = styleCss
-    this.root.append(style, content)
-
-    this.container = this.root.querySelector('.tooltip') as HTMLElement | null
-    // Backward compatibility: if align holds a side value, migrate it
-    this.normalizeAttributes()
-    this.applySide()
-    this.applyAlign()
-    this.applyOffset()
+  static get observedAttributes(): string[] {
+    return ['side', 'align', 'offset', 'variant']
   }
 
   attributeChangedCallback(name: string): void {
-    if (name === 'side') this.applySide()
-    if (name === 'align') this.applyAlign()
-    if (name === 'offset') this.applyOffset()
+    if (name === 'side') this._syncSide()
+    if (name === 'align') this._syncAlign()
+    if (name === 'offset') this._syncOffset()
+    if (name === 'variant') this._syncVariant()
   }
 
-  private normalizeAttributes(): void {
-    const align = (this.getAttribute('align') || '').toLowerCase()
-    if (['top', 'bottom', 'left', 'right'].includes(align)) {
-      // move side value from align -> side
-      if (!this.hasAttribute('side')) this.setAttribute('side', align)
-      // default align to center when using side-only
-      if (!this.getAttribute('align')) this.setAttribute('align', 'center')
-    }
-    if (!this.getAttribute('side')) this.setAttribute('side', 'top')
-    if (!this.getAttribute('align')) this.setAttribute('align', 'center')
+  connectedCallback(): void {
+    this._render()
+    this._queryRefs()
+
+    this._syncSide()
+    this._syncAlign()
+    this._syncOffset()
   }
 
-  private applySide(): void {
+  private _render(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    this.shadowRoot.adoptedStyleSheets = [UITooltip.sheet]
+    this.shadowRoot.append(UITooltip.tpl.content.cloneNode(true))
+  }
+
+  private _queryRefs(): void {
+    if (!this.shadowRoot) return
+    this._baseEl = this.shadowRoot.querySelector('[data-el="base"]') as HTMLElement | null
+  }
+
+  private _syncSide(): void {
     const side = (this.getAttribute('side') || 'top').toLowerCase()
-    if (this.container) this.container.setAttribute('data-side', side)
+    if (this._baseEl) this._baseEl.setAttribute('data-side', side)
   }
 
-  private applyAlign(): void {
+  private _syncAlign(): void {
     const align = (this.getAttribute('align') || 'center').toLowerCase()
-    if (this.container) this.container.setAttribute('data-align', align)
+    if (this._baseEl) this._baseEl.setAttribute('data-align', align)
   }
 
-  private applyOffset(): void {
+  private _syncOffset(): void {
     const off = Number(this.getAttribute('offset') || '8')
     const px = isNaN(off) ? 8 : off
     this.style.setProperty('--ui-tooltip-offset', `${px}px`)
   }
+
+  private _syncVariant(): void {
+    const variant = (this.getAttribute('variant') || 'default').toLowerCase()
+    if (this._baseEl) this._baseEl.setAttribute('data-variant', variant)
+  }
 }
 
-customElements.define('ui-tooltip', UITooltip)
+if (!customElements.get('ui-tooltip')) {
+  customElements.define('ui-tooltip', UITooltip)
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'ui-tooltip': UITooltip
+  }
+}

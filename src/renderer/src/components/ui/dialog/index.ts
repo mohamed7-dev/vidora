@@ -1,11 +1,31 @@
 import template from './template.html?raw'
-import resetStyle from '@renderer/assets/reset.css?raw'
 import style from './style.css?inline'
 import { UIButton } from '../button'
+
+type Source = 'close-button' | 'keyboard' | 'overlay' | 'cancel'
 export type UIRequestCloseDetail = {
-  source: 'close-button' | 'keyboard' | 'overlay' | 'cancel'
+  source: Source
 }
+
 export class UIDialog extends HTMLElement {
+  // Cache stylesheet and template per class for performance and to prevent FOUC
+  private static readonly sheet: CSSStyleSheet = (() => {
+    const s = new CSSStyleSheet()
+    s.replaceSync(style)
+    return s
+  })()
+  private static readonly tpl: HTMLTemplateElement = (() => {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(template, 'text/html')
+    const inner = doc.querySelector('template')
+    const t = document.createElement('template')
+    t.innerHTML = inner ? inner.innerHTML : template
+    return t
+  })()
+  // states
+  private _aborters = new WeakMap<HTMLElement, AbortController>()
+  private _dialogMounted = false
+  // refs
   private _baseEl: HTMLElement | null = null
   private _overlayEl: HTMLElement | null = null
   private _panelEl: HTMLElement | null = null
@@ -13,9 +33,8 @@ export class UIDialog extends HTMLElement {
   private _triggerSlot: HTMLSlotElement | null = null
   private _footerSlot: HTMLSlotElement | null = null
   private _cancelSlot: HTMLSlotElement | null = null
-  private _aborters = new WeakMap<HTMLElement, AbortController>()
-  private _closeBtn: UIButton | null = null
   private _originalTrigger: HTMLElement | null = null
+  private _xBtn: UIButton | null = null
 
   constructor() {
     super()
@@ -35,18 +54,11 @@ export class UIDialog extends HTMLElement {
   }
 
   connectedCallback(): void {
-    this.render()
-    this.applyListeners()
+    this._render()
+    this._queryRefs()
+    this._applyListeners()
 
     this._onTriggerSlotChange()
-    this._onCancelSlotChange()
-    this._onFooterSlotChange()
-
-    // Initial footer visibility sync
-    this._syncFooterVisibility()
-
-    // Ensure internal close button according to attribute/slot
-    this._ensureInternalClose()
 
     this._syncOpenState()
     this._onOpenChanged()
@@ -71,59 +83,49 @@ export class UIDialog extends HTMLElement {
   }
 
   private _ensureInternalClose(): void {
-    const closeBtn = this.shadowRoot?.querySelector('#close-btn') as UIButton | null
-    if (!closeBtn) return
-
-    if (!this._closeBtn) {
-      closeBtn.addEventListener('click', () => this.requestClose('close-button'))
-      this._closeBtn = closeBtn
-    }
+    if (!this._xBtn) return
+    this._xBtn.addEventListener('click', () => this.requestClose('close-button'))
     this._syncCloseVisibility()
   }
 
   private _syncCloseVisibility(): void {
     const shouldShow = this.hasAttribute('show-x-button')
-    if (this._closeBtn) {
-      if (shouldShow) this._closeBtn.setAttribute('data-closable', '')
-      else this._closeBtn.removeAttribute('data-closable')
+    if (this._xBtn) {
+      if (shouldShow) this._xBtn.setAttribute('data-closable', '')
+      else this._xBtn.removeAttribute('data-closable')
     }
   }
 
-  private applyListeners(): void {
+  private _applyListeners(): void {
     this._triggerSlot?.addEventListener('slotchange', () => this._onTriggerSlotChange())
     this._cancelSlot?.addEventListener('slotchange', () => this._onCancelSlotChange())
     this._footerSlot?.addEventListener('slotchange', () => this._onFooterSlotChange())
-    // Overlay click requests close (cancelable)
     this._overlayEl?.addEventListener('click', () => {
       if (this.hasAttribute('alert')) return
       this.requestClose('overlay')
     })
   }
 
-  private render(): void {
-    const parser = new DOMParser()
-    const tree = parser.parseFromString(template, 'text/html')
-    const templateElement = tree.querySelector<HTMLTemplateElement>('template')
-    if (!templateElement) return
+  private _render(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    // attach cached stylesheet first to avoid FOUC
+    this.shadowRoot.adoptedStyleSheets = [UIDialog.sheet]
+    const triggerSlot = document.createElement('slot')
+    triggerSlot.name = 'trigger'
+    this.shadowRoot.append(triggerSlot)
+  }
 
-    const content = templateElement.content.cloneNode(true)
-    const styleElement = document.createElement('style')
-    styleElement.textContent = resetStyle + style
-    this.shadowRoot?.append(styleElement, content)
-
-    this._baseEl = this.shadowRoot?.querySelector('[data-base]') as HTMLElement | null
-    this._overlayEl = this.shadowRoot?.querySelector('[data-overlay]') as HTMLElement | null
-    this._panelEl = this.shadowRoot?.querySelector('[data-panel]') as HTMLElement | null
-    this._footerEl = this.shadowRoot?.querySelector('.footer') as HTMLElement | null
-    this._triggerSlot = this.shadowRoot?.querySelector(
-      'slot[name="trigger"]'
-    ) as HTMLSlotElement | null
-    this._footerSlot = this.shadowRoot?.querySelector(
-      'slot[name="footer"]'
-    ) as HTMLSlotElement | null
-    this._cancelSlot = this.shadowRoot?.querySelector(
-      'slot[name="cancel"]'
-    ) as HTMLSlotElement | null
+  private _queryRefs(): void {
+    if (!this.shadowRoot) return
+    this._baseEl = this.shadowRoot.querySelector('[data-el="base"]') as HTMLElement
+    this._overlayEl = this.shadowRoot.querySelector('[data-el="overlay"]') as HTMLElement
+    this._panelEl = this.shadowRoot.querySelector('[data-el="panel"]') as HTMLElement
+    this._footerEl = this.shadowRoot.querySelector('[data-el="footer"]') as HTMLElement
+    this._triggerSlot = this.shadowRoot.querySelector('slot[name="trigger"]') as HTMLSlotElement
+    this._footerSlot = this.shadowRoot.querySelector('slot[name="footer"]') as HTMLSlotElement
+    this._cancelSlot = this.shadowRoot.querySelector('slot[name="cancel"]') as HTMLSlotElement
+    this._xBtn = this.shadowRoot.querySelector('[data-el="x-btn"]') as UIButton
   }
 
   private _onTriggerSlotChange(): void {
@@ -161,7 +163,7 @@ export class UIDialog extends HTMLElement {
       if (hasAny) this._footerEl.setAttribute('data-has-footer', '')
       else this._footerEl.removeAttribute('data-has-footer')
     }
-    this._baseEl?.classList.toggle('dialog--has-footer', hasAny)
+    this._baseEl?.setAttribute('data-has-footer', hasAny ? 'true' : 'false')
   }
 
   private _bindOnce(el: HTMLElement, handler: () => void): void {
@@ -178,11 +180,13 @@ export class UIDialog extends HTMLElement {
     this._overlayEl?.toggleAttribute('data-open', isOpen)
     this._panelEl?.toggleAttribute('data-open', isOpen)
     this._panelEl?.setAttribute('aria-hidden', isOpen ? 'false' : 'true')
-    this._baseEl?.classList.toggle('dialog--open', isOpen)
+    this._baseEl?.toggleAttribute('data-open', isOpen)
   }
 
   private _onOpenChanged(): void {
     if (this.open) {
+      this._ensureDialogMounted()
+      this._syncOpenState()
       this.dispatchEvent(new CustomEvent('ui-show', { bubbles: true }))
       this._addOpenListeners()
       this._originalTrigger = (document.activeElement as HTMLElement) || null
@@ -207,7 +211,50 @@ export class UIDialog extends HTMLElement {
       const t = this._originalTrigger
       if (t && typeof t.focus === 'function') setTimeout(() => t.focus())
       this.dispatchEvent(new CustomEvent('ui-after-hide', { bubbles: true }))
+      this._unmountDialog()
     }
+  }
+
+  private _ensureDialogMounted(): void {
+    if (this._dialogMounted || !this.shadowRoot) return
+    const frag = UIDialog.tpl.content.cloneNode(true) as DocumentFragment
+    const base = frag.querySelector('[data-el="base"]') as HTMLElement | null
+    if (base) {
+      const firstChild = this.shadowRoot.firstChild
+      if (firstChild) this.shadowRoot.insertBefore(base, firstChild)
+      else this.shadowRoot.append(base)
+    }
+
+    this._queryRefs()
+    this._applyListeners()
+    this._onCancelSlotChange()
+    this._onFooterSlotChange()
+    this._syncFooterVisibility()
+    this._ensureInternalClose()
+
+    this._dialogMounted = true
+  }
+
+  private _unmountDialog(): void {
+    if (!this._dialogMounted || !this.shadowRoot) return
+    const cleanupSlots: (HTMLSlotElement | null)[] = [this._cancelSlot, this._footerSlot]
+    for (const slot of cleanupSlots) {
+      const nodes = slot?.assignedElements({ flatten: true }) ?? []
+      for (const n of nodes) {
+        const ac = this._aborters.get(n as HTMLElement)
+        ac?.abort()
+        this._aborters.delete(n as HTMLElement)
+      }
+    }
+    this._baseEl?.remove()
+    this._baseEl = null
+    this._overlayEl = null
+    this._panelEl = null
+    this._footerEl = null
+    this._footerSlot = null
+    this._cancelSlot = null
+    this._xBtn = null
+    this._dialogMounted = false
   }
 
   private _addOpenListeners(): void {
@@ -234,7 +281,7 @@ export class UIDialog extends HTMLElement {
     document.body.style.overflow = ''
   }
 
-  requestClose(source: 'close-button' | 'keyboard' | 'overlay' | 'cancel' = 'close-button'): void {
+  requestClose(source: Source = 'close-button'): void {
     const ev = new CustomEvent<UIRequestCloseDetail>('ui-request-close', {
       bubbles: true,
       cancelable: true,
@@ -262,7 +309,7 @@ export class UIDialog extends HTMLElement {
   }
 }
 
-customElements.define('ui-dialog', UIDialog)
+if (!customElements.get('ui-dialog')) customElements.define('ui-dialog', UIDialog)
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -273,6 +320,6 @@ declare global {
     'ui-after-show': CustomEvent<void>
     'ui-hide': CustomEvent<void>
     'ui-after-hide': CustomEvent<void>
-    'ui-request-close': CustomEvent<import('./index').UIRequestCloseDetail>
+    'ui-request-close': CustomEvent<UIRequestCloseDetail>
   }
 }

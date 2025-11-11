@@ -1,135 +1,80 @@
 <template id="downloads-tab-template">
-  <div class="tab-content__sections-container">
-    <section class="tab-content__section" role="region" aria-labelledby="section-downloads-title">
-      <h2
-        class="tab-content__section__title"
-        id="section-downloads-title"
-        data-i18n="pref.downloads.sections.downloads"
-      >
-        Downloads
-      </h2>
-      <div class="tab-content__section__content">
-        <article class="tab-content__section__content__article">
-          <h3
-            class="tab-content__section__content__article__title"
-            data-i18n="pref.downloads.downloadPath.title"
+  <area-section label="pref.downloads.sections.downloads">
+    <div slot="articles">
+      <area-article label="pref.downloads.downloadPath.title" first>
+        <div slot="content" class="download-path_container">
+          <span id="download-path-display"></span>
+          <ui-button class="download-path-button" id="change-download-path-button" variant="outline"
+            ><span slot="label" data-i18n="pref.downloads.downloadPath.change"
+              >Change</span
+            ></ui-button
           >
-            Download Path
-          </h3>
-          <div class="download-path_container">
-            <span id="download-path-display"></span>
-            <ui-button
-              class="download-path-button"
-              id="change-download-path-button"
-              variant="outline"
-              ><span slot="label" data-i18n="pref.downloads.downloadPath.change"
-                >Change</span
-              ></ui-button
-            >
-          </div>
-        </article>
-        <article class="tab-content__section__content__article">
-          <h3
-            class="tab-content__section__content__article__title"
-            data-i18n="pref.downloads.maxDownloads.title"
-          >
-            Max Number of Downloads
-          </h3>
-          <div id="max-downloads-controls" class="max-downloads_container">
-            <ui-button size="icon" variant="outline" data-action="decrement">
-              <ui-icon slot="prefix" name="minus"></ui-icon>
-            </ui-button>
-            <span id="max-downloads-display">5</span>
-            <ui-button size="icon" variant="outline" data-action="increment">
-              <ui-icon slot="prefix" name="plus"></ui-icon>
-            </ui-button>
-          </div>
-        </article>
-      </div>
-    </section>
-    <section
-      class="tab-content__section"
-      role="region"
-      aria-labelledby="section-quality-control-title"
-    >
-      <h2
-        class="tab-content__section__title"
-        id="section-quality-control-title"
-        data-i18n="pref.downloads.sections.qualityControl"
-      >
-        Quality Control
-      </h2>
-      <div class="tab-content__section__content">
-        <article class="tab-content__section__content__article">
-          <h3
-            class="tab-content__section__content__article__title"
-            data-i18n="pref.downloads.videoQuality.title"
-          >
-            Preferred Video Quality
-          </h3>
-          <ui-select id="video-quality-select" variant="outline" placeholder="Select quality">
-          </ui-select>
-        </article>
-        <article class="tab-content__section__content__article">
-          <h3
-            class="tab-content__section__content__article__title"
-            data-i18n="pref.downloads.videoCodec.title"
-          >
-            Preferred Video Codec
-          </h3>
-          <ui-select id="video-codec-select" variant="outline" placeholder="Select codec">
-          </ui-select>
-        </article>
-        <article class="tab-content__section__content__article">
-          <h3
-            class="tab-content__section__content__article__title"
-            data-i18n="pref.downloads.audioQuality.title"
-          >
-            Preferred Audio Quality
-          </h3>
-          <ui-select id="audio-quality-select" variant="outline" placeholder="Select audio quality">
-          </ui-select>
-        </article>
-      </div>
-    </section>
-    <section class="tab-content__section" role="region" aria-labelledby="section-naming-title">
-      <h2
-        class="tab-content__section__title"
-        id="section-naming-title"
-        data-i18n="pref.downloads.sections.naming"
-      >
-        Naming
-      </h2>
-      <div class="tab-content__section__content">
-        <article class="tab-content__section__content__article">
-          <h3
-            class="tab-content__section__content__article__title"
-            data-i18n="pref.downloads.fileNameFormatPlaylists.title"
-          >
-            File Name Format For Playlists
-          </h3>
-          <div class="name-format-playlists_container">
-            <ui-input id="file-name-format-playlists-input" dir="ltr" type="text"></ui-input>
-            <ui-button size="sm" variant="ghost" data-action="reset-file-name">
-              <span slot="label" data-i18n="generic.actions.reset">Reset</span>
-            </ui-button>
-          </div>
-        </article>
-        <article class="tab-content__section__content__article">
-          <h3
-            class="tab-content__section__content__article__title"
-            data-i18n="pref.downloads.folderNameFormatPlaylists.title"
-          >
-            Folder Name Format For Playlists
-          </h3>
-          <div class="name-format-playlists_container">
-            <ui-input id="folder-name-format-playlists-input" dir="ltr" type="text"></ui-input>
-            <ui-button size="sm" variant="ghost" data-action="reset-folder-name">
-              <span slot="label" data-i18n="generic.actions.reset">Reset</span>
-            </ui-button>
-          </div>
-        </article>
-      </div>
-    </section>
-  </div>
+        </div>
+      </area-article>
+      <area-article label="pref.downloads.maxDownloads.title" last>
+        <div slot="content" id="max-downloads-controls" class="max-downloads_container">
+          <ui-button size="icon" variant="outline" data-action="decrement">
+            <ui-icon slot="prefix" name="minus"></ui-icon>
+          </ui-button>
+          <span id="max-downloads-display">5</span>
+          <ui-button size="icon" variant="outline" data-action="increment">
+            <ui-icon slot="prefix" name="plus"></ui-icon>
+          </ui-button>
+        </div>
+      </area-article>
+    </div>
+  </area-section>
+
+  <area-section label="pref.downloads.sections.qualityControl">
+    <div slot="articles">
+      <area-article label="pref.downloads.videoQuality.title" first>
+        <ui-select
+          slot="content"
+          id="video-quality-select"
+          variant="outline"
+          placeholder="Select quality"
+        >
+        </ui-select>
+      </area-article>
+      <area-article label="pref.downloads.videoCodec.title">
+        <ui-select
+          slot="content"
+          id="video-codec-select"
+          variant="outline"
+          placeholder="Select codec"
+        >
+        </ui-select>
+      </area-article>
+      <area-article label="pref.downloads.audioQuality.title" last>
+        <ui-select
+          slot="content"
+          id="audio-quality-select"
+          variant="outline"
+          placeholder="Select audio quality"
+        >
+        </ui-select>
+      </area-article>
+    </div>
+  </area-section>
+
+  <area-section label="pref.downloads.sections.naming">
+    <div slot="articles">
+      <area-article label="pref.downloads.fileNameFormatPlaylists.title" first>
+        <div slot="content" class="name-format-playlists_container">
+          <ui-input id="file-name-format-playlists-input" dir="ltr" type="text"></ui-input>
+          <ui-button size="sm" variant="ghost" data-action="reset-file-name">
+            <span slot="label" data-i18n="generic.actions.reset">Reset</span>
+          </ui-button>
+        </div>
+      </area-article>
+      <area-article label="pref.downloads.folderNameFormatPlaylists.title" last>
+        <div slot="content" class="name-format-playlists_container">
+          <ui-input id="folder-name-format-playlists-input" dir="ltr" type="text"></ui-input>
+          <ui-button size="sm" variant="ghost" data-action="reset-folder-name">
+            <span slot="label" data-i18n="generic.actions.reset">Reset</span>
+          </ui-button>
+        </div>
+      </area-article>
+    </div>
+  </area-section>
 </template>

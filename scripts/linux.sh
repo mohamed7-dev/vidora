@@ -10,8 +10,8 @@ if ! command -V curl > /dev/null 2>&1; then
     exit
 fi
 
-# download ffmpeg in the current dir (app root)
-curl -SL --progress-bar "https://github.com/mohamed7-dev/built-ffmpeg/releases/download/v6/ffmpeg_linux_amd64" -o ffmpeg
+# download ffmpeg in the current dir (app root) from my repo (dev setup only)
+curl -SL --progress-bar "https://github.com/mohamed7-dev/built-ffmpeg/releases/download/V6/ffmpeg-linux-amd64" -o ffmpeg
 
 # make ffmpeg executable
 chmod +x ffmpeg

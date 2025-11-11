@@ -1,3 +1,5 @@
+import '../../../area-article/index'
+import '../../../area-section/index'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
 import { UIButton, UISelect, UICheckbox } from '@renderer/components/ui'
@@ -155,6 +157,11 @@ export class GeneralTab extends HTMLElement {
   private applyI18n(): void {
     const root = this.shadowRoot
     if (!root) return
+    // labels translations
+    this.shadowRoot.querySelectorAll('[label]').forEach((el) => {
+      el.setAttribute('label', this.t(el.getAttribute('label') ?? ''))
+    })
+
     // translate static labels
     root.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
       const key = el.getAttribute('data-i18n') || ''

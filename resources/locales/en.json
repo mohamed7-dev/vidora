@@ -248,6 +248,14 @@
     "cardButtonTitle": "Add Download"
   },
   "downloading": {
-    "pageTitle": "Downloading"
+    "pageTitle": "Downloading",
+    "sectionTitle": "Active Downloads"
+  },
+  "jobItem": {
+    "controls": {
+      "pause": "Pause",
+      "resume": "Resume",
+      "delete": "Delete"
+    }
   }
 }

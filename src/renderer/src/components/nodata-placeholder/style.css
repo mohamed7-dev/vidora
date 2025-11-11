@@ -1,0 +1,21 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.nodata-placeholder_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  border-radius: calc(var(--radius) - 4px);
+}
+
+.nodata-placeholder_sub {
+  font-size: 0.8rem;
+}
+
+:host([data-hide]) {
+  display: none;
+}

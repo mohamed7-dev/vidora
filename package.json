@@ -20,6 +20,7 @@
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
     "icons:gen": "node scripts/gen-icons.mjs",
+    "test:ffmpeg-download": "tsx scripts/test-ffmpeg-download.ts",
     "ffmpeg:download": "bash scripts/linux.sh && mkdir -p \"$HOME/.config/vidora/bin\" && mv -f ./ffmpeg \"$HOME/.config/vidora/bin/ffmpeg\" && chmod +x \"$HOME/.config/vidora/bin/ffmpeg\""
   },
   "dependencies": {
@@ -40,6 +41,7 @@
     "eslint": "^9.36.0",
     "prettier": "^3.6.2",
     "sharp": "^0.33.5",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.2",
     "vite": "^7.1.6"
   },
