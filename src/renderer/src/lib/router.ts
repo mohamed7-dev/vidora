@@ -15,6 +15,18 @@ const routes: Record<string, RouteDef> = {
       root.innerHTML = `<downloading-page></downloading-page>`
       await Promise.all([import('../components/downloading-page/index')])
     }
+  },
+  '/queued': {
+    async mount(root) {
+      root.innerHTML = `<queued-page></queued-page>`
+      await Promise.all([import('../components/queued-page/index')])
+    }
+  },
+  '/completed': {
+    async mount(root) {
+      root.innerHTML = `<completed-page></completed-page>`
+      await Promise.all([import('../components/completed-page/index')])
+    }
   }
 }
 

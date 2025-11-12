@@ -1,10 +1,23 @@
 <template>
-  <div part="overlay" class="overlay" role="alertdialog" aria-modal="true">
-    <div part="box" class="overlay__box">
+  <div class="overlay" role="alertdialog" aria-modal="true">
+    <div class="overlay__box">
       <div class="header">
-        <h2 part="title" class="overlay__title" id="scrim-title" data-i18n="scrim.title"></h2>
+        <h2 class="overlay__title" data-i18n="scrim.title"></h2>
       </div>
-      <div class="tasks" id="tasks" aria-live="polite" aria-atomic="false"></div>
+      <div class="tasks" aria-live="polite" aria-atomic="false" data-el="tasks-wrapper"></div>
     </div>
   </div>
+  <template data-el="task-item-template">
+    <div class="task" data-el="task-wrapper">
+      <div class="task__icon" data-el="task-icon"></div>
+      <div class="task__center">
+        <div class="task__title" data-el="task-title"></div>
+        <div class="task__msg" data-el="task-message"></div>
+      </div>
+      <div class="task__right">
+        <progress max="100" value="0" hidden data-el="task-progress"></progress>
+        <span class="task__err" hidden data-el="task-error"></span>
+      </div>
+    </div>
+  </template>
 </template>

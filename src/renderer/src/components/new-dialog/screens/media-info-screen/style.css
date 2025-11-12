@@ -40,3 +40,13 @@
   word-break: break-all;
   white-space: nowrap;
 }
+
+area-section::part(base) {
+  gap: 1rem;
+}
+
+.tab-content__sections-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

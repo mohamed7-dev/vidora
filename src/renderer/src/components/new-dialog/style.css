@@ -9,6 +9,7 @@
 :host ui-dialog::part(panel) {
   width: 32rem;
   min-height: 12rem;
+  max-height: 90vh;
   height: auto;
 }
 

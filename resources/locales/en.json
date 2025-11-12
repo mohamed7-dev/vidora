@@ -251,6 +251,14 @@
     "pageTitle": "Downloading",
     "sectionTitle": "Active Downloads"
   },
+  "queued": {
+    "pageTitle": "Queued",
+    "sectionTitle": "Queued Downloads"
+  },
+  "completed": {
+    "pageTitle": "Completed",
+    "sectionTitle": "Completed Downloads"
+  },
   "jobItem": {
     "controls": {
       "pause": "Pause",

@@ -1,3 +1,5 @@
+import '../../../area-section/index'
+import '../../../area-article/index'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
 import { YtdlpInfo } from '@root/shared/downloads'
@@ -96,6 +98,11 @@ export class MediaInfoScreen extends HTMLElement {
 
   private _applyI18n(): void {
     if (!this.shadowRoot) return
+    // labels translations
+    this.shadowRoot.querySelectorAll('[label]').forEach((el) => {
+      el.setAttribute('label', this.t(el.getAttribute('label') ?? ''))
+    })
+
     // text content translations
     this.shadowRoot.querySelectorAll('[data-i18n]').forEach((el) => {
       const key = el.getAttribute('data-i18n')
@@ -107,6 +114,7 @@ export class MediaInfoScreen extends HTMLElement {
         el.setAttribute('placeholder', this.t(placeholder))
       }
     })
+
     // placeholder translations
     this.shadowRoot.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
       const key = el.getAttribute('data-i18n-placeholder')

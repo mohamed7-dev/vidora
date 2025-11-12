@@ -1,0 +1,19 @@
+@import url('../../assets/reset.css');
+@import url('../../assets/shared-content-style.css');
+
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.content-wrapper {
+  width: 100%;
+}
+
+.jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 100%;
+}

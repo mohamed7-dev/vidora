@@ -247,6 +247,14 @@
     "pageTitle": "التحميلات",
     "sectionTitle": "التحميلات النشطة"
   },
+  "queued": {
+    "pageTitle": "الانتظار",
+    "sectionTitle": "التحميلات في الانتظار"
+  },
+  "completed": {
+    "pageTitle": "المكتملة",
+    "sectionTitle": "التحميلات المكتملة"
+  },
   "jobItem": {
     "controls": {
       "pause": "إيقاف",

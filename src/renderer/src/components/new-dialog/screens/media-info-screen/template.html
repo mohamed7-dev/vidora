@@ -25,75 +25,40 @@
     <!-- </div> -->
     <!-- start video settings tab panel  -->
     <div class="tab-content__sections-container" slot="panel" value="video">
-      <section
-        part="section"
-        class="tab-content__section"
-        role="region"
-        aria-labelledby="quality-section-title"
-      >
-        <h2
-          part="section-title"
-          class="tab-content__section__title"
-          id="quality-section-title"
-          data-i18n="newDownload.mediaInfoScreen.sections.quality"
-        ></h2>
-        <div part="section-content" class="tab-content__section__content">
-          <article part="section-content-article" class="tab-content__section__content__article">
-            <h3
-              class="tab-content__section__content__article__title"
-              data-i18n="newDownload.mediaInfoScreen.videoFormat.title"
-            ></h3>
+      <area-section label="newDownload.mediaInfoScreen.sections.quality">
+        <div slot="articles">
+          <area-article label="newDownload.mediaInfoScreen.videoFormat.title" first>
             <ui-select
+              slot="content"
               id="video-format-select"
               data-i18n-placeholder="newDownload.mediaInfoScreen.videoFormat.placeholder"
               data-i18n-aria-label="newDownload.mediaInfoScreen.videoFormat.placeholder"
             ></ui-select>
-          </article>
-          <article part="section-content-article" class="tab-content__section__content__article">
-            <h3
-              class="tab-content__section__content__article__title"
-              data-i18n="newDownload.mediaInfoScreen.audioFormatForVideo.title"
-            ></h3>
+          </area-article>
+          <area-article label="newDownload.mediaInfoScreen.audioFormatForVideo.title" last>
             <ui-select
+              slot="content"
               id="audio-for-video-format-select"
               data-i18n-placeholder="newDownload.mediaInfoScreen.audioFormatForVideo.placeholder"
               data-i18n-aria-label="newDownload.mediaInfoScreen.audioFormatForVideo.placeholder"
             ></ui-select>
-          </article>
+          </area-article>
         </div>
-      </section>
-      <section
-        part="section"
-        class="tab-content__section"
-        role="region"
-        aria-labelledby="advanced-section-title"
-      >
-        <h2
-          part="section-title"
-          class="tab-content__section__title"
-          id="advanced-section-title"
-          data-i18n="newDownload.mediaInfoScreen.sections.advanced"
-        ></h2>
-        <div part="section-content" class="tab-content__section__content">
-          <article part="section-content-article" class="tab-content__section__content__article">
-            <h3
-              class="tab-content__section__content__article__title"
-              data-i18n="newDownload.mediaInfoScreen.subtitles.title"
-            ></h3>
-            <div class="subtitles_container">
+      </area-section>
+
+      <area-section label="newDownload.mediaInfoScreen.sections.advanced">
+        <div slot="articles">
+          <area-article label="newDownload.mediaInfoScreen.subtitles.title" first>
+            <div slot="content" class="subtitles_container">
               <label
                 for="subtitles-checkbox"
                 data-i18n="newDownload.mediaInfoScreen.subtitles.label"
               ></label>
               <ui-checkbox id="subtitles-checkbox" size="lg"></ui-checkbox>
             </div>
-          </article>
-          <article part="section-content-article" class="tab-content__section__content__article">
-            <h3
-              class="tab-content__section__content__article__title"
-              data-i18n="newDownload.mediaInfoScreen.downloadPath.title"
-            ></h3>
-            <div class="download-path_container">
+          </area-article>
+          <area-article label="newDownload.mediaInfoScreen.downloadPath.title">
+            <div slot="content" class="download-path_container">
               <span class="download-path_text" id="download-path-text"></span>
               <ui-button
                 variant="outline"
@@ -106,13 +71,9 @@
                 ></span>
               </ui-button>
             </div>
-          </article>
-          <article part="section-content-article" class="tab-content__section__content__article">
-            <h3
-              class="tab-content__section__content__article__title"
-              data-i18n="newDownload.mediaInfoScreen.downloadTimeRange.title"
-            ></h3>
-            <div class="time-range_container">
+          </area-article>
+          <area-article label="newDownload.mediaInfoScreen.downloadTimeRange.title" last>
+            <div slot="content" class="time-range_container">
               <ui-input id="time-start" placeholder="0:00:00" size="sm"></ui-input>
               <span
                 class="sep"
@@ -120,33 +81,20 @@
               ></span>
               <ui-input id="time-end" placeholder="00:05:00" size="sm"></ui-input>
             </div>
-          </article>
+          </area-article>
         </div>
-      </section>
+      </area-section>
       <ui-button class="tab-content__start-download-btn" id="start-download-btn">
         <span slot="label" data-i18n="newDownload.mediaInfoScreen.startDownloadBtn"></span>
       </ui-button>
     </div>
     <!-- end video settings tab panel  -->
     <div class="tab-content__sections-container" slot="panel" value="audio">
-      <section
-        part="section"
-        class="tab-content__section"
-        role="region"
-        aria-labelledby="audio-options-section-title"
-      >
-        <h2
-          part="section-title"
-          class="tab-content__section__title"
-          id="audio-options-section-title"
-          data-i18n="newDownload.mediaInfoScreen.sections.audioOptions"
-        ></h2>
-        <div part="section-content" class="tab-content__section__content">
-          <article part="section-content-article" class="tab-content__section__content__article">
-            content goes here
-          </article>
-        </div>
-      </section>
+      <area-section label="newDownload.mediaInfoScreen.sections.audioOptions">
+        <area-article label="newDownload.mediaInfoScreen.audioFormat.title" first>
+          <p>content goes here!</p>
+        </area-article>
+      </area-section>
     </div>
   </ui-tabs>
 </template>

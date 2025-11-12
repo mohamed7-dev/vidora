@@ -137,11 +137,11 @@ export class JobItem extends HTMLElement {
         hideProgress = false
         break
       case 'queued':
-        hideControls = true
+        hideControls = false
         hideProgress = true
         break
       case 'completed':
-        hideControls = true
+        hideControls = false
         hideProgress = true
         break
       default:
