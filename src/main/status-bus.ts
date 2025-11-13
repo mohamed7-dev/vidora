@@ -61,6 +61,21 @@ export function progress(
     messageParams
   })
 }
+
+export function ask(
+  kind: TaskKind,
+  messageKey?: string,
+  messageParams?: Record<string, string | number>,
+  message?: string
+): TaskStatus {
+  return set(kind, {
+    state: 'asking',
+    message,
+    messageKey,
+    messageParams
+  })
+}
+
 export function success(
   kind: TaskKind,
   messageKey?: string,

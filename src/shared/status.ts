@@ -6,7 +6,7 @@ export type TaskKind =
   | 'configTray'
   | 'configYtDlpFile'
 
-export type TaskState = 'idle' | 'pending' | 'success' | 'error'
+export type TaskState = 'idle' | 'pending' | 'success' | 'error' | 'asking'
 
 export interface TaskStatus {
   id: string

@@ -33,6 +33,7 @@
 
 /* Anything clickable must be no-drag */
 new-dialog,
+notification-popover,
 .app-header__sheet-button,
 .app-header__dropdown-button,
 .app-header__chrome-controls,

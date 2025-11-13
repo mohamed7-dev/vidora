@@ -5,6 +5,7 @@ import { t } from './i18n'
 import { AppConfig, DeepPartial } from '../shared/types'
 import { DownloadJobPayload } from '../shared/jobs'
 import { applyInitialTheme, startThemeWatcher } from './theme'
+import { DownloadAppUpdateApprovalRes, InstallAppUpdateApprovalRes } from '../shared/app-update'
 
 applyInitialTheme()
 startThemeWatcher()
@@ -115,6 +116,12 @@ const api = {
       ipcRenderer.on(EVENTS.JOBS.UPDATED, handler)
       return () => ipcRenderer.removeListener(EVENTS.JOBS.UPDATED, handler)
     }
+  },
+  appUpdate: {
+    respondToDownloadApproval: (res: DownloadAppUpdateApprovalRes) =>
+      ipcRenderer.invoke(EVENTS.APP_UPDATE.DOWNLOAD_APPROVAL_RESPONSE, res),
+    respondToInstallApproval: (res: InstallAppUpdateApprovalRes) =>
+      ipcRenderer.invoke(EVENTS.APP_UPDATE.INSTALL_APPROVAL_RESPONSE, res)
   }
 }
 

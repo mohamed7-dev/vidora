@@ -5,6 +5,7 @@ export interface AppConfig {
     language: string
     dir: string
     theme: string
+    autoUpdate: boolean
   }
   downloads: {
     downloadDir: string

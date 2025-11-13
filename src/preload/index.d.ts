@@ -65,6 +65,10 @@ declare global {
         resume: (id: string) => Promise<import('../shared/jobs').Job | null>
         onUpdated: (cb: (evt: import('../shared/jobs').JobsUpdateEvent) => void) => () => void
       }
+      appUpdate: {
+        respondToDownloadApproval: (res: DownloadAppUpdateApprovalRes) => void
+        respondToInstallApproval: (res: InstallAppUpdateApprovalRes) => void
+      }
     }
   }
 }

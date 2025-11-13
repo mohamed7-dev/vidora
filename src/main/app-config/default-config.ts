@@ -46,7 +46,8 @@ export const DEFAULT_CONFIG: AppConfig = {
     closeToTray: false,
     language: DATA.languages.find((lang) => lang.value === 'en')?.value ?? 'en',
     dir: 'ltr',
-    theme: DATA.themes.find((theme) => theme.value === 'system')?.value ?? 'system'
+    theme: DATA.themes.find((theme) => theme.value === 'system')?.value ?? 'system',
+    autoUpdate: true
   },
   downloads: {
     downloadDir: DEFAULT_INTERNAL_CONFIG.downloadFolderPath,

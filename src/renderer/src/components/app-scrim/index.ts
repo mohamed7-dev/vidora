@@ -5,7 +5,7 @@ import type { StatusSnapshot, TaskKind, TaskStatus } from '@root/shared/status'
 const TITLES: Record<TaskKind, string> = {
   ytdlp: 'yt-dlp',
   ffmpeg: 'FFmpeg',
-  appUpdate: 'App update',
+  appUpdate: '',
   configDownloadDir: '',
   configTray: '',
   configYtDlpFile: ''
@@ -84,7 +84,7 @@ export class AppScrim extends HTMLElement {
   }
 
   private reflect(snap: StatusSnapshot): void {
-    const whiteList = new Set<TaskKind>(['ytdlp', 'ffmpeg', 'appUpdate'])
+    const whiteList = new Set<TaskKind>(['ytdlp', 'ffmpeg'])
     // Show rows for any kind that has a non-idle state
     ;(Object.keys(snap) as TaskKind[]).forEach((kind) => {
       const st = snap[kind]
@@ -108,9 +108,8 @@ export class AppScrim extends HTMLElement {
     }
     const ytdlpPending = isPending('ytdlp')
     const ffmpegPending = isPending('ffmpeg')
-    const appUpdatePending = isPending('appUpdate')
 
-    const blocking = appUpdatePending || (!firstRunDone && (ytdlpPending || ffmpegPending))
+    const blocking = !firstRunDone && (ytdlpPending || ffmpegPending)
 
     document.documentElement.dataset.appBlocking = String(blocking)
     this.toggleAttribute('data-visible', blocking)

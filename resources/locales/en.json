@@ -37,7 +37,8 @@
     "actions": {
       "reset": "Reset",
       "requireStartAlert": "Changes here require app restart.",
-      "change": "Change"
+      "change": "Change",
+      "progress": "Download in progress"
     }
   },
   "pref": {

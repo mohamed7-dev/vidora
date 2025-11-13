@@ -51,5 +51,9 @@ export const EVENTS = {
   STATUS: {
     UPDATE: 'status:update', // renderer listens
     SNAPSHOT: 'status:snapshot' // renderer invokes to get current state
+  },
+  APP_UPDATE: {
+    DOWNLOAD_APPROVAL_RESPONSE: 'app-update: download-approval-response',
+    INSTALL_APPROVAL_RESPONSE: 'app-update: install-approval-response'
   }
 }

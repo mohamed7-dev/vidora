@@ -1,5 +1,6 @@
-import '../preferences-dialog'
-import '../new-dialog'
+import '../preferences-dialog/index'
+import '../new-dialog/index'
+import '../notification-popover/index'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
 import { DATA } from '@root/shared/data'

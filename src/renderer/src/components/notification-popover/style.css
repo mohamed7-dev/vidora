@@ -1,0 +1,13 @@
+ui-popover::part(panel) {
+  width: 15rem;
+}
+
+ui-popover[data-hide='true'] {
+  display: none;
+}
+
+.approve-app-update-actions-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

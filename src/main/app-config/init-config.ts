@@ -4,6 +4,7 @@ import { useTray } from '../tray'
 import { AppConfig } from '../../shared/types'
 import { success, fail } from '../status-bus'
 import { readInternalConfig } from './internal-config-api'
+import { checkForUpdate } from '../app-update'
 
 export type ConfigStatus = {
   downloadDir: {
@@ -85,5 +86,7 @@ export const initConfig = (): void => {
     'configTray',
     status.tray.isEnabled ? 'status.config.tray.enabled' : 'status.config.tray.disabled'
   )
-  // TODO: check settings for auto-update and start update if needed
+  if (config.general.autoUpdate) {
+    checkForUpdate()
+  }
 }

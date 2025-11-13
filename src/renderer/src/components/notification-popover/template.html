@@ -1,0 +1,42 @@
+<template>
+  <ui-popover align="center">
+    <ui-button
+      slot="trigger"
+      variant="ghost"
+      size="icon"
+      style="--ui-button-icon-size: 22px"
+      data-el="popover-trigger-button"
+      class="popover-trigger-btn"
+    >
+      <ui-icon slot="prefix" name="settings"></ui-icon>
+    </ui-button>
+    <div slot="content" class="popover-content-wrapper" data-el="popover-content-container"></div>
+  </ui-popover>
+
+  <template data-el="approve-app-update-template">
+    <div class="approve-app-update-container">
+      <p class="approve-app-update-msg" data-el="approve-download-msg"></p>
+      <div class="approve-app-update-actions-container">
+        <ui-button variant="secondary" data-el="approve-download-btn" block>
+          <span slot="label">Approve</span>
+        </ui-button>
+        <ui-button variant="secondary" data-el="cancel-download-btn" block>
+          <span slot="label">Cancel</span>
+        </ui-button>
+      </div>
+    </div>
+  </template>
+  <template data-el="approve-app-install-template">
+    <div class="approve-app-install-container">
+      <p class="approve-app-install-msg" data-el="approve-install-msg"></p>
+      <div class="approve-app-install-actions-container">
+        <ui-button variant="secondary" data-el="approve-install-btn" block>
+          <span slot="label">Approve</span>
+        </ui-button>
+        <ui-button variant="secondary" data-el="cancel-install-btn" block>
+          <span slot="label">Cancel</span>
+        </ui-button>
+      </div>
+    </div>
+  </template>
+</template>
