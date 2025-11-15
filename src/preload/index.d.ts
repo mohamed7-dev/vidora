@@ -10,6 +10,10 @@ declare global {
       downloads: {
         getInfo: (url: string) => Promise<import('../shared/downloads').YtdlpInfo>
       }
+      pasteLink?: {
+        showMenu: () => void
+        onPaste: (cb: (text: string) => void) => () => void
+      }
       clipboard?: {
         readText: () => Promise<string>
         writeText: (text: string) => Promise<void>
@@ -66,6 +70,7 @@ declare global {
         onUpdated: (cb: (evt: import('../shared/jobs').JobsUpdateEvent) => void) => () => void
       }
       appUpdate: {
+        check: () => void
         respondToDownloadApproval: (res: DownloadAppUpdateApprovalRes) => void
         respondToInstallApproval: (res: InstallAppUpdateApprovalRes) => void
       }

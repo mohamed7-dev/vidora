@@ -230,6 +230,9 @@ export class UISheet extends HTMLElement {
     this._onFooterSlotChange()
     this._syncFooterVisibility()
     this._ensureInternalClose()
+    this._syncSide()
+    this._syncOpenState()
+    this._syncCloseVisibility()
 
     this._sheetMounted = true
   }

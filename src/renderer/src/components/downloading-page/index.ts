@@ -4,6 +4,8 @@ import '../nodata-placeholder/index'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
 import { DownloadJobPayload, Job } from '@root/shared/jobs'
+import { UIAlert } from '../ui'
+import type { StatusSnapshot, TaskStatus } from '@root/shared/status'
 
 export class DownloadingPage extends HTMLElement {
   // Cache stylesheet and template per class for performance and to prevent FOUC
@@ -25,9 +27,11 @@ export class DownloadingPage extends HTMLElement {
   //states
   private _t = window.api.i18n?.t ?? (() => '')
   private _unsub: (() => void) | null = null
+  private _statusUnsub: (() => void) | null = null
 
   //Refs
   private _jobsList: HTMLDivElement | null = null
+  private _errorAlert: UIAlert | null = null
 
   constructor() {
     super()
@@ -40,11 +44,13 @@ export class DownloadingPage extends HTMLElement {
     this._applyI18n()
     void this._load()
     this._bindUpdates()
+    this._bindStatus()
   }
 
   private _cacheRefs(): void {
     if (!this.shadowRoot) return
     this._jobsList = this.shadowRoot.querySelector<HTMLDivElement>('[data-el="jobs-list"]')
+    this._errorAlert = this.shadowRoot.querySelector<UIAlert>('#download-error-alert')
   }
 
   disconnectedCallback(): void {
@@ -69,6 +75,42 @@ export class DownloadingPage extends HTMLElement {
   private _bindUpdates(): void {
     this._unsub = window.api.jobs.onUpdated(() => {
       void this._load()
+    })
+  }
+
+  private _bindStatus(): void {
+    this._statusUnsub?.()
+    this._statusUnsub = window.api.status.onUpdate((snap: StatusSnapshot) => {
+      const st = snap.ytdlp as TaskStatus | undefined
+      if (!st || st.kind !== 'ytdlp') return
+
+      const scope = (st.messageParams as Record<string, unknown> | undefined)?.scope
+      if (scope !== 'download') return
+
+      if (!this._errorAlert) {
+        this._errorAlert = this.shadowRoot?.querySelector<UIAlert>('#download-error-alert') || null
+      }
+      const alert = this._errorAlert
+      if (!alert) return
+
+      if (st.state === 'error') {
+        const titleEl = alert.querySelector('[slot="title"]') as HTMLElement | null
+        const descEl = alert.querySelector('[slot="description"]') as HTMLElement | null
+        const key = st.error?.key || st.messageKey || 'status.ytdlp.download_failed'
+        const fallback = st.error?.message || st.message || 'Download failed.'
+
+        if (titleEl) {
+          titleEl.textContent = this._t('downloading.error.title') || 'Error'
+        }
+        if (descEl) {
+          descEl.textContent = (key && this._t(key)) || fallback
+        }
+
+        alert.setAttribute('variant', 'destructive')
+        alert.show()
+      } else if (st.state === 'pending' || st.state === 'success') {
+        alert.hide()
+      }
     })
   }
 

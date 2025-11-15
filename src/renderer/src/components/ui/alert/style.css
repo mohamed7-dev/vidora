@@ -1,0 +1,56 @@
+.ui-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  font-size: 0.875rem;
+}
+
+.ui-alert[data-variant='default'] {
+  background-color: transparent;
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.ui-alert[data-variant='destructive'] {
+  background-color: transparent;
+  border-color: color-mix(in srgb, var(--destructive) 30%, transparent);
+}
+
+.ui-alert_icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.ui-alert_content {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.ui-alert_title {
+  font-weight: 600;
+  margin-bottom: 0.125rem;
+}
+
+.ui-alert_description {
+  opacity: 0.9;
+}
+
+.ui-alert[data-variant='default'] .ui-alert_title {
+  color: var(--primary);
+}
+
+.ui-alert[data-variant='destructive'] .ui-alert_title {
+  color: var(--destructive);
+}
+
+.ui-alert[data-variant='default'] .ui-alert_icon::part(base) {
+  color: var(--primary);
+}
+
+.ui-alert[data-variant='destructive'] .ui-alert_icon::part(base) {
+  color: var(--destructive);
+}

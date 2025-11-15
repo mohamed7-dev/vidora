@@ -58,9 +58,6 @@
   font-weight: 600;
   font-size: 0.95rem;
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .job-controls {

@@ -11,8 +11,29 @@
           <span slot="label" data-i18n="pref.general.restartApp.button">Restart App</span>
         </ui-button>
       </area-article>
+      <area-article label="pref.general.checkForUpdates.title">
+        <ui-button
+          slot="content"
+          class="check-for-updates_button"
+          id="check-for-updates-button"
+          variant="outline"
+        >
+          <span slot="label" data-i18n="pref.general.checkForUpdates.button">
+            Check for updates
+          </span>
+        </ui-button>
+      </area-article>
+      <area-article label="pref.general.autoUpdate.title">
+        <div slot="content" class="with-tooltip">
+          <ui-tooltip side="bottom" align="center" offset="8">
+            <span slot="trigger" class="restart-indicator" aria-label="Requires restart"> ! </span>
+            <div slot="content" data-i18n="generic.actions.requireStartAlert"></div>
+          </ui-tooltip>
+          <ui-checkbox id="auto-update-switch" variant="secondary"></ui-checkbox>
+        </div>
+      </area-article>
       <area-article label="pref.general.useNativeToolbar.title">
-        <div slot="content" class="native-toolbar-container">
+        <div slot="content" class="with-tooltip native-toolbar-container">
           <ui-tooltip side="bottom" align="center" offset="8">
             <span slot="trigger" class="restart-indicator" aria-label="Requires restart"> ! </span>
             <div slot="content" data-i18n="generic.actions.requireStartAlert"></div>
@@ -34,7 +55,7 @@
         </ui-select>
       </area-article>
       <area-article label="pref.general.language.title" last>
-        <div slot="content" class="language-select-container">
+        <div slot="content" class="with-tooltip language-select-container">
           <ui-tooltip side="bottom" align="center" offset="8">
             <span slot="trigger" class="restart-indicator" aria-label="Requires restart"> ! </span>
             <div slot="content" data-i18n="generic.actions.requireStartAlert"></div>

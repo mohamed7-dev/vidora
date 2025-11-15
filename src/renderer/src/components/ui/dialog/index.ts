@@ -231,6 +231,8 @@ export class UIDialog extends HTMLElement {
     this._onFooterSlotChange()
     this._syncFooterVisibility()
     this._ensureInternalClose()
+    this._syncOpenState()
+    this._syncCloseVisibility()
 
     this._dialogMounted = true
   }

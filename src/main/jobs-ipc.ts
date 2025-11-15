@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow } from 'electron'
+import { ipcMain, BrowserWindow, Notification } from 'electron'
 import { EVENTS } from '../shared/events'
 import type {
   DownloadJobPayload,
@@ -11,6 +11,7 @@ import { randomUUID } from 'node:crypto'
 import { DEFAULT_INTERNAL_CONFIG } from './app-config/default-config'
 import { downloadEngine } from './download-engine'
 import { readConfig } from './app-config/config-api'
+import { DATA } from '../shared/data'
 
 /*
   we need to use require here because electron-store is not a typescript module
@@ -74,6 +75,20 @@ function broadcastUpdate(win: BrowserWindow | null, evt: JobsUpdateEvent): void 
   if (win) win.webContents.send(EVENTS.JOBS.UPDATED, evt)
 }
 
+function notifyDownloadCompleted(job: Job): void {
+  if (!Notification.isSupported()) return
+  const payload = job.payload as DownloadJobPayload
+  const title = payload?.title || payload?.url || 'Download completed'
+
+  const notif = new Notification({
+    title: DATA.appName,
+    subtitle: title,
+    body: 'Download finished successfully.',
+    silent: false
+  })
+  notif.show()
+}
+
 function enqueueNextIfPossible(): void {
   const jobs = getJobs()
   const active = countActive(jobs)
@@ -115,6 +130,7 @@ export function registerJobsIpc(): void {
       j.updatedAt = now()
       saveJobs(jobs)
       broadcastUpdate(null, { type: 'updated', job: j })
+      if (ok) notifyDownloadCompleted(j)
       enqueueNextIfPossible()
     }
   })

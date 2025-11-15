@@ -75,3 +75,9 @@ notification-popover,
 .app-header__dropdown-menu-item:hover {
   background-color: transparent;
 }
+
+@media (min-width: 767px) {
+  ui-sheet {
+    display: none;
+  }
+}

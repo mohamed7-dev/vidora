@@ -17,6 +17,14 @@ const api = {
   downloads: {
     getInfo: async (url: string) => ipcRenderer.invoke(EVENTS.DOWNLOADS.GET_INFO, url)
   },
+  pasteLink: {
+    showMenu: (): void => ipcRenderer.send(EVENTS.DIALOG.SHOW_PASTE_LINK_MENU),
+    onPaste: (callback: (text: string) => void): (() => void) => {
+      const handler = (_e: unknown, text: string): void => callback(text)
+      ipcRenderer.on(EVENTS.PASTE_LINK, handler)
+      return () => ipcRenderer.removeListener(EVENTS.PASTE_LINK, handler)
+    }
+  },
   clipboard: {
     readText: async (): Promise<string> => clipboard.readText(),
     writeText: async (text: string): Promise<void> => clipboard.writeText(text)
@@ -118,6 +126,7 @@ const api = {
     }
   },
   appUpdate: {
+    check: () => ipcRenderer.send(EVENTS.APP_UPDATE.CHECK),
     respondToDownloadApproval: (res: DownloadAppUpdateApprovalRes) =>
       ipcRenderer.invoke(EVENTS.APP_UPDATE.DOWNLOAD_APPROVAL_RESPONSE, res),
     respondToInstallApproval: (res: InstallAppUpdateApprovalRes) =>

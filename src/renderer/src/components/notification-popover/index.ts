@@ -73,7 +73,8 @@ export class NotificationPopover extends HTMLElement {
   }
 
   private _syncHide(): void {
-    const hide = this.getAttribute('hide') || true
+    const attr = this.getAttribute('hide')
+    const hide = attr === null ? true : attr === 'true'
     this._popoverEl?.setAttribute('data-hide', hide ? 'true' : 'false')
   }
 
@@ -83,6 +84,15 @@ export class NotificationPopover extends HTMLElement {
   }
 
   private _reflect(snap: StatusSnapshot): void {
+    const st = snap.appUpdate
+
+    // If there is no appUpdate status yet, keep the popover hidden
+    if (!st || st.kind !== 'appUpdate' || st.state === 'idle') {
+      this.setAttribute('hide', 'true')
+      return
+    }
+
+    // We have something meaningful to show for app updates
     this.setAttribute('hide', 'false')
 
     if (
@@ -120,7 +130,7 @@ export class NotificationPopover extends HTMLElement {
     if (
       snap.appUpdate?.kind === 'appUpdate' &&
       snap.appUpdate.state === 'error' && // error means either error during download/install or user cancelled
-      snap.appUpdate.messageParams
+      (snap.appUpdate.message || snap.appUpdate.messageKey || snap.appUpdate.error)
     ) {
       this._renderError(snap.appUpdate)
     }
@@ -155,7 +165,25 @@ export class NotificationPopover extends HTMLElement {
   }
 
   private _renderUpdateAppProgress(status: TaskStatus): void {
-    // TODO: render progress bar
+    if (!this.shadowRoot || !this._popoverContentEl) return
+    const progressTpl = this.shadowRoot.querySelector(
+      '[data-el="app-update-progress-template"]'
+    ) as HTMLTemplateElement | null
+    if (!progressTpl) return
+    const content = progressTpl.content.cloneNode(true) as DocumentFragment
+    const msgEl = content.querySelector('[data-el="progress-msg"]') as HTMLElement | null
+    const valueEl = content.querySelector('[data-el="progress-value"]') as HTMLElement | null
+    if (!msgEl || !valueEl) return
+
+    const key = status.messageKey || 'appUpdate.download.progress'
+    const fallbackMsg = status.message || 'Downloading update...'
+    msgEl.textContent = this._t(key) || fallbackMsg
+
+    const prog = typeof status.progress === 'number' ? Math.round(status.progress) : 0
+    valueEl.textContent = `${prog}%`
+
+    this._popoverContentEl.innerHTML = ''
+    this._popoverContentEl.append(content)
   }
 
   private _renderInstallAppApproval(ev: ApproveAppInstallPayload): void {
@@ -185,7 +213,35 @@ export class NotificationPopover extends HTMLElement {
   }
 
   private _renderError(status: TaskStatus): void {
-    // TODO: render error
+    if (!this.shadowRoot || !this._popoverContentEl) return
+
+    // Skip pure cancellation errors (e.g. *\.cancelled keys)
+    const key = status.messageKey || status.error?.key || ''
+    if (key.endsWith('.cancelled')) {
+      return
+    }
+
+    const errorTpl = this.shadowRoot.querySelector(
+      '[data-el="app-update-error-template"]'
+    ) as HTMLTemplateElement | null
+    if (!errorTpl) return
+
+    const content = errorTpl.content.cloneNode(true) as DocumentFragment
+    const msgEl = content.querySelector('[data-el="error-msg"]') as HTMLElement | null
+    const dismissBtn = content.querySelector('[data-el="dismiss-error-btn"]') as UIButton | null
+    if (!msgEl || !dismissBtn) return
+
+    const fallbackMsg =
+      (status.error && status.error.message) || status.message || 'Failed to update the app.'
+    msgEl.textContent = (key && this._t(key)) || fallbackMsg
+
+    dismissBtn.addEventListener('click', () => {
+      this.close()
+      this.setAttribute('hide', 'true')
+    })
+
+    this._popoverContentEl.innerHTML = ''
+    this._popoverContentEl.append(content)
   }
 
   open(): void {

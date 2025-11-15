@@ -8,7 +8,7 @@
       data-el="popover-trigger-button"
       class="popover-trigger-btn"
     >
-      <ui-icon slot="prefix" name="settings"></ui-icon>
+      <ui-icon slot="prefix" name="info"></ui-icon>
     </ui-button>
     <div slot="content" class="popover-content-wrapper" data-el="popover-content-container"></div>
   </ui-popover>
@@ -35,6 +35,22 @@
         </ui-button>
         <ui-button variant="secondary" data-el="cancel-install-btn" block>
           <span slot="label">Cancel</span>
+        </ui-button>
+      </div>
+    </div>
+  </template>
+  <template data-el="app-update-progress-template">
+    <div class="app-update-progress-container">
+      <p class="app-update-progress-msg" data-el="progress-msg"></p>
+      <p class="app-update-progress-value" data-el="progress-value"></p>
+    </div>
+  </template>
+  <template data-el="app-update-error-template">
+    <div class="app-update-error-container">
+      <p class="app-update-error-msg" data-el="error-msg"></p>
+      <div class="app-update-error-actions-container">
+        <ui-button variant="secondary" data-el="dismiss-error-btn" block>
+          <span slot="label">Dismiss</span>
         </ui-button>
       </div>
     </div>

@@ -34,6 +34,8 @@ export class GeneralTab extends HTMLElement {
   private closeAppToSystemTraySwitch: UICheckbox | null = null
   private useNativeToolbarSwitch: UICheckbox | null = null
   private restartBtn: UIButton | null = null
+  private checkForUpdatesBtn: UIButton | null = null
+  private autoUpdateSwitch: UICheckbox | null = null
 
   constructor() {
     super()
@@ -51,10 +53,13 @@ export class GeneralTab extends HTMLElement {
     this.changeLanguage()
     this.applyI18n()
     this.wireRestartButton()
+    this.wireCheckForUpdatesButton()
     this.syncCloseAppToSystemTray()
     this.changeCloseAppToSystemTray()
     this.syncUseNativeToolbar()
     this.changeUseNativeToolbar()
+    this.syncAutoUpdate()
+    this.changeAutoUpdate()
   }
 
   private _render(): void {
@@ -74,6 +79,10 @@ export class GeneralTab extends HTMLElement {
     this.useNativeToolbarSwitch =
       this.shadowRoot?.querySelector<UICheckbox>('#use-native-toolbar-switch') || null
     this.restartBtn = this.shadowRoot?.querySelector<UIButton>('#restart-app-button') || null
+    this.checkForUpdatesBtn =
+      this.shadowRoot?.querySelector<UIButton>('#check-for-updates-button') || null
+    this.autoUpdateSwitch =
+      this.shadowRoot?.querySelector<UICheckbox>('#auto-update-switch') || null
   }
 
   private syncTheme(): void {
@@ -186,6 +195,13 @@ export class GeneralTab extends HTMLElement {
     })
   }
 
+  private wireCheckForUpdatesButton(): void {
+    if (!this.checkForUpdatesBtn) return
+    this.checkForUpdatesBtn.addEventListener('click', () => {
+      window.api?.appUpdate?.check()
+    })
+  }
+
   private async syncCloseAppToSystemTray(): Promise<void> {
     if (!this.closeAppToSystemTraySwitch) return
     const useTray = this.config?.general.closeToTray
@@ -220,6 +236,28 @@ export class GeneralTab extends HTMLElement {
         .catch(() => {})
       // Mark relaunch required only if changed from initial
       this.needsRelaunch = value !== this.initialConfig?.general.useNativeToolbar
+    })
+  }
+
+  private async syncAutoUpdate(): Promise<void> {
+    if (!this.autoUpdateSwitch) return
+    const autoUpdate = this.config?.general.autoUpdate
+    this.autoUpdateSwitch.toggleAttribute('checked', autoUpdate)
+  }
+
+  private changeAutoUpdate(): void {
+    if (!this.autoUpdateSwitch) return
+    this.autoUpdateSwitch.addEventListener('change', (e) => {
+      const checkbox = e.target as UICheckbox
+      const value = checkbox.checked
+      window.api?.config
+        ?.updateConfig({ general: { autoUpdate: value } })
+        .then(() => {
+          if (this.config) this.config.general.autoUpdate = value
+        })
+        .catch(() => {})
+      // Mark relaunch required only if changed from initial
+      this.needsRelaunch = value !== this.initialConfig?.general.autoUpdate
     })
   }
 }

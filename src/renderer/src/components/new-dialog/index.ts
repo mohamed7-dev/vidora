@@ -1,10 +1,11 @@
 import './screens/media-info-screen/index'
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
-import { UIButton, UIInput } from '../ui'
+import { UIButton, UIInput, UIAlert } from '../ui'
 import { UIDialog } from '../ui/dialog'
 import { YtdlpInfo } from '@root/shared/downloads'
 import type { MediaInfoScreen } from './screens/media-info-screen'
+import type { StatusSnapshot, TaskStatus } from '@root/shared/status'
 export class NewDialog extends HTMLElement {
   // Cache stylesheet and template per class for performance and to prevent FOUC
   private static readonly sheet: CSSStyleSheet = (() => {
@@ -26,16 +27,59 @@ export class NewDialog extends HTMLElement {
   private mediaUrlInput: UIInput | null = null
   private _dialogEl: UIDialog | null = null
   private mediaInfoScreen: MediaInfoScreen | null = null
+  private mediaInfoErrorAlert: UIAlert | null = null
 
   // states
   // private mediaLoadingScreen: HTMLElement | null = null
   private _mounted = false
   private _listeners: AbortController | null = null
   private t = window.api.i18n?.t ?? (() => '')
+  private statusUnsub: (() => void) | null = null
+  private pasteLinkUnsub: (() => void) | null = null
 
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
+  }
+
+  private setupStatusListener(): void {
+    this.statusUnsub?.()
+    this.statusUnsub = window.api.status.onUpdate((snap: StatusSnapshot) => {
+      const st = snap.ytdlp as TaskStatus | undefined
+      if (!st || st.kind !== 'ytdlp') return
+
+      const scope = (st.messageParams as Record<string, unknown> | undefined)?.scope
+      if (scope !== 'getMediaInfo') return
+
+      // lazily cache alert if not yet available
+      if (!this.mediaInfoErrorAlert) {
+        this.mediaInfoErrorAlert = this.shadowRoot?.querySelector('ui-alert') as UIAlert | null
+      }
+      const alert = this.mediaInfoErrorAlert
+      if (!alert) return
+
+      if (st.state === 'error') {
+        const titleEl = alert.querySelector('[slot="title"]') as HTMLElement | null
+        const descEl = alert.querySelector('[slot="description"]') as HTMLElement | null
+        const key = st.error?.key || st.messageKey || 'status.ytdlp.info_failed'
+        const fallback = st.error?.message || st.message || 'Failed to fetch media info.'
+
+        if (titleEl) {
+          titleEl.textContent = this.t('newDialog.mediaInfo.error.title') || 'Error'
+        }
+        if (descEl) {
+          descEl.textContent = (key && this.t(key)) || fallback
+        }
+
+        alert.setAttribute('variant', 'destructive')
+        alert.show()
+        // ensure we are on the media-url screen so the user can adjust the URL
+        this._dialogEl?.setAttribute('data-active-screen', 'media-url')
+      } else if (st.state === 'pending' || st.state === 'success') {
+        // clear any previous error when a new request starts or finishes successfully
+        alert.hide()
+      }
+    })
   }
 
   connectedCallback(): void {
@@ -71,9 +115,12 @@ export class NewDialog extends HTMLElement {
     this.mediaInfoScreen = this.shadowRoot?.querySelector(
       'media-info-screen'
     ) as MediaInfoScreen | null
+    this.mediaInfoErrorAlert = this.shadowRoot?.querySelector('ui-alert') as UIAlert | null
     this._listeners = new AbortController()
     this._applyI18n()
     this.setupListeners(this._listeners.signal)
+    this.setupStatusListener()
+    this.setupPasteLink()
     this.initValidationButton()
 
     this._mounted = true
@@ -88,6 +135,11 @@ export class NewDialog extends HTMLElement {
     this.validateBtn = null
     this.mediaUrlInput = null
     this.mediaInfoScreen = null
+    this.mediaInfoErrorAlert = null
+    this.statusUnsub?.()
+    this.statusUnsub = null
+    this.pasteLinkUnsub?.()
+    this.pasteLinkUnsub = null
     this._mounted = false
     // Re-render the trigger-only shell after unmount
     this._renderShell()
@@ -168,6 +220,22 @@ export class NewDialog extends HTMLElement {
     })
   }
 
+  private setupPasteLink(): void {
+    if (!this.mediaUrlInput) return
+
+    this.mediaUrlInput.addEventListener('contextmenu', (e) => {
+      e.preventDefault()
+      window.api?.pasteLink?.showMenu?.()
+    })
+
+    this.pasteLinkUnsub =
+      window.api?.pasteLink?.onPaste?.((text: string) => {
+        if (!this.mediaUrlInput) return
+        this.mediaUrlInput.value = text
+        void this.getInfo(text)
+      }) ?? null
+  }
+
   private async pasteAndGetInfo(): Promise<void> {
     const clipboardText = await window.api.clipboard?.readText()
     if (clipboardText) this.getInfo(clipboardText)
@@ -176,6 +244,7 @@ export class NewDialog extends HTMLElement {
   private async getInfo(text: string): Promise<void> {
     if (!this._dialogEl) return
     // set pending to true
+    this.mediaInfoErrorAlert?.hide()
     this._dialogEl.setAttribute('data-active-screen', 'media-loading')
     try {
       const info = await window.api.downloads.getInfo(text)

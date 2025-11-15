@@ -5,6 +5,7 @@ import YTDlpWrapImport, { YTDlpEventEmitter } from 'yt-dlp-wrap-plus'
 import os from 'node:os'
 import { readConfig } from './app-config/config-api'
 import { readInternalConfig } from './app-config/internal-config-api'
+import { begin, fail, progress as statusProgress, success } from './status-bus'
 
 export type EngineHooks = {
   onProgress?: (jobId: string, progress: number) => void
@@ -60,6 +61,10 @@ export class DownloadEngine {
         const num = typeof raw === 'number' ? raw : parseFloat(String(raw ?? '0').replace('%', ''))
         const clamped = Math.max(0, Math.min(100, isFinite(num) ? num : 0))
         this.hooks.onProgress?.(job.id, clamped)
+        statusProgress('ytdlp', clamped, 'status.ytdlp.download_progress', {
+          scope: 'download',
+          jobId: job.id
+        })
       })
 
       // First event after spawn (optional UI change)
@@ -77,6 +82,9 @@ export class DownloadEngine {
         errBuf += chunk
       })
 
+      // Mark job as started in status bus
+      begin('ytdlp', 'status.ytdlp.download_started', { scope: 'download', jobId: job.id })
+
       // Close/completion: prefer child process event to get signal as well
       spawned?.once?.('close', (code: number | null, signal: NodeJS.Signals | null) => {
         if (completed) return
@@ -86,6 +94,10 @@ export class DownloadEngine {
         const ok = code === 0
         if (ok) {
           this.hooks.onDone?.(job.id, true, undefined)
+          success('ytdlp', 'status.ytdlp.download_done', {
+            scope: 'download',
+            jobId: job.id
+          })
         } else {
           const cleaned = errBuf
             .split('\n')
@@ -98,6 +110,10 @@ export class DownloadEngine {
           const reason = code !== null ? `code ${code}` : signal ? `signal ${signal}` : 'unknown'
           const msg = base ? `${base}\n[exit ${reason}]` : `yt-dlp exited with ${reason}`
           this.hooks.onDone?.(job.id, false, msg)
+          fail('ytdlp', new Error(msg), 'status.ytdlp.download_failed', {
+            scope: 'download',
+            jobId: job.id
+          })
         }
       })
       // Fallback: wrapper-level close (in case spawned is unavailable)
@@ -135,7 +151,12 @@ export class DownloadEngine {
           .filter((l) => !l.trim().startsWith('WARNING:'))
           .join('\n')
           .trim()
-        this.hooks.onDone?.(job.id, false, cleaned || msg)
+        const finalMsg = cleaned || msg
+        this.hooks.onDone?.(job.id, false, finalMsg)
+        fail('ytdlp', new Error(finalMsg), 'status.ytdlp.download_failed', {
+          scope: 'download',
+          jobId: job.id
+        })
       })
     })
   }

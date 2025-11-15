@@ -13,6 +13,7 @@ import { registerStatusIpc } from './status-bus'
 import { handleAppControlsIpc } from './app-controls'
 import { registerJobsIpc, pauseAllIncompletedJobs } from './jobs-ipc'
 import { registerYtdlpIpc } from './ytdlp'
+import { PasteLinkContextMenuIpc } from './context-menu-ipc'
 
 function createWindow(): void {
   const iconPath = app.isPackaged
@@ -116,6 +117,8 @@ app.whenReady().then(() => {
   registerYtdlpIpc()
   // init download jobs ipc
   registerJobsIpc()
+  // init paste link context menu ipc
+  PasteLinkContextMenuIpc()
 
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()

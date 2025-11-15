@@ -5,7 +5,13 @@
     </header>
     <div part="content" class="content-wrapper">
       <area-section label="downloading.sectionTitle">
-        <div slot="articles" class="jobs-list" data-el="jobs-list"></div>
+        <div slot="articles">
+          <ui-alert id="download-error-alert" variant="destructive" hidden closable>
+            <span slot="title" data-i18n="downloading.error.title"></span>
+            <span slot="description"></span>
+          </ui-alert>
+          <div class="jobs-list" data-el="jobs-list"></div>
+        </div>
       </area-section>
     </div>
   </div>

@@ -11,3 +11,23 @@ ui-popover[data-hide='true'] {
   align-items: center;
   gap: 0.5rem;
 }
+
+.app-update-progress-container,
+.app-update-error-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.app-update-progress-value {
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+.app-update-error-msg {
+  color: var(--ui-color-destructive, #b91c1c);
+}
+
+.app-update-error-actions-container {
+  display: flex;
+}

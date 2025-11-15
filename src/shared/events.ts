@@ -2,7 +2,8 @@ export const EVENTS = {
   PASTE_LINK: 'paste-link',
   DIALOG: {
     OPEN_FOLDER: 'dialog:open-folder',
-    SELECTED_LOCATION: 'dialog:selected-location'
+    SELECTED_LOCATION: 'dialog:selected-location',
+    SHOW_PASTE_LINK_MENU: 'dialog:show-paste-link-menu'
   },
   WINDOW: {
     MINIMIZE: 'window:minimize',
@@ -54,6 +55,7 @@ export const EVENTS = {
   },
   APP_UPDATE: {
     DOWNLOAD_APPROVAL_RESPONSE: 'app-update: download-approval-response',
-    INSTALL_APPROVAL_RESPONSE: 'app-update: install-approval-response'
+    INSTALL_APPROVAL_RESPONSE: 'app-update: install-approval-response',
+    CHECK: 'app-update:check'
   }
 }
