@@ -96,7 +96,7 @@ export class DownloadingPage extends HTMLElement {
       if (st.state === 'error') {
         const titleEl = alert.querySelector('[slot="title"]') as HTMLElement | null
         const descEl = alert.querySelector('[slot="description"]') as HTMLElement | null
-        const key = st.error?.key || st.messageKey || 'status.ytdlp.download_failed'
+        const key = st.error?.key || st.messageKey
         const fallback = st.error?.message || st.message || 'Download failed.'
 
         if (titleEl) {
@@ -117,35 +117,18 @@ export class DownloadingPage extends HTMLElement {
   private _renderJobs(jobs: Array<Job>): void {
     if (!this._jobsList) return
     this._jobsList.innerHTML = ''
-    const mockJob = {
-      id: 'mock',
-      status: 'downloading',
-      progress: 50,
-      error: '',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      payload: {
-        thumbnail: 'https://i.ytimg.com/vi/U_oag1vungQ/maxresdefault.jpg'
-      }
-    }
-    jobs.push(mockJob)
     if (!jobs.length) {
       const placeholder = document.createElement('nodata-placeholder')
-      placeholder.setAttribute('message', 'No active downloads') // TODO: use locale token
+      placeholder.setAttribute('message', this._t('downloading.emptyMessage'))
       this._jobsList.appendChild(placeholder)
       return
     }
     for (const j of jobs) {
       const payload = j.payload as DownloadJobPayload
       const title = payload?.title || payload?.url || 'Untitled'
-      const pct =
-        typeof j.progress === 'number'
-          ? `${Math.max(0, Math.min(100, Math.round(j.progress)))}%`
-          : '0%'
-      const subtitle = `${j.status} • ${pct}`
       const jobItem = document.createElement('job-item')
+
       jobItem.setAttribute('title', title)
-      jobItem.setAttribute('subtitle', subtitle)
       jobItem.setAttribute('thumbnail', payload.thumbnail || '')
       jobItem.setAttribute('state', j.status)
       jobItem.addEventListener('pause', async () => {
@@ -157,9 +140,16 @@ export class DownloadingPage extends HTMLElement {
       jobItem.addEventListener('delete', async () => {
         await window.api.jobs.remove(j.id)
       })
-      const progress =
-        typeof j.progress === 'number' ? `${Math.max(0, Math.min(100, j.progress))}%` : '0%'
-      jobItem.setAttribute('progress', progress)
+
+      // Only show subtitle + progress once we have real progress
+      if (typeof j.progress === 'number' && j.progress > 0) {
+        const pct = `${Math.max(0, Math.min(100, Math.round(j.progress)))}%`
+        const subtitle = `${j.status} • ${pct}`
+        jobItem.setAttribute('subtitle', subtitle)
+
+        const progress = `${Math.max(0, Math.min(100, j.progress))}%`
+        jobItem.setAttribute('progress', progress)
+      }
 
       this._jobsList.appendChild(jobItem)
     }

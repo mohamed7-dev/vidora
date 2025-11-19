@@ -1,5 +1,6 @@
-appId: com.electron.app
-productName: vidora
+appId: io.github.mohamed7-dev.vidora
+productName: Vidora
+artifactName: '${productName}.${ext}'
 directories:
   buildResources: build
 files:
@@ -19,11 +20,24 @@ extraResources:
 win:
   executableName: vidora
   icon: resources/icons/icon-256.png
+  target:
+    - nsis
+    - msi
+    - zip
+  artifactName: '${productName}_Win.${ext}'
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: '${productName}-${version}-setup.${ext}'
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  allowToChangeInstallationDirectory: true
+  oneClick: false
+  deleteAppDataOnUninstall: true
+msi:
+  oneClick: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: ${productName}
 mac:
   icon: resources/icons/icon-1024.png
   entitlementsInherit: build/entitlements.mac.plist
@@ -33,19 +47,36 @@ mac:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
+  category: Utility
+  target:
+    - zip
+    - dmg
+  artifactName: '${productName}_Mac_${arch}.${ext}'
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+  sign: false
 linux:
   target:
     - AppImage
     - snap
+    - rpm
+    - zip
     - deb
   icon: resources/icons
-  maintainer: electronjs.org
   category: Utility
-appImage:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: '${productName}_Linux.${ext}'
+snap:
+  grade: stable
+  base: core22
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: mohamed7-dev
+  repo: vidora
+  private: false

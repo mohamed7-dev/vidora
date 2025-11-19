@@ -42,7 +42,7 @@ export const DEFAULT_INTERNAL_CONFIG: InternalConfig = {
  */
 export const DEFAULT_CONFIG: AppConfig = {
   general: {
-    useNativeToolbar: false,
+    useNativeToolbar: true,
     closeToTray: false,
     language: DATA.languages.find((lang) => lang.value === 'en')?.value ?? 'en',
     dir: 'ltr',

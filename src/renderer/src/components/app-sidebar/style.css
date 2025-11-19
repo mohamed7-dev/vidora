@@ -1,6 +1,5 @@
 :host {
   display: contents;
-  flex-shrink: 0;
 }
 
 .sidebar {
@@ -9,6 +8,9 @@
   color: var(--sidebar-foreground);
   border-right: 1px solid var(--border);
   height: 100vh;
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
   box-sizing: border-box;
   padding: 0.75rem;
   padding-top: calc(var(--toolbar-height) + 1rem);

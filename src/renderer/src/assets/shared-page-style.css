@@ -1,3 +1,36 @@
+body {
+  min-height: 100vh;
+  color: var(--foreground);
+  background: var(--background);
+  line-height: 1.6;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Disable transitions for performance */
+html[data-theme-transition='off'] * {
+  transition: none !important;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
 html[data-app-blocking='true'] .container {
   pointer-events: none;
   user-select: none;
@@ -12,17 +45,21 @@ html[data-app-blocking='true'] app-scrim {
   display: block;
 }
 
-/* main content style  */
-.container {
-  display: flex;
-  min-width: 100%;
-  min-height: 100vh;
-}
-
-.container app-sidebar {
-  flex-shrink: 0;
-}
-
 main {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-inline-start: var(--sidebar-width);
+}
+
+main > * {
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 767px) {
+  main {
+    margin-inline-start: 0;
+  }
 }

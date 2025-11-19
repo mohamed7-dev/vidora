@@ -1,10 +1,24 @@
 {
   "name": "vidora",
-  "version": "1.0.0",
-  "description": "A minimal Electron application with TypeScript",
+  "version": "0.0.0",
+  "description": "A modern video and audio downloader from YouTube and many other sites",
   "main": "./out/main/index.js",
-  "author": "example.com",
+  "author": {
+    "name": "Mohamed",
+    "email": "mo.job3830@gmail.com"
+  },
   "homepage": "https://electron-vite.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mohamed7-dev/vidora.git"
+  },
+  "license": "GPL-3.0",
+  "publish": {
+    "provider": "github",
+    "owner": "mohamed7-dev",
+    "repo": "vidora",
+    "private": false
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
@@ -19,9 +33,9 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
+    "publish:linux": "pnpm build:linux -- --publish always",
     "icons:gen": "node scripts/gen-icons.mjs",
-    "test:ffmpeg-download": "tsx scripts/test-ffmpeg-download.ts",
-    "ffmpeg:download": "bash scripts/linux.sh && mkdir -p \"$HOME/.config/vidora/bin\" && mv -f ./ffmpeg \"$HOME/.config/vidora/bin/ffmpeg\" && chmod +x \"$HOME/.config/vidora/bin/ffmpeg\""
+    "test:ffmpeg-download": "tsx scripts/test-ffmpeg-download.ts"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",

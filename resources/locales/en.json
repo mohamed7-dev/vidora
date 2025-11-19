@@ -1,4 +1,18 @@
 {
+  "routes": {
+    "home": {
+      "title": "Home"
+    },
+    "downloading": {
+      "title": "Downloading"
+    },
+    "queued": {
+      "title": "Queued"
+    },
+    "completed": {
+      "title": "Completed"
+    }
+  },
   "tray": {
     "openApp": {
       "title": "Open App"
@@ -38,7 +52,9 @@
       "reset": "Reset",
       "requireStartAlert": "Changes here require app restart.",
       "change": "Change",
-      "progress": "Download in progress"
+      "approve": "Approve",
+      "cancel": "Cancel",
+      "dismiss": "Dismiss"
     }
   },
   "pref": {
@@ -79,6 +95,13 @@
           "ar": "Arabic"
         },
         "placeholder": "Select language"
+      },
+      "checkForUpdate": {
+        "buttonTitle": "Check for Updates",
+        "title": "Check for Updates"
+      },
+      "autoUpdate": {
+        "title": "Auto Update"
       }
     },
     "downloads": {
@@ -210,7 +233,13 @@
       "download_failed": "Failed to download yt-dlp.",
       "fetching_info": "Fetching media info…",
       "info_ready": "Media info is ready.",
-      "info_failed": "Failed to fetch media info."
+      "info_failed": "Failed to fetch media info.",
+      "downloadMedia": {
+        "started": "Started downloading media.",
+        "progress": "Downloading media is currently in progress.",
+        "failed": "Failed to download media.",
+        "success": "Successfully downloaded media."
+      }
     },
     "ffmpeg": {
       "checking": "Checking FFmpeg…",
@@ -240,6 +269,24 @@
       "invalid": "Invalid directory.",
       "not_writable": "Download directory is not writable.",
       "ready": "Download directory was picked successfully."
+    },
+    "appUpdate": {
+      "fail": "Failed to check for updates.",
+      "progress": "Downloading new update is in progress.",
+      "download": {
+        "beginMessage": "A new version is ready to be downloaded, do you want to download it?",
+        "downloadedMessage": "A new update was downloaded successfully.",
+        "approved": {
+          "mac": "Download can be started now, go and download the latest release from github.",
+          "others": "Download is started."
+        },
+        "cancelled": "Latest version of the app is available, but the user refused to perform the update."
+      },
+      "install": {
+        "beginMessage": "A new version is ready to be installed, do you want to install it?",
+        "approved": "A new update was installed successfully.",
+        "cancelled": "Latest version of the app is available, but the user refused to perform the installation."
+      }
     }
   },
   "home": {
@@ -250,21 +297,31 @@
   },
   "downloading": {
     "pageTitle": "Downloading",
-    "sectionTitle": "Active Downloads"
+    "sectionTitle": "Active Downloads",
+    "error": {
+      "title": "Error"
+    },
+    "emptyMessage": "No active downloads"
   },
   "queued": {
     "pageTitle": "Queued",
-    "sectionTitle": "Queued Downloads"
+    "sectionTitle": "Queued Downloads",
+    "emptyMessage": "No queued downloads"
   },
   "completed": {
     "pageTitle": "Completed",
-    "sectionTitle": "Completed Downloads"
+    "sectionTitle": "Completed Downloads",
+    "emptyMessage": "No completed downloads"
   },
   "jobItem": {
     "controls": {
       "pause": "Pause",
       "resume": "Resume",
       "delete": "Delete"
+    },
+    "status": {
+      "processing": "Processing...",
+      "queued": "Queued"
     }
   }
 }

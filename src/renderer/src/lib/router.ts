@@ -3,27 +3,33 @@ type RouteDef = {
   unmount?: (root: HTMLElement) => void
 }
 
+const _t = window.api.i18n?.t || (() => '')
+
 const routes: Record<string, RouteDef> = {
   '/': {
     async mount(root) {
       const { renderHome } = await import('../views/home')
+      document.title = _t('routes.home.title') || 'Home'
       renderHome(root)
     }
   },
   '/downloading': {
     async mount(root) {
+      document.title = _t('routes.downloading.title') || 'Downloading'
       root.innerHTML = `<downloading-page></downloading-page>`
       await Promise.all([import('../components/downloading-page/index')])
     }
   },
   '/queued': {
     async mount(root) {
+      document.title = _t('routes.queued.title') || 'Queued'
       root.innerHTML = `<queued-page></queued-page>`
       await Promise.all([import('../components/queued-page/index')])
     }
   },
   '/completed': {
     async mount(root) {
+      document.title = _t('routes.completed.title') || 'Completed'
       root.innerHTML = `<completed-page></completed-page>`
       await Promise.all([import('../components/completed-page/index')])
     }

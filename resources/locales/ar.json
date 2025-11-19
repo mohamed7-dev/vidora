@@ -1,4 +1,18 @@
 {
+  "routes": {
+    "home": {
+      "title": "الرئيسية"
+    },
+    "downloading": {
+      "title": "التحميلات"
+    },
+    "queued": {
+      "title": "الانتظار"
+    },
+    "completed": {
+      "title": "الكامل"
+    }
+  },
   "tray": {
     "openApp": {
       "title": "فتح التطبيق"
@@ -38,7 +52,9 @@
       "reset": "إعادة التعيين",
       "requireStartAlert": "تغيير هذه الاعدادت يتطلب اعادة تشغيل التطبيق.",
       "change": "تغيير",
-      "progress": "جاري التحميل"
+      "approve": "الموافقة",
+      "cancel": "الإلغاء",
+      "dismiss": "إغلاق"
     }
   },
   "pref": {
@@ -75,6 +91,13 @@
       "language": {
         "title": "اللغة",
         "placeholder": "اختر اللغة"
+      },
+      "checkForUpdate": {
+        "buttonTitle": "التحقق من وجود تحديثات",
+        "title": "التحقق من وجود تحديثات"
+      },
+      "autoUpdate": {
+        "title": "التحديث التلقائي"
       }
     },
     "downloads": {
@@ -206,7 +229,13 @@
       "download_failed": "فشل تنزيل (yt-dlp).",
       "fetching_info": "جاري جلب معلومات الفيديو…",
       "info_ready": "تم جلب معلومات الفيديو.",
-      "info_failed": "فشل جلب معلومات الفيديو."
+      "info_failed": "فشل جلب معلومات الفيديو.",
+      "downloadMedia": {
+        "started": "بدأ تنزيل الوسائط.",
+        "progress": "جاري تنزيل الوسائط.",
+        "failed": "فشل تنزيل الوسائط.",
+        "success": "تم تنزيل الوسائط بنجاح."
+      }
     },
     "ffmpeg": {
       "checking": "(FFMPEG) جارٍ فحص",
@@ -236,6 +265,24 @@
       "invalid": ".مسار غير صحيح.",
       "not_writable": ".مسار التنزيل غير قابل للكتابة.",
       "ready": ".تم اختيار مسار التنزيل بنجاح."
+    },
+    "appUpdate": {
+      "fail": "حدث خطأ أثناء التحقق من التحديثات.",
+      "progress": "جاري التحميل.",
+      "download": {
+        "beginMessage": "تم العثور على تحديث جديد، هل تريد تحميله؟",
+        "downloadedMessage": "تم تحميل التحديث بنجاح.",
+        "approved": {
+          "mac": "(github) يمكنك الآن بدء التحميل، اذهب وقم بتحميل أحدث النسخة من.",
+          "others": "تم بدء التحميل."
+        },
+        "cancelled": "أحدث نسخة من التطبيق متاحة، لكن المستخدم رفض تحميل التحديث."
+      },
+      "install": {
+        "beginMessage": "تم العثور على تحديث جديد، هل تريد تثبيته؟",
+        "approved": "تم تثبيت التحديث بنجاح.",
+        "cancelled": "أحدث نسخة من التطبيق متاحة، لكن المستخدم رفض تثبيت التحديث."
+      }
     }
   },
   "home": {
@@ -246,21 +293,31 @@
   },
   "downloading": {
     "pageTitle": "التحميلات",
-    "sectionTitle": "التحميلات النشطة"
+    "sectionTitle": "التحميلات النشطة",
+    "error": {
+      "title": "حدث خطأ"
+    },
+    "emptyMessage": "لا توجد تحميلات نشطة"
   },
   "queued": {
     "pageTitle": "الانتظار",
-    "sectionTitle": "التحميلات في الانتظار"
+    "sectionTitle": "التحميلات في الانتظار",
+    "emptyMessage": "لا توجد تحميلات في الانتظار"
   },
   "completed": {
     "pageTitle": "المكتملة",
-    "sectionTitle": "التحميلات المكتملة"
+    "sectionTitle": "التحميلات المكتملة",
+    "emptyMessage": "لا توجد تحميلات مكتملة"
   },
   "jobItem": {
     "controls": {
       "pause": "إيقاف",
       "resume": "استئناف",
       "delete": "حذف"
+    },
+    "status": {
+      "processing": "قيد المعالجة..",
+      "queued": "في الانتظار"
     }
   }
 }

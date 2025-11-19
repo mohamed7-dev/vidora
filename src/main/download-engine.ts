@@ -61,7 +61,7 @@ export class DownloadEngine {
         const num = typeof raw === 'number' ? raw : parseFloat(String(raw ?? '0').replace('%', ''))
         const clamped = Math.max(0, Math.min(100, isFinite(num) ? num : 0))
         this.hooks.onProgress?.(job.id, clamped)
-        statusProgress('ytdlp', clamped, 'status.ytdlp.download_progress', {
+        statusProgress('ytdlp', clamped, 'status.ytdlp.downloadMedia.progress', {
           scope: 'download',
           jobId: job.id
         })
@@ -83,7 +83,7 @@ export class DownloadEngine {
       })
 
       // Mark job as started in status bus
-      begin('ytdlp', 'status.ytdlp.download_started', { scope: 'download', jobId: job.id })
+      begin('ytdlp', 'status.ytdlp.downloadMedia.started', { scope: 'download', jobId: job.id })
 
       // Close/completion: prefer child process event to get signal as well
       spawned?.once?.('close', (code: number | null, signal: NodeJS.Signals | null) => {
@@ -94,7 +94,7 @@ export class DownloadEngine {
         const ok = code === 0
         if (ok) {
           this.hooks.onDone?.(job.id, true, undefined)
-          success('ytdlp', 'status.ytdlp.download_done', {
+          success('ytdlp', 'status.ytdlp.downloadMedia.success', {
             scope: 'download',
             jobId: job.id
           })
@@ -110,7 +110,7 @@ export class DownloadEngine {
           const reason = code !== null ? `code ${code}` : signal ? `signal ${signal}` : 'unknown'
           const msg = base ? `${base}\n[exit ${reason}]` : `yt-dlp exited with ${reason}`
           this.hooks.onDone?.(job.id, false, msg)
-          fail('ytdlp', new Error(msg), 'status.ytdlp.download_failed', {
+          fail('ytdlp', new Error(msg), 'status.ytdlp.downloadMedia.failed', {
             scope: 'download',
             jobId: job.id
           })
@@ -153,7 +153,7 @@ export class DownloadEngine {
           .trim()
         const finalMsg = cleaned || msg
         this.hooks.onDone?.(job.id, false, finalMsg)
-        fail('ytdlp', new Error(finalMsg), 'status.ytdlp.download_failed', {
+        fail('ytdlp', new Error(finalMsg), 'status.ytdlp.downloadMedia.failed', {
           scope: 'download',
           jobId: job.id
         })

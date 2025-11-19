@@ -90,6 +90,7 @@ export class JobItem extends HTMLElement {
     this._applyState()
     this._applyTitle()
     this._applySubtitle()
+    this._applyStatusSubtitle()
     this._applyProgress()
     this._applyThumbnail()
   }
@@ -131,10 +132,12 @@ export class JobItem extends HTMLElement {
     let hideControls = false
     let hideProgress = false
 
+    const hasProgress = !!this.getAttribute('progress')
+
     switch (state) {
       case 'downloading':
         hideControls = false
-        hideProgress = false
+        hideProgress = !hasProgress
         break
       case 'queued':
         hideControls = false
@@ -155,6 +158,8 @@ export class JobItem extends HTMLElement {
     // toggle controls visibility
     if (this._pauseBtn) this._pauseBtn.style.display = state === 'downloading' ? '' : 'none'
     if (this._resumeBtn) this._resumeBtn.style.display = state === 'paused' ? '' : 'none'
+
+    this._applyStatusSubtitle()
   }
 
   private _applyTitle(): void {
@@ -169,6 +174,28 @@ export class JobItem extends HTMLElement {
     if (this._subtitle) this._subtitle.textContent = subtitle
   }
 
+  private _applyStatusSubtitle(): void {
+    if (!this._subtitle) return
+
+    const explicitSubtitle = this.getAttribute('subtitle')
+    if (explicitSubtitle) return
+
+    const state = (this.getAttribute('state') || '').toLowerCase()
+    const progress = this.getAttribute('progress')
+
+    if (state === 'downloading' && !progress) {
+      this._subtitle.textContent = this.t('jobItem.status.processing')
+      return
+    }
+
+    if (state === 'queued') {
+      this._subtitle.textContent = this.t('jobItem.status.queued')
+      return
+    }
+
+    this._subtitle.textContent = ''
+  }
+
   private _applyThumbnail(): void {
     const thumbnail = this.getAttribute('thumbnail')
     if (!thumbnail) return
@@ -180,10 +207,23 @@ export class JobItem extends HTMLElement {
 
   private _applyProgress(): void {
     const progress = this.getAttribute('progress')
-    if (!progress) return
     const bar = this.shadowRoot?.querySelector('[data-el="bar"]') as HTMLDivElement
+    const state = (this.getAttribute('state') || '').toLowerCase()
+
+    if (!progress) {
+      if (state === 'downloading') {
+        this.toggleAttribute('data-hide-progress', true)
+      }
+      return
+    }
     if (!bar) return
     bar.style.width = progress
+
+    if (state === 'downloading') {
+      this.toggleAttribute('data-hide-progress', false)
+    }
+
+    this._applyStatusSubtitle()
   }
 
   private _render(): void {

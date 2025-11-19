@@ -1,4 +1,5 @@
 @import url('../../../assets/reset.css');
+@import url('../../../assets/scrollbar.css');
 
 :host .overlay,
 :host .panel,
@@ -145,45 +146,4 @@
 /* Show close button only when dialog is closable */
 .close-btn[data-closable] {
   display: flex;
-}
-
-:host .content {
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 55%, transparent)
-    color-mix(in srgb, var(--muted) 45%, transparent);
-}
-
-:host .content::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  background: transparent;
-}
-
-:host .content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-:host .content::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 999px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  transition: background-color 0.15s ease-in-out;
-}
-
-:host .content:hover::-webkit-scrollbar-thumb,
-:host .content:focus-within::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--muted-foreground) 55%, transparent);
-}
-
-:host .content::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--muted-foreground) 70%, transparent);
-}
-
-:host .content::-webkit-scrollbar-thumb:active {
-  background: color-mix(in srgb, var(--muted-foreground) 85%, transparent);
-}
-
-:host .content::-webkit-scrollbar-button {
-  display: none;
 }

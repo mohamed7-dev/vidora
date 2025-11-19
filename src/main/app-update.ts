@@ -85,7 +85,7 @@ function onDownloadProgress(info: ProgressInfo): void {
   progress(
     'appUpdate',
     info.percent,
-    'generic.actions.progress',
+    'appUpdate.progress',
     { ...info, scope: 'download' } as unknown as Record<string, string | number>,
     'Downloading new update is in progress.'
   )

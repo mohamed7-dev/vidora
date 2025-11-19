@@ -91,21 +91,10 @@ export class QueuedPage extends HTMLElement {
   private _renderJobs(jobs: Array<Job>): void {
     if (!this._jobsList) return
     this._jobsList.innerHTML = ''
-    const mockJob = {
-      id: 'mock',
-      status: 'queued',
-      progress: 0,
-      error: '',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      payload: {
-        thumbnail: 'https://i.ytimg.com/vi/U_oag1vungQ/maxresdefault.jpg'
-      }
-    }
-    jobs.push(mockJob)
+
     if (!jobs.length) {
       const placeholder = document.createElement('nodata-placeholder')
-      placeholder.setAttribute('message', 'No queued downloads') // TODO: use locale token
+      placeholder.setAttribute('message', this._t('queued.emptyMessage'))
       this._jobsList.appendChild(placeholder)
       return
     }

@@ -26,7 +26,7 @@ export class NotificationPopover extends HTMLElement {
 
   // states
   private _approvedDownload = false
-  private _approvedInstall = false
+  // private _approvedInstall = false
   private _t = window.api.i18n?.t || (() => '')
   private unsubStatus: (() => void) | null = null
 
@@ -48,6 +48,7 @@ export class NotificationPopover extends HTMLElement {
   connectedCallback(): void {
     this._render()
     this._cacheRefs()
+    this._applyI18n()
     this._syncHide()
     this._applyListeners()
   }
@@ -70,6 +71,16 @@ export class NotificationPopover extends HTMLElement {
     this._popoverContentEl = this.shadowRoot.querySelector(
       '[data-el="popover-content-container"]'
     ) as HTMLDivElement | null
+  }
+
+  private _applyI18n(): void {
+    if (!this.shadowRoot) return
+    // translate all elements with data-i18n attribute
+    this.shadowRoot.querySelectorAll('[data-i18n]').forEach((el) => {
+      const key = el.getAttribute('data-i18n')
+      if (!key) return
+      el.textContent = this._t(key)
+    })
   }
 
   private _syncHide(): void {
@@ -200,7 +211,7 @@ export class NotificationPopover extends HTMLElement {
     const cancelBtnEl = content.querySelector('[data-el="cancel-install-btn"]') as UIButton | null
     if (!approveBtnEl || !cancelBtnEl) return
     approveBtnEl.addEventListener('click', () => {
-      this._approvedInstall = true
+      // this._approvedInstall = true
       window.api.appUpdate.respondToInstallApproval(1)
     })
     cancelBtnEl.addEventListener('click', () => {
