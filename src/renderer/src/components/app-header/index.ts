@@ -1,6 +1,6 @@
 import '../preferences-dialog/index'
 import '../new-dialog/index'
-import '../notification-popover/index'
+// import '../notification-popover/index' // will be back once we fix the bug
 import template from './template.html?raw'
 import styleCss from './style.css?inline'
 import { DATA } from '@root/shared/data'
