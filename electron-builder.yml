@@ -64,7 +64,6 @@ dmg:
 linux:
   target:
     - AppImage
-    - snap
     - rpm
     - zip
     - deb

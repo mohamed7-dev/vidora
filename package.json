@@ -33,7 +33,7 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
-    "publish:linux": "npm run build && electron-builder --linux --publish always",
+    "publish:linux": "electron-builder --linux --publish always",
     "icons:gen": "node scripts/gen-icons.mjs",
     "test:ffmpeg-download": "tsx scripts/test-ffmpeg-download.ts"
   },
