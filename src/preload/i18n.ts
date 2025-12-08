@@ -1,65 +1,38 @@
 import { ipcRenderer } from 'electron'
 import { EVENTS } from '../shared/events'
+import { LoadedLocaleDictPayload, LocaleDict, setLoadedLanguage, setLocale } from '../shared/i18n'
 
-let loadedLanguage: Record<string, unknown> = {}
-let currentLocale = 'en'
+async function initI18nLoader(): Promise<void> {
+  let currentLocale = ''
+  let loadedLanguage: LocaleDict = {}
 
-function deepGet(obj: unknown, path: string[]): unknown {
-  let cur: unknown = obj
-  for (const seg of path) {
-    if (cur && typeof cur === 'object' && seg in (cur as Record<string, unknown>)) {
-      cur = (cur as Record<string, unknown>)[seg]
-    } else {
-      return undefined
-    }
-  }
-  return cur
-}
-
-export function t(phrase: string): string {
-  const val = deepGet(loadedLanguage, phrase.split('.'))
-  return typeof val === 'string' ? val : phrase
-}
-
-export async function initI18nLoader(): Promise<void> {
   try {
-    const config = await ipcRenderer.invoke(EVENTS.CONFIG.GET)
-    currentLocale = config.general.language
-    loadedLanguage = await ipcRenderer.invoke(EVENTS.I18N.LOAD_LOCALE, currentLocale)
+    loadedLanguage = await ipcRenderer.invoke(EVENTS.PREFERENCES.LOCALE.LOAD)
   } catch {
     // fallback: try English
     try {
-      loadedLanguage = await ipcRenderer.invoke(EVENTS.I18N.LOAD_LOCALE, 'en')
+      loadedLanguage = await ipcRenderer.invoke(EVENTS.PREFERENCES.LOCALE.LOAD, 'en')
       currentLocale = 'en'
     } catch {
       loadedLanguage = {}
     }
   }
+  setLocale(currentLocale)
+  setLoadedLanguage(loadedLanguage)
 }
 
-export function setLocale(locale: string): void {
-  currentLocale = locale
-}
+/**
+ * @description
+ * This function initializes i18n, this will load the current language and dictionary to the memory based on
+ * user configuration
+ */
+export function initI18n(): void {
+  // edge case(in dev): when reloading window we lose locale and dictionary since they were in memory
+  // so we have to manually invoke get locale event to get each time
+  initI18nLoader()
 
-export function getLocale(): string {
-  return currentLocale
+  ipcRenderer.on(EVENTS.PREFERENCES.LOCALE.LOADED, async (_e, info: LoadedLocaleDictPayload) => {
+    setLocale(info.locale)
+    setLoadedLanguage(info.dict)
+  })
 }
-
-export function setLoadedLanguage(language: Record<string, unknown>): void {
-  loadedLanguage = language
-}
-
-export function getLoadedLanguage(): Record<string, unknown> {
-  return loadedLanguage
-}
-
-// Initialize i18n loader and keep cache in sync
-void initI18nLoader()
-ipcRenderer.on(EVENTS.I18N.LOCALE_CHANGED, async (_e, locale: string) => {
-  try {
-    currentLocale = locale
-    loadedLanguage = await ipcRenderer.invoke(EVENTS.I18N.LOAD_LOCALE, currentLocale)
-  } catch {
-    /* ignore */
-  }
-})

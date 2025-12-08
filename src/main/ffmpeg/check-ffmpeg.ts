@@ -3,7 +3,6 @@ import os from 'node:os'
 import cp from 'node:child_process'
 import https from 'node:https'
 import path from 'node:path'
-import { begin, fail, progress, success } from './status-bus'
 
 const BASE_URL = 'https://github.com/mohamed7-dev/built-ffmpeg/releases/download/V6'
 
@@ -176,7 +175,7 @@ export class FfmpegDownloader {
   static async getDefaultPath(defaultPath?: string): Promise<string> {
     let ffmpegPath = defaultPath
     if (!defaultPath) {
-      ffmpegPath = await import('./app-config/internal-config-api').then(
+      ffmpegPath = await import('../app-config/internal-config-api').then(
         (mod) => mod.readInternalConfig().ffmpegPath
       )
     }
@@ -242,23 +241,22 @@ export class FfmpegDownloader {
  * @returns path to ffmpeg or null if it fails
  */
 export async function checkFFmpeg(): Promise<string | null> {
-  const ffmpegPath = await import('./app-config/internal-config-api').then(
+  const ffmpegPath = await import('../app-config/internal-config-api').then(
     (mod) => mod.readInternalConfig().ffmpegPath
   )
-  console.log({ ffmpegPath })
 
-  begin('ffmpeg', 'status.ffmpeg.checking')
+  // begin('ffmpeg', 'status.ffmpeg.checking')
   // if env variable exist, prioritize it
   if (process.env.VIDORA_FFMPEG_PATH) {
     if (fs.existsSync(process.env.VIDORA_FFMPEG_PATH)) {
-      success('ffmpeg', 'status.ffmpeg.ready')
+      // success('ffmpeg', 'status.ffmpeg.ready')
       return String(process.env.VIDORA_FFMPEG_PATH)
     }
-    fail(
-      'ffmpeg',
-      "VIDORA_FFMPEG_PATH ENV variable is used, but the file doesn't exist there.",
-      'status.ffmpeg.env_missing'
-    )
+    // fail(
+    //   'ffmpeg',
+    //   "VIDORA_FFMPEG_PATH ENV variable is used, but the file doesn't exist there.",
+    //   'status.ffmpeg.env_missing'
+    // )
     return null
   }
 
@@ -267,11 +265,11 @@ export async function checkFFmpeg(): Promise<string | null> {
     try {
       const ffmpegPath = cp.execSync('which ffmpeg').toString().trim()
       if (fs.existsSync(ffmpegPath)) {
-        success('ffmpeg', 'status.ffmpeg.ready')
+        // success('ffmpeg', 'status.ffmpeg.ready')
         return ffmpegPath
       }
     } catch {
-      fail('ffmpeg', 'Ffmpeg is not found on freebsd', 'status.ffmpeg.not_found_freebsd')
+      // fail('ffmpeg', 'Ffmpeg is not found on freebsd', 'status.ffmpeg.not_found_freebsd')
       return null
     }
   }
@@ -279,16 +277,16 @@ export async function checkFFmpeg(): Promise<string | null> {
   // check if already downloaded in user data directory
   try {
     await fs.promises.access(ffmpegPath)
-    success('ffmpeg', 'status.ffmpeg.ready')
+    // success('ffmpeg', 'status.ffmpeg.ready')
     return ffmpegPath
   } catch {
     console.log('ffmpeg not found, downloading...')
     try {
       await FfmpegDownloader.downloadFfmpeg(ffmpegPath, (downloaded, total) => {
         const percent = Math.round((downloaded / total) * 100)
-        progress('ffmpeg', percent)
+        // progress('ffmpeg', percent)
       })
-      success('ffmpeg', 'status.ffmpeg.ready')
+      // success('ffmpeg', 'status.ffmpeg.ready')
       return ffmpegPath
     } catch (downloadError) {
       console.error('Failed to download ffmpeg:', downloadError)
@@ -300,10 +298,10 @@ export async function checkFFmpeg(): Promise<string | null> {
 
       if (fs.existsSync(bundledPath)) {
         console.log('Using bundled ffmpeg as fallback')
-        success('ffmpeg', 'status.ffmpeg.ready')
+        // success('ffmpeg', 'status.ffmpeg.ready')
         return bundledPath
       }
-      fail('ffmpeg', 'Failed to download ffmpeg', 'status.ffmpeg.download_failed')
+      // fail('ffmpeg', 'Failed to download ffmpeg', 'status.ffmpeg.download_failed')
       throw new Error('Failed to download ffmpeg and no bundled version found.')
     }
   }

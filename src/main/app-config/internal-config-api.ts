@@ -3,7 +3,19 @@ import fs from 'node:fs'
 import { DEFAULT_INTERNAL_CONFIG } from './default-config'
 import { DeepPartial } from '../../shared/types'
 
-let internalConfig: InternalConfig | null = null
+let cachedConfig: InternalConfig | null = null
+
+/**
+ * @description
+ * This function caches the config file in memory for faster access.
+ */
+export function initInternalConfigCache(): void {
+  try {
+    cachedConfig = readInternalConfig()
+  } catch {
+    cachedConfig = null
+  }
+}
 
 function ensureInternalConfigFile(): void {
   try {
@@ -14,25 +26,25 @@ function ensureInternalConfigFile(): void {
       DEFAULT_INTERNAL_CONFIG.internalConfigFilePath,
       JSON.stringify(DEFAULT_INTERNAL_CONFIG, null, 2)
     )
-    internalConfig = DEFAULT_INTERNAL_CONFIG
+    cachedConfig = DEFAULT_INTERNAL_CONFIG
   }
 }
 
 export function readInternalConfig(): InternalConfig {
   ensureInternalConfigFile()
-  if (internalConfig !== null) return internalConfig
+  if (cachedConfig !== null) return cachedConfig
   try {
     const raw = fs.readFileSync(DEFAULT_INTERNAL_CONFIG.internalConfigFilePath, 'utf8')
     const parsed = JSON.parse(raw) as Partial<InternalConfig>
     const merged: InternalConfig = { ...DEFAULT_INTERNAL_CONFIG, ...parsed }
-    internalConfig = merged
+    cachedConfig = merged
     return merged
   } catch {
     fs.writeFileSync(
       DEFAULT_INTERNAL_CONFIG.internalConfigFilePath,
       JSON.stringify(DEFAULT_INTERNAL_CONFIG, null, 2)
     )
-    internalConfig = DEFAULT_INTERNAL_CONFIG
+    cachedConfig = DEFAULT_INTERNAL_CONFIG
     return DEFAULT_INTERNAL_CONFIG
   }
 }
@@ -42,6 +54,6 @@ export function updateInternalConfig(patch: DeepPartial<InternalConfig>): Intern
   const current = readInternalConfig()
   const merged = { ...current, ...patch }
   fs.writeFileSync(DEFAULT_INTERNAL_CONFIG.internalConfigFilePath, JSON.stringify(merged, null, 2))
-  internalConfig = merged
+  cachedConfig = merged
   return merged
 }

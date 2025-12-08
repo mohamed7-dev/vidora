@@ -1,58 +1,66 @@
 export const EVENTS = {
-  PASTE_LINK: 'paste-link',
-  DIALOG: {
-    OPEN_FOLDER: 'dialog:open-folder',
-    SELECTED_LOCATION: 'dialog:selected-location',
-    SHOW_PASTE_LINK_MENU: 'dialog:show-paste-link-menu'
+  // keep
+  PASTE_LINK: {
+    SHOW_MENU: 'paste-link:show-menu',
+    PASTED: 'paste-link:pasted'
   },
+  // keep
   WINDOW: {
     MINIMIZE: 'window:minimize',
     MAXIMIZE: 'window:maximize',
     CLOSE: 'window:close',
     RELOAD: 'window:reload'
   },
+  // keep
   APP: {
     RELAUNCH: 'app:relaunch'
   },
+  // keep
   NAVIGATE: 'navigate:to',
-  DOWNLOAD_PATH: {
-    CHANGE: 'download-preferences:change-download-path',
-    CHANGED: 'download-preferences:download-path-changed'
-  },
-  MEDIA_DOWNLOAD_PATH: {
-    CHANGE: 'download-media:change-download-path',
-    CHANGED: 'download-media:download-path-changed'
-  },
-  CONFIG_PATH: {
-    CHANGE: 'download-preferences:change-config-path',
-    CHANGED: 'download-preferences:config-path-changed'
-  },
-  I18N: {
-    LOAD_LOCALE: 'i18n:load-locale',
-    LOCALE_CHANGED: 'i18n:locale-changed'
-  },
+  // keep
   CONFIG: {
     GET: 'config:get',
     UPDATE: 'config:update',
     GET_APP_DEFAULTS: 'config:get-defaults',
     UPDATED: 'config:updated'
   },
-  JOBS: {
-    ADD: 'jobs:add',
-    LIST: 'jobs:list',
-    UPDATE_STATUS: 'jobs:update-status',
-    REMOVE: 'jobs:remove',
-    PAUSE: 'jobs:pause',
-    RESUME: 'jobs:resume',
-    UPDATED: 'jobs:updated'
+  // keep
+  PREFERENCES: {
+    LOCALE: {
+      LOADED: 'preferences:locale:loaded',
+      LOAD: 'preferences:locale:load'
+    },
+    DOWNLOAD_PATH: {
+      CHANGE_LOCAL: 'preferences:download-path:change-local',
+      CHANGE_GLOBAL: 'preferences:download-path:change-global',
+      CHANGED_GLOBAL: 'preferences:download-path:changed-global',
+      CHANGED_LOCAL: 'preferences:download-path:changed-local'
+    },
+    YTDLP_FILE_PATH: {
+      CHANGE: 'preferences:ytdlp-path:change',
+      CHANGED: 'preferences:ytdlp-path:changed'
+    }
   },
+  // keep
+  DOWNLOAD_JOBS: {
+    ADD: 'download-jobs:add',
+    LIST: 'download-jobs:list',
+    UPDATE_STATUS: 'download-jobs:update-status',
+    REMOVE: 'download-jobs:remove',
+    PAUSE: 'download-jobs:pause',
+    RESUME: 'download-jobs:resume',
+    UPDATED: 'download-jobs:updated'
+  },
+  // keep
   DOWNLOADS: {
     GET_INFO: 'downloads:get-info'
   },
+  // delete
   STATUS: {
     UPDATE: 'status:update', // renderer listens
     SNAPSHOT: 'status:snapshot' // renderer invokes to get current state
   },
+  // keep
   APP_UPDATE: {
     DOWNLOAD_APPROVAL_RESPONSE: 'app-update: download-approval-response',
     INSTALL_APPROVAL_RESPONSE: 'app-update: install-approval-response',

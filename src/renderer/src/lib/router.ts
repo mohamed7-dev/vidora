@@ -38,7 +38,7 @@ const routes: Record<string, RouteDef> = {
 
 const appRoot = (): HTMLElement => document.querySelector('#app') as HTMLElement
 
-function normalizePath(path: string): string {
+export function normalizePath(path: string): string {
   const name = (path || '')
     .trim()
     .replace(/^\/?/, '')
@@ -81,10 +81,10 @@ export async function navigate(path: string, replace = false): Promise<void> {
 
 let currentPath = getRouteFromLocation()
 export function initRouter(): void {
-  window.addEventListener('hashchange', () => {
-    const path = getRouteFromLocation()
-    void navigate(path, true)
-  })
+  // window.addEventListener('hashchange', () => {
+  //   const path = getRouteFromLocation()
+  //   void navigate(path, true)
+  // })
   // initial mount
   const path = getRouteFromLocation()
   void navigate(path, true)

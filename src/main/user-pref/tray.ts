@@ -1,28 +1,14 @@
 import { BrowserWindow, Menu, Tray, nativeImage, app, clipboard } from 'electron'
 import path from 'node:path'
 import { platform } from '@electron-toolkit/utils'
-import { EVENTS } from '../shared/events'
-import { readLocaleFile } from './i18n'
-import { readConfig } from './app-config/config-api'
-
-type TrayDict = {
-  tray: {
-    openApp: {
-      title: string
-    }
-    pasteVideoLink: {
-      title: string
-    }
-    quit: {
-      title: string
-    }
-  }
-}
+import { AppConfig } from '../../shared/types'
+import { t } from '../../shared/i18n'
+import { EVENTS } from '../../shared/events'
 
 function getIconPath(): string {
   const base = app.isPackaged
     ? path.join(process.resourcesPath, 'icons')
-    : path.join(__dirname, '../../resources/icons')
+    : path.join(__dirname, '../../../resources/icons')
   const file = platform.isMacOS ? 'icon-16.png' : 'icon-256.png'
   return path.join(base, file)
 }
@@ -41,11 +27,9 @@ async function init(): Promise<void> {
   const image = nativeImage.createFromPath(getIconPath())
   trayRef = new Tray(image)
   trayRef.setToolTip(app.name)
-  const config = readConfig()
-  const dict = (await readLocaleFile(config.general.language)) as TrayDict
   const menu = Menu.buildFromTemplate([
     {
-      label: dict.tray?.openApp?.title ?? 'Open App',
+      label: t('open app'),
       click: () => {
         const win = getWindow()
         if (win) {
@@ -57,18 +41,18 @@ async function init(): Promise<void> {
       }
     },
     {
-      label: dict.tray?.pasteVideoLink?.title ?? 'Paste video link',
+      label: t('paste media link'),
       click: () => {
         const text = clipboard.readText()
         const win = getWindow()
         if (!win) return
         win.show()
         if (app.dock) app.dock.show()
-        win.webContents.send(EVENTS.PASTE_LINK, text)
+        win.webContents.send(EVENTS.PASTE_LINK.PASTED, text)
       }
     },
     {
-      label: dict.tray?.quit?.title ?? 'Quit',
+      label: t('quit'),
       role: 'quit',
       click: () => {
         quitting = true
@@ -109,4 +93,13 @@ export function getIsQuitting(): boolean {
 
 export function isTrayEnabled(): boolean {
   return enabled
+}
+
+/**
+ * @description
+ * This function initializes tray based on the option configured by the user
+ */
+export function initTray(closeToTray: AppConfig['general']['closeToTray']): void {
+  // sync tray from config
+  useTray(closeToTray)
 }

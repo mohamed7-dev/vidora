@@ -1,92 +1,51 @@
-import fs from 'node:fs'
-import { readConfig } from './config-api'
-import { useTray } from '../tray'
-import { AppConfig } from '../../shared/types'
-import { success, fail } from '../status-bus'
-import { readInternalConfig } from './internal-config-api'
-import { checkForUpdate } from '../app-update'
+import { initConfigCache, readConfig, updateConfig } from './config-api'
+import { AppConfig, DeepPartial } from '../../shared/types'
+import { initInternalConfigCache } from './internal-config-api'
+import { BrowserWindow, ipcMain } from 'electron'
+import { EVENTS } from '../../shared/events'
+import { DEFAULT_CONFIG } from './default-config'
 
-export type ConfigStatus = {
-  downloadDir: {
-    path: string
-    writable: boolean
-    reason?: string
-  }
-  tray: {
-    isEnabled: boolean
-  }
-}
+/**
+ * @description
+ * This function registers the ipc listeners for config file.
+ */
+function registerConfigIpc(): void {
+  ipcMain.handle(EVENTS.CONFIG.GET_APP_DEFAULTS, () => {
+    return DEFAULT_CONFIG
+  })
 
-const isWritable = (dir: string): boolean => {
-  try {
-    // ensure dir exists
-    fs.mkdirSync(dir, { recursive: true })
-    fs.accessSync(dir, fs.constants.W_OK)
-    return true
-  } catch {
-    return false
-  }
-}
+  // async (for invoke)
+  ipcMain.handle(EVENTS.CONFIG.GET, () => {
+    return readConfig()
+  })
 
-const computeDownloadDirStatus = (
-  downloadDir: AppConfig['downloads']['downloadDir']
-): ConfigStatus['downloadDir'] => {
-  // make sure download dir is exists, and writable
-  const writable = isWritable(downloadDir)
-  return {
-    path: downloadDir,
-    writable,
-    reason: writable ? undefined : 'Default downloads path is not writable.'
-  }
-}
+  // sync (for sendSync in preload)
+  ipcMain.on(EVENTS.CONFIG.GET, (event) => {
+    event.returnValue = readConfig()
+  })
 
-const computeTrayStatus = (
-  closeToTray: AppConfig['general']['closeToTray']
-): ConfigStatus['tray'] => ({
-  isEnabled: Boolean(closeToTray)
-})
-
-const computeStatus = (config: AppConfig): ConfigStatus => ({
-  downloadDir: computeDownloadDirStatus(config.downloads.downloadDir),
-  tray: computeTrayStatus(config.general.closeToTray)
-})
-
-const syncTrayFromConfig = (closeToTray: AppConfig['general']['closeToTray']): void => {
-  useTray(Boolean(closeToTray))
+  ipcMain.handle(EVENTS.CONFIG.UPDATE, (_e, patch: DeepPartial<AppConfig>) => {
+    const updated = updateConfig(patch)
+    // broadcast updated config to all windows
+    BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(EVENTS.CONFIG.UPDATED, updated))
+    return updated
+  })
 }
 
 /**
  * @description
- * Initialize user personalizations, and the internal system configs.
+ * Initialize user defined config, and the internal system configs.
+ * This function runs synchronously
  */
-export const initConfig = (): void => {
-  // ensure internal config file is setup, and read it
-  readInternalConfig()
-  // ensure user config file is setup, and read it
-  const config = readConfig()
-  // sync tray state in tray menu based on config option
-  syncTrayFromConfig(config.general.closeToTray)
-  // compute config status
-  const status = computeStatus(config)
-
-  // Publish status-bus entries
-  if (status.downloadDir.writable) {
-    success('configDownloadDir', 'status.config.downloadDir.writable', {
-      path: status.downloadDir.path
-    })
-  } else {
-    fail(
-      'configDownloadDir',
-      new Error(status.downloadDir.reason || 'Download directory not writable'),
-      'status.config.downloadDir.notWritable',
-      { path: status.downloadDir.path }
-    )
+export function initConfig(): AppConfig {
+  // ensure user config file is setup, read it, and cache it
+  const appConfig = initConfigCache()
+  if (!appConfig) {
+    throw new Error('Something went wrong while initializing app')
   }
-  success(
-    'configTray',
-    status.tray.isEnabled ? 'status.config.tray.enabled' : 'status.config.tray.disabled'
-  )
-  if (config.general.autoUpdate) {
-    checkForUpdate()
-  }
+  // ensure app internal config file is setup, read it, and cache it
+  initInternalConfigCache()
+  // register IPC for managing config file
+  registerConfigIpc()
+  return appConfig
 }

@@ -1,19 +1,10 @@
 import { app, shell, BrowserWindow } from 'electron'
-import { join } from 'path'
+import { join } from 'node:path'
 import { electronApp, optimizer, is, platform } from '@electron-toolkit/utils'
-import { handleWindowControlsIpc } from './window-controls'
-import { initChangeDownloadPathIpc, initChangeYtdlpConfigPathIpc } from './preferences'
-import { handleI18nIpc } from './i18n'
-import { getIsQuitting, isTrayEnabled } from './tray'
-import { initConfig } from './app-config/init-config'
 import { readConfig } from './app-config/config-api'
-import { initConfigCache, registerConfigIpc } from './app-config/config-listeners'
-import { setupAppInternals } from './setup'
-import { registerStatusIpc } from './status-bus'
-import { handleAppControlsIpc } from './app-controls'
-import { registerJobsIpc, pauseAllIncompletedJobs } from './jobs-ipc'
-import { registerYtdlpIpc } from './ytdlp'
-import { PasteLinkContextMenuIpc } from './context-menu-ipc'
+import { setupApp } from './setup/index'
+import { getIsQuitting, isTrayEnabled } from './user-pref/tray'
+import { pauseAllIncompletedJobs } from './jobs/download-jobs'
 
 function createWindow(): void {
   const iconPath = app.isPackaged
@@ -94,31 +85,9 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-  // init config cache and config
-  initConfigCache()
-  initConfig()
-  // setup app internals
-  setupAppInternals()
-  // register config file related ipc
-  registerConfigIpc()
-  // init window controls ipc
-  handleWindowControlsIpc()
-  // init app controls ipc
-  handleAppControlsIpc()
-  // init download dir path change ipc
-  initChangeDownloadPathIpc()
-  // init config file path change ipc
-  initChangeYtdlpConfigPathIpc()
-  // init i18n ipc
-  handleI18nIpc()
-  // init status ipc
-  registerStatusIpc()
-  // init ytdlp ipc
-  registerYtdlpIpc()
-  // init download jobs ipc
-  registerJobsIpc()
-  // init paste link context menu ipc
-  PasteLinkContextMenuIpc()
+
+  // Setup Application
+  setupApp()
 
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()

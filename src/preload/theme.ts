@@ -120,3 +120,12 @@ function resolveThemeMode(name: string): 'light' | 'dark' | 'system' {
   if (name === 'system' || !mode) return 'system'
   return mode
 }
+
+/**
+ * @description
+ * This function initializes theme on the render processes
+ */
+export function initTheme(): void {
+  applyInitialTheme()
+  startThemeWatcher()
+}

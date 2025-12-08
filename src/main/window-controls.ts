@@ -5,7 +5,7 @@ import { EVENTS } from '../shared/events'
  * @description
  * This function registers the ipc listeners for window controls.
  */
-export function handleWindowControlsIpc(): void {
+function initWindowControlsIpc(): void {
   ipcMain.on(EVENTS.WINDOW.MINIMIZE, (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     win?.minimize()
@@ -27,4 +27,12 @@ export function handleWindowControlsIpc(): void {
     const win = BrowserWindow.fromWebContents(event.sender)
     win?.reload()
   })
+}
+
+/**
+ * @description
+ * This function initializes window controls.
+ */
+export function initWindowControls(): void {
+  initWindowControlsIpc()
 }

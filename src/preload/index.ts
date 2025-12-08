@@ -1,14 +1,17 @@
 import { clipboard, contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { EVENTS } from '../shared/events'
-import { t } from './i18n'
 import { AppConfig, DeepPartial } from '../shared/types'
-import { DownloadJobPayload } from '../shared/jobs'
-import { applyInitialTheme, startThemeWatcher } from './theme'
+import { DownloadJobPayload, Job, JobStatus, JobsUpdateEvent, ListJobsParams } from '../shared/jobs'
+import { initTheme } from './theme'
 import { DownloadAppUpdateApprovalRes, InstallAppUpdateApprovalRes } from '../shared/app-update'
+import { type PreloadApi } from './types'
+import { LoadedLocaleDictPayload, t } from '../shared/i18n'
+import { initI18n } from './i18n'
+import { SPA_NAVIGATE_EVENT, SPANavigateEventDetailsPayload } from '../shared/navigate'
 
-applyInitialTheme()
-startThemeWatcher()
+void initTheme()
+void initI18n()
 
 const api = {
   app: {
@@ -18,11 +21,11 @@ const api = {
     getInfo: async (url: string) => ipcRenderer.invoke(EVENTS.DOWNLOADS.GET_INFO, url)
   },
   pasteLink: {
-    showMenu: (): void => ipcRenderer.send(EVENTS.DIALOG.SHOW_PASTE_LINK_MENU),
+    showMenu: (): void => ipcRenderer.send(EVENTS.PASTE_LINK.SHOW_MENU),
     onPaste: (callback: (text: string) => void): (() => void) => {
       const handler = (_e: unknown, text: string): void => callback(text)
-      ipcRenderer.on(EVENTS.PASTE_LINK, handler)
-      return () => ipcRenderer.removeListener(EVENTS.PASTE_LINK, handler)
+      ipcRenderer.on(EVENTS.PASTE_LINK.PASTED, handler)
+      return () => ipcRenderer.removeListener(EVENTS.PASTE_LINK.PASTED, handler)
     }
   },
   clipboard: {
@@ -37,40 +40,45 @@ const api = {
   },
   navigation: {
     navigate: (page: string): void => {
-      // Broadcast to the renderer world for SPA routing (no full reload)
+      // Broadcast to the renderer world for SPA routing
       try {
-        const ev = new CustomEvent('spa:navigate', { detail: { page } })
+        const ev = new CustomEvent<SPANavigateEventDetailsPayload>(SPA_NAVIGATE_EVENT, {
+          detail: { page }
+        })
+
         window.dispatchEvent(ev)
       } catch {
         void 0
       }
     }
   },
-  downloadsPreferences: {
-    changeDownloadPath: (): void => ipcRenderer.send(EVENTS.DOWNLOAD_PATH.CHANGE),
-    changedDownloadPath: (callback: (location: string) => void): (() => void) => {
-      const handler = (_e: unknown, location: string): void => callback(location)
-      ipcRenderer.on(EVENTS.DOWNLOAD_PATH.CHANGED, handler)
-      return () => ipcRenderer.removeListener(EVENTS.DOWNLOAD_PATH.CHANGED, handler)
+  preferences: {
+    downloadPath: {
+      changeLocal: (): void => ipcRenderer.send(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGE_LOCAL),
+      changedLocal: (callback: (location: string) => void): (() => void) => {
+        const handler = (_e: unknown, location: string): void => callback(location)
+        ipcRenderer.on(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGED_LOCAL, handler)
+        return () =>
+          ipcRenderer.removeListener(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGED_LOCAL, handler)
+      },
+      changeGlobal: (): void => ipcRenderer.send(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGE_GLOBAL),
+      changedGlobal: (callback: (location: string) => void): (() => void) => {
+        const handler = (_e: unknown, location: string): void => callback(location)
+        ipcRenderer.on(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGED_GLOBAL, handler)
+        return () =>
+          ipcRenderer.removeListener(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGED_GLOBAL, handler)
+      }
     },
-    changeYtdlpConfigPath: (): void => ipcRenderer.send(EVENTS.CONFIG_PATH.CHANGE),
-    changedYtdlpConfigPath: (callback: (location: string) => void): (() => void) => {
-      const handler = (_e: unknown, location: string): void => callback(location)
-      ipcRenderer.on(EVENTS.CONFIG_PATH.CHANGED, handler)
-      return () => ipcRenderer.removeListener(EVENTS.CONFIG_PATH.CHANGED, handler)
+    ytdlpConfigPath: {
+      change: (): void => ipcRenderer.send(EVENTS.PREFERENCES.YTDLP_FILE_PATH.CHANGE),
+      changed: (callback: (location: string) => void): (() => void) => {
+        const handler = (_e: unknown, location: string): void => callback(location)
+        ipcRenderer.on(EVENTS.PREFERENCES.YTDLP_FILE_PATH.CHANGED, handler)
+        return () => ipcRenderer.removeListener(EVENTS.PREFERENCES.YTDLP_FILE_PATH.CHANGED, handler)
+      }
     }
   },
-  /**
-   * local changes when downloading media
-   */
-  mediaPreferences: {
-    changeMediaDownloadPath: (): void => ipcRenderer.send(EVENTS.MEDIA_DOWNLOAD_PATH.CHANGE),
-    changedMediaDownloadPath: (callback: (location: string) => void): (() => void) => {
-      const handler = (_e: unknown, location: string): void => callback(location)
-      ipcRenderer.on(EVENTS.MEDIA_DOWNLOAD_PATH.CHANGED, handler)
-      return () => ipcRenderer.removeListener(EVENTS.MEDIA_DOWNLOAD_PATH.CHANGED, handler)
-    }
-  },
+
   config: {
     getAppDefaults: async (): Promise<AppConfig> =>
       ipcRenderer.invoke(EVENTS.CONFIG.GET_APP_DEFAULTS),
@@ -85,44 +93,42 @@ const api = {
   },
   i18n: {
     loadLocale: async (locale: string): Promise<Record<string, unknown>> =>
-      ipcRenderer.invoke(EVENTS.I18N.LOAD_LOCALE, locale),
-    onLocaleChanged: (callback: (locale: string) => void): (() => void) => {
-      const handler = (_e: Electron.IpcRendererEvent, locale: string): void => callback(locale)
-      ipcRenderer.on(EVENTS.I18N.LOCALE_CHANGED, handler)
-      return () => ipcRenderer.removeListener(EVENTS.I18N.LOCALE_CHANGED, handler)
+      ipcRenderer.invoke(EVENTS.PREFERENCES.LOCALE.LOAD, locale),
+    onLocaleChanged: (callback: (info: LoadedLocaleDictPayload) => void): (() => void) => {
+      const handler = (_e: Electron.IpcRendererEvent, info: LoadedLocaleDictPayload): void =>
+        callback(info)
+      ipcRenderer.on(EVENTS.PREFERENCES.LOCALE.LOADED, handler)
+      return () => ipcRenderer.removeListener(EVENTS.PREFERENCES.LOCALE.LOADED, handler)
     },
     t: (phrase: string): string => t(phrase)
   },
-  status: {
-    getSnapshot: async (): Promise<import('../shared/status').StatusSnapshot> =>
-      ipcRenderer.invoke(EVENTS.STATUS.SNAPSHOT),
-    onUpdate: (cb: (snap: import('../shared/status').StatusSnapshot) => void): (() => void) => {
-      const handler = (_: unknown, snap: import('../shared/status').StatusSnapshot): void =>
-        cb(snap)
-      ipcRenderer.on(EVENTS.STATUS.UPDATE, handler)
-      return () => ipcRenderer.removeListener(EVENTS.STATUS.UPDATE, handler)
-    }
-  },
-  jobs: {
-    add: async (payload: DownloadJobPayload): Promise<import('../shared/jobs').Job> =>
-      ipcRenderer.invoke(EVENTS.JOBS.ADD, payload),
-    list: async (
-      params?: import('../shared/jobs').ListJobsParams
-    ): Promise<import('../shared/jobs').Job[]> => ipcRenderer.invoke(EVENTS.JOBS.LIST, params),
-    updateStatus: async (
-      id: string,
-      status: import('../shared/jobs').JobStatus
-    ): Promise<import('../shared/jobs').Job | null> =>
-      ipcRenderer.invoke(EVENTS.JOBS.UPDATE_STATUS, id, status),
-    remove: async (id: string): Promise<boolean> => ipcRenderer.invoke(EVENTS.JOBS.REMOVE, id),
-    pause: async (id: string): Promise<import('../shared/jobs').Job | null> =>
-      ipcRenderer.invoke(EVENTS.JOBS.PAUSE, id),
-    resume: async (id: string): Promise<import('../shared/jobs').Job | null> =>
-      ipcRenderer.invoke(EVENTS.JOBS.RESUME, id),
-    onUpdated: (cb: (evt: import('../shared/jobs').JobsUpdateEvent) => void): (() => void) => {
-      const handler = (_: unknown, evt: import('../shared/jobs').JobsUpdateEvent): void => cb(evt)
-      ipcRenderer.on(EVENTS.JOBS.UPDATED, handler)
-      return () => ipcRenderer.removeListener(EVENTS.JOBS.UPDATED, handler)
+  // status: {
+  //   getSnapshot: async (): Promise<import('../shared/status').StatusSnapshot> =>
+  //     ipcRenderer.invoke(EVENTS.STATUS.SNAPSHOT),
+  //   onUpdate: (cb: (snap: import('../shared/status').StatusSnapshot) => void): (() => void) => {
+  //     const handler = (_: unknown, snap: import('../shared/status').StatusSnapshot): void =>
+  //       cb(snap)
+  //     ipcRenderer.on(EVENTS.STATUS.UPDATE, handler)
+  //     return () => ipcRenderer.removeListener(EVENTS.STATUS.UPDATE, handler)
+  //   }
+  // },
+  downloadJobs: {
+    add: async (payload: DownloadJobPayload): Promise<Job> =>
+      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.ADD, payload),
+    list: async (params?: ListJobsParams): Promise<Job[]> =>
+      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.LIST, params),
+    updateStatus: async (id: string, status: JobStatus): Promise<Job | null> =>
+      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.UPDATE_STATUS, id, status),
+    remove: async (id: string): Promise<boolean> =>
+      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.REMOVE, id),
+    pause: async (id: string): Promise<Job | null> =>
+      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.PAUSE, id),
+    resume: async (id: string): Promise<Job | null> =>
+      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.RESUME, id),
+    onUpdated: (cb: (evt: JobsUpdateEvent) => void): (() => void) => {
+      const handler = (_: unknown, evt: JobsUpdateEvent): void => cb(evt)
+      ipcRenderer.on(EVENTS.DOWNLOAD_JOBS.UPDATED, handler)
+      return () => ipcRenderer.removeListener(EVENTS.DOWNLOAD_JOBS.UPDATED, handler)
     }
   },
   appUpdate: {
@@ -132,7 +138,7 @@ const api = {
     respondToInstallApproval: (res: InstallAppUpdateApprovalRes) =>
       ipcRenderer.invoke(EVENTS.APP_UPDATE.INSTALL_APPROVAL_RESPONSE, res)
   }
-}
+} satisfies PreloadApi
 
 if (process.contextIsolated) {
   try {

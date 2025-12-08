@@ -1,11 +1,11 @@
-import { DEFAULT_INTERNAL_CONFIG } from './app-config/default-config'
-import type { Job } from '../shared/jobs'
-import { ensureYtDlpPath, YTDlpWrap } from './ytdlp'
+import { DEFAULT_INTERNAL_CONFIG } from '../app-config/default-config'
+import type { Job } from '../../shared/jobs'
+import { ensureYtDlpPath, YTDlpWrap } from './check-ytdlp'
 import YTDlpWrapImport, { YTDlpEventEmitter } from 'yt-dlp-wrap-plus'
 import os from 'node:os'
-import { readConfig } from './app-config/config-api'
-import { readInternalConfig } from './app-config/internal-config-api'
-import { begin, fail, progress as statusProgress, success } from './status-bus'
+import { readConfig } from '../app-config/config-api'
+import { readInternalConfig } from '../app-config/internal-config-api'
+// import { begin, fail, progress as statusProgress, success } from '../status-bus'
 
 export type EngineHooks = {
   onProgress?: (jobId: string, progress: number) => void
@@ -61,10 +61,10 @@ export class DownloadEngine {
         const num = typeof raw === 'number' ? raw : parseFloat(String(raw ?? '0').replace('%', ''))
         const clamped = Math.max(0, Math.min(100, isFinite(num) ? num : 0))
         this.hooks.onProgress?.(job.id, clamped)
-        statusProgress('ytdlp', clamped, 'status.ytdlp.downloadMedia.progress', {
-          scope: 'download',
-          jobId: job.id
-        })
+        // statusProgress('ytdlp', clamped, 'status.ytdlp.downloadMedia.progress', {
+        //   scope: 'download',
+        //   jobId: job.id
+        // })
       })
 
       // First event after spawn (optional UI change)
@@ -83,7 +83,7 @@ export class DownloadEngine {
       })
 
       // Mark job as started in status bus
-      begin('ytdlp', 'status.ytdlp.downloadMedia.started', { scope: 'download', jobId: job.id })
+      //   begin('ytdlp', 'status.ytdlp.downloadMedia.started', { scope: 'download', jobId: job.id })
 
       // Close/completion: prefer child process event to get signal as well
       spawned?.once?.('close', (code: number | null, signal: NodeJS.Signals | null) => {
@@ -94,10 +94,10 @@ export class DownloadEngine {
         const ok = code === 0
         if (ok) {
           this.hooks.onDone?.(job.id, true, undefined)
-          success('ytdlp', 'status.ytdlp.downloadMedia.success', {
-            scope: 'download',
-            jobId: job.id
-          })
+          //   success('ytdlp', 'status.ytdlp.downloadMedia.success', {
+          //     scope: 'download',
+          //     jobId: job.id
+          //   })
         } else {
           const cleaned = errBuf
             .split('\n')
@@ -110,10 +110,10 @@ export class DownloadEngine {
           const reason = code !== null ? `code ${code}` : signal ? `signal ${signal}` : 'unknown'
           const msg = base ? `${base}\n[exit ${reason}]` : `yt-dlp exited with ${reason}`
           this.hooks.onDone?.(job.id, false, msg)
-          fail('ytdlp', new Error(msg), 'status.ytdlp.downloadMedia.failed', {
-            scope: 'download',
-            jobId: job.id
-          })
+          //   fail('ytdlp', new Error(msg), 'status.ytdlp.downloadMedia.failed', {
+          //     scope: 'download',
+          //     jobId: job.id
+          //   })
         }
       })
       // Fallback: wrapper-level close (in case spawned is unavailable)
@@ -153,10 +153,10 @@ export class DownloadEngine {
           .trim()
         const finalMsg = cleaned || msg
         this.hooks.onDone?.(job.id, false, finalMsg)
-        fail('ytdlp', new Error(finalMsg), 'status.ytdlp.downloadMedia.failed', {
-          scope: 'download',
-          jobId: job.id
-        })
+        // fail('ytdlp', new Error(finalMsg), 'status.ytdlp.downloadMedia.failed', {
+        //   scope: 'download',
+        //   jobId: job.id
+        // })
       })
     })
   }
