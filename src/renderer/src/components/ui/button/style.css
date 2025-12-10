@@ -1,95 +1,78 @@
-:root {
-  --button-hover-mix: 80%;
-}
-
 :host {
-  display: inline-flex;
+  display: inline-block;
 }
 
-/* block attribute is used to make the button take full width */
+/* Block */
 
 :host([block]) {
   display: block;
   width: 100%;
 }
 
-:host([block]) button {
-  width: 100%;
-}
+/* Inner Button  */
 
-/* inner button  */
-
-:host button {
-  -webkit-appearance: none;
-  appearance: none;
-  outline: none;
-  border: 1px solid transparent;
-  border-radius: var(--ui-button-radius, var(--radius));
-  outline: none;
-  cursor: pointer;
-  font-weight: 500;
-  line-height: 1;
-  white-space: no-wrap;
-  transition: all 0.15s ease;
-  font-size: var(--ui-button-font-size, 0.875rem);
-  padding: var(--ui-button-padding, 0.5rem 1rem);
+button {
+  all: unset;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--ui-button-gap, 0.5rem);
-  flex-direction: var(--ui-button-direction, row);
+  border-radius: var(--ui-button-radius, var(--radius));
+  font-size: var(--ui-button-font-size, 0.875em);
+  line-height: 1;
+  font-weight: 500;
+  padding-inline: var(--ui-button-inline-padding, 0.75rem);
+  padding-block: var(--ui-button-block-padding, 0.5rem);
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: nowrap;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 50ms ease;
   flex-shrink: 0;
+  border: 1px solid transparent;
+  cursor: pointer;
 }
-:host button:focus-visible {
+
+button:focus-visible {
   box-shadow: var(--focus-ring);
 }
 
-:host([aria-invalid]) button {
-  border-color: var(--destructive);
-  box-shadow: 0 0 0 1px oklch(from var(--destructive) l calc(c / 20) h);
+:host([disabled]) button,
+:host([loading]) button {
+  cursor: default;
+  opacity: 0.7;
 }
 
-:host-context(.dark) :host([aria-invalid]) button {
-  box-shadow: 0 0 0 1px oklch(from var(--destructive) l calc(c / 40) h);
-}
-
-:host([aria-invalid]) button:focus-visible {
-  box-shadow:
-    var(--focus-ring),
-    0 0 0 1px var(--destructive);
-}
-
-/* Named slot layout */
-:host button ::slotted([slot='label']) {
+/* Named Slots */
+.prefix,
+.suffix {
   display: inline-flex;
   align-items: center;
 }
 
-/* Icon sizing for named slots using ui-icon */
-:host button ::slotted([slot='prefix']),
-:host button ::slotted([slot='suffix']) {
+.label {
   display: inline-flex;
-  flex-shrink: 0;
-  width: var(--ui-button-icon-size, 1rem);
-  height: var(--ui-button-icon-size, 1rem);
+  align-items: center;
 }
 
-/* Loading state: hide normal content, show spinner slot */
-:host([loading]) button ::slotted([slot='prefix']),
-:host([loading]) button ::slotted([slot='label']),
-:host([loading]) button ::slotted([slot='suffix']) {
-  visibility: hidden;
-  opacity: 0;
+.spinner {
+  display: inline-flex;
+  align-items: center;
 }
 
-:host button ::slotted([slot='spinner']) {
+/* Loading */
+
+:host(:not([loading])) .spinner {
   display: none;
 }
 
-:host([loading]) button ::slotted([slot='spinner']) {
-  display: inline-flex;
-  width: var(--ui-button-icon-size, 1rem);
-  height: var(--ui-button-icon-size, 1rem);
+:host([loading]) .label {
+  opacity: 0.7;
 }
 
 /* Variants */
@@ -99,9 +82,12 @@
   border-color: transparent;
 }
 
-:host([variant='default']:hover) button {
+:host(:not([toggle])[variant='default']) button:hover:not(:disabled) {
   background: oklch(from var(--primary) calc(l / 1.2) c h);
-  color: var(--primary-foreground);
+}
+
+:host([pressed][variant='default']) button {
+  background: oklch(from var(--primary) calc(l / 1.2) c h);
 }
 
 :host([variant='secondary']) button {
@@ -110,9 +96,12 @@
   border-color: var(--input);
 }
 
-:host([variant='secondary']:hover) button {
+:host(:not([toggle])[variant='secondary']) button:hover:not(:disabled) {
   background: oklch(from var(--secondary) calc(l / 1.2) c h);
-  color: var(--secondary-foreground);
+}
+
+:host([pressed][variant='secondary']) button {
+  background: oklch(from var(--secondary) calc(l / 1.2) c h);
 }
 
 :host([variant='destructive']) button {
@@ -121,9 +110,12 @@
   border-color: transparent;
 }
 
-:host([variant='destructive']:hover) button {
+:host(:not([toggle])[variant='destructive']) button:hover:not(:disabled) {
   background: oklch(from var(--destructive) calc(l / 1.2) c h);
-  color: var(--destructive-foreground);
+}
+
+:host([pressed][variant='destructive']) button {
+  background: oklch(from var(--destructive) calc(l / 1.2) c h);
 }
 
 :host([variant='outline']) button {
@@ -132,8 +124,13 @@
   border-color: var(--input);
 }
 
-:host([variant='outline']:hover) button {
+:host(:not([toggle])[variant='outline']) button:hover:not(:disabled) {
   background: oklch(from var(--accent) calc(l / 1.2) c h);
+  color: var(--accent-foreground);
+}
+
+:host([pressed][variant='outline']) button {
+  border-color: var(--primary);
   color: var(--accent-foreground);
 }
 
@@ -143,7 +140,12 @@
   color: var(--foreground);
 }
 
-:host([variant='ghost']:hover) button {
+:host(:not([toggle])[variant='ghost']) button:hover:not(:disabled) {
+  background: oklch(from var(--accent) calc(l / 1.2) c h);
+  color: var(--accent-foreground);
+}
+
+:host([pressed][variant='ghost']) button {
   background: oklch(from var(--accent) calc(l / 1.2) c h);
   color: var(--accent-foreground);
 }
@@ -151,50 +153,43 @@
 :host([variant='link']) button {
   background: transparent;
   color: var(--primary);
-  border-color: transparent;
+  border: 0;
+  outline: 0;
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 0.5em;
 }
 
 /* Sizes */
-:host([size='default']) button {
-  height: var(--ui-button-height, 2.5rem);
+
+:host(:not([size]), [size='default']) button {
+  height: var(--ui-button-height, 2.25rem);
+  font-size: var(--ui-button-font-size, 0.875rem);
+  padding-inline: var(--ui-button-inline-padding, 0.75rem);
 }
 
 :host([size='sm']) button {
-  height: var(--ui-button-height, 2.25rem);
-  border-radius: var(--ui-button-radius, calc(var(--radius) - 2px));
+  height: var(--ui-button-height, 1.875rem);
+  border-radius: var(--ui-button-radius, calc(var(--radius) - 4px));
+  padding-inline: var(--ui-button-inline-padding, 0.5rem);
+  font-size: var(--ui-button-font-size, 0.75rem);
 }
 
 :host([size='lg']) button {
-  height: var(--ui-button-height, 2.75rem);
-  font-size: var(--ui-button-font-size, 1rem);
+  height: var(--ui-button-height, 2.625rem);
+  border-radius: var(--ui-button-radius, calc(var(--radius) - 2px));
+  padding-inline: var(--ui-button-inline-padding, 1rem);
 }
 
 :host([size='icon']) button {
   height: var(--ui-button-icon-box, 2.25rem);
   width: var(--ui-button-icon-box, 2.25rem);
   padding: 0;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 100%;
+  border-radius: var(--ui-button-radius, 100%);
 }
 
 /* Disabled */
-:host([disabled]) button,
-:host button:disabled {
-  opacity: 0.5;
-  pointer-events: none;
-  cursor: not-allowed;
-}
 
-/* Force consistent disabled visuals across all variants and states */
-/* Use [disabled][variant] to raise specificity above variant :hover selectors */
-:host([disabled][variant]) button,
-:host([disabled][variant]) button:hover,
-:host([disabled][variant]) button:focus,
-:host([disabled][variant]) button:focus-visible {
-  background: var(--muted);
-  color: var(--muted-foreground);
-  border-color: var(--input);
+/* When disabled, prevent mouse events from bubbling up from children */
+:host([disabled]) * {
+  pointer-events: none;
 }

@@ -1,0 +1,15 @@
+import type { StorybookConfig } from '@storybook/html-vite'
+
+const config: StorybookConfig = {
+  stories: ['../src/**/*.stories.@(ts|js)'],
+  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions'],
+  framework: {
+    name: '@storybook/html-vite',
+    options: {}
+  },
+  core: {
+    disableTelemetry: true
+  }
+}
+
+export default config

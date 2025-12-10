@@ -1,8 +1,16 @@
-<template>
-  <button part="base">
-    <slot name="prefix" part="prefix"></slot>
-    <slot name="label" part="label"></slot>
-    <slot name="suffix" part="suffix"></slot>
-    <slot name="spinner" part="spinner"></slot>
-  </button>
-</template>
+<button part="base" type="button">
+  <span part="prefix" class="prefix" aria-hidden="true">
+    <slot name="prefix"></slot>
+  </span>
+  <span part="label" class="label">
+    <slot></slot>
+  </span>
+  <span part="suffix" class="suffix" aria-hidden="true">
+    <slot name="suffix"></slot>
+  </span>
+  <span part="spinner" class="spinner" aria-hidden="true">
+    <slot name="spinner">
+      <ui-icon name="loader-circle" spin></ui-icon>
+    </slot>
+  </span>
+</button>

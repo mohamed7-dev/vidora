@@ -1,5 +1,8 @@
-import template from './template.html?raw'
 import style from './style.css?inline'
+import template from './template.html?raw'
+
+export type UIButtonVariant = 'default' | 'outline' | 'secondary' | 'ghost' | 'destructive'
+export type UIButtonSize = 'sm' | 'default' | 'lg' | 'icon'
 
 export class UIButton extends HTMLElement {
   // Cache stylesheet and template per class for performance and to prevent FOUC
@@ -8,191 +11,162 @@ export class UIButton extends HTMLElement {
     s.replaceSync(style)
     return s
   })()
-  private static readonly tpl: HTMLTemplateElement = (() => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(template, 'text/html')
-    const inner = doc.querySelector('template')
-    const t = document.createElement('template')
-    t.innerHTML = inner ? inner.innerHTML : template
-    return t
-  })()
   // refs
-  private _buttonEl: HTMLButtonElement | null = null
-  private _attrObserver: MutationObserver | null = null
+  private _buttonEl!: HTMLButtonElement
   private _eventsAborter: AbortController | null = null
+
+  // states
+  private _initialized = false
 
   constructor() {
     super()
-    // focusing host would send focus to inner button
     this.attachShadow({ mode: 'open', delegatesFocus: true })
   }
 
   static get observedAttributes(): string[] {
-    return ['variant', 'size', 'disabled', 'loading', 'toggle', 'pressed']
+    return ['variant', 'size', 'disabled', 'loading', 'toggle', 'pressed', 'type']
   }
 
-  attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null): void {
-    if (name === 'disabled' && this._buttonEl) {
-      this._buttonEl.disabled = newValue !== null
-    }
-    if (name === 'loading' && this._buttonEl) {
-      const isLoading = newValue !== null
-      this._buttonEl.setAttribute('aria-busy', isLoading ? 'true' : 'false')
-      if (isLoading) this._buttonEl.disabled = true
-      else this._buttonEl.disabled = this.hasAttribute('disabled')
-    }
-    if (name === 'pressed' && this._buttonEl) {
-      const isToggle = this.hasAttribute('toggle')
-      if (isToggle) {
-        const isPressed = newValue !== null
-        this._buttonEl.setAttribute('aria-pressed', isPressed ? 'true' : 'false')
-      }
-    }
+  attributeChangedCallback(): void {
+    if (!this._initialized) return
+    this._syncButtonState()
   }
 
   connectedCallback(): void {
-    this._render()
-    this._setDefaults()
-    this._syncAllAttributesToInner()
-    this._observeAttributeChanges()
-    this._bindEventForwarders()
+    if (!this._initialized) {
+      this._render()
+      this._queryRefs()
+      this._syncButtonState()
+      this._bindEventForwarders()
+      this._bindKeyboardA11y()
+      this._initialized = true
+    } else {
+      // In case attributes changed while disconnected
+      this._syncButtonState()
+    }
+  }
+
+  disconnectedCallback(): void {
+    this._eventsAborter?.abort()
+    this._eventsAborter = null
   }
 
   private _render(): void {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = ''
+    this.shadowRoot.innerHTML = template
+
     // attach cached stylesheet first to avoid FOUC
     this.shadowRoot.adoptedStyleSheets = [UIButton.sheet]
-    // append cached template content
-    this.shadowRoot.append(UIButton.tpl.content.cloneNode(true))
-    // query refs
-    this._buttonEl = this.shadowRoot.querySelector('button') ?? null
   }
 
-  disconnectedCallback(): void {
-    this._attrObserver?.disconnect()
-    this._attrObserver = null
-    this._eventsAborter?.abort()
-    this._eventsAborter = null
+  private _queryRefs(): void {
+    if (!this.shadowRoot) return
+    this._buttonEl = this.shadowRoot.querySelector('button') as HTMLButtonElement
   }
 
-  private _observeAttributeChanges(): void {
-    if (this._attrObserver) return
-    this._attrObserver = new MutationObserver(() => this._syncAllAttributesToInner())
-    this._attrObserver.observe(this, { attributes: true })
-  }
+  private _syncButtonState(): void {
+    const disabled = this.hasAttribute('disabled')
+    const loading = this.hasAttribute('loading')
 
-  private _setDefaults(): void {
-    if (!this.hasAttribute('variant')) this.setAttribute('variant', 'default')
-    if (!this.hasAttribute('size')) this.setAttribute('size', 'default')
-    if (this.hasAttribute('disabled') && this._buttonEl) {
-      this._buttonEl.disabled = true
-    }
-    if (this._buttonEl && !this.hasAttribute('type')) {
-      this._buttonEl.type = 'button'
-    }
-  }
+    this._buttonEl.disabled = disabled || loading
 
-  private _syncAllAttributesToInner(): void {
-    if (!this._buttonEl) return
-    const deny = new Set([
-      'id',
-      'class',
-      'style',
-      'slot',
-      'variant',
-      'size',
-      'loading',
-      'toggle',
-      'pressed'
-    ])
+    const type = (this.getAttribute('type') as HTMLButtonElement['type']) ?? 'button'
+    this._buttonEl.type = type
 
-    // Remove attributes on inner button that are not present on host anymore (except denylist)
-    for (const attr of Array.from(this._buttonEl.attributes)) {
-      if (deny.has(attr.name)) continue
-      if (!this.hasAttribute(attr.name)) this._buttonEl.removeAttribute(attr.name)
+    const variant = (this.variant as UIButtonVariant) ?? 'default'
+    this.variant = variant
+
+    const size = (this.variant as UIButtonSize) ?? 'default'
+    this.size = size
+
+    if (!this.variant) {
+      this.variant = 'default'
     }
 
-    // Mirror all host attributes (except denylist)
-    for (const attr of Array.from(this.attributes)) {
-      const name = attr.name
-      if (deny.has(name)) continue
-      const value = attr.value
-      // Handle boolean attributes: if present with empty value, set empty string
-      if (value === '' || value === name) this._buttonEl.setAttribute(name, '')
-      else this._buttonEl.setAttribute(name, value)
-    }
+    this._buttonEl.ariaBusy = loading ? 'true' : 'false'
 
-    // Keep disabled property in sync with attribute
-    this._buttonEl.disabled = this.hasAttribute('disabled')
-    if (!this.hasAttribute('type')) this._buttonEl.setAttribute('type', 'button')
-
-    const isLoading = this.hasAttribute('loading')
-    this._buttonEl.setAttribute('aria-busy', isLoading ? 'true' : 'false')
-    if (isLoading) this._buttonEl.disabled = true
-
-    const isToggle = this.hasAttribute('toggle')
-    if (isToggle) {
-      const isPressed = this.hasAttribute('pressed')
-      this._buttonEl.setAttribute('aria-pressed', isPressed ? 'true' : 'false')
+    // Toggle button ARIA state
+    if (this.toggle) {
+      this._buttonEl.setAttribute('aria-pressed', this.pressed ? 'true' : 'false')
     } else {
       this._buttonEl.removeAttribute('aria-pressed')
     }
   }
 
   private _bindEventForwarders(): void {
-    if (!this._buttonEl) return
     this._eventsAborter?.abort()
     this._eventsAborter = new AbortController()
     const signal = this._eventsAborter.signal
 
-    // Forward focus/blur (non-bubbling in shadow DOM)
-    this._buttonEl.addEventListener(
-      'focus',
-      (e: FocusEvent) => {
-        this.dispatchEvent(
-          new FocusEvent('focus', {
-            bubbles: true,
-            composed: true,
-            relatedTarget: e.relatedTarget as EventTarget | null
-          })
-        )
-      },
-      { signal }
-    )
-    this._buttonEl.addEventListener(
-      'blur',
-      (e: FocusEvent) => {
-        this.dispatchEvent(
-          new FocusEvent('blur', {
-            bubbles: true,
-            composed: true,
-            relatedTarget: e.relatedTarget as EventTarget | null
-          })
-        )
-      },
-      { signal }
-    )
+    // Forward focus/blur using original event for consistency
+    const forward = (e: Event): void => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const clone = new (e.constructor as any)(e.type, {
+        ...e,
+        bubbles: true,
+        composed: true
+      })
+      this.dispatchEvent(clone)
+    }
+    this._buttonEl.addEventListener('focus', forward, { signal })
+    this._buttonEl.addEventListener('blur', forward, { signal })
 
-    // Forward invalid (does not bubble by default)
+    // invalid
     this._buttonEl.addEventListener(
       'invalid',
-      () => {
-        this.dispatchEvent(new Event('invalid', { bubbles: true, composed: true }))
-      },
+      () => this.dispatchEvent(new Event('invalid', { bubbles: true, composed: true })),
       { signal }
     )
 
+    // Toggle behavior
     this._buttonEl.addEventListener(
       'click',
-      () => {
-        if (!this.hasAttribute('toggle')) return
-        if (this.hasAttribute('disabled') || this.hasAttribute('loading')) return
-        if (this.hasAttribute('pressed')) this.removeAttribute('pressed')
-        else this.setAttribute('pressed', '')
+      (event) => {
+        if (this.hasAttribute('disabled') || this.hasAttribute('loading')) {
+          event.preventDefault()
+          event.stopImmediatePropagation()
+          return
+        }
+        // Toggle behavior: when [toggle] is present, flip pressed state on click
+        if (this.toggle) {
+          this.pressed = !this.pressed
+          this.dispatchEvent(
+            new CustomEvent('ui-toggle', {
+              detail: { pressed: this.pressed },
+              bubbles: true,
+              composed: true
+            })
+          )
+        }
       },
       { signal }
     )
+  }
+
+  private _bindKeyboardA11y(): void {
+    // Add key handling on host, not on internal button
+    this.addEventListener('keydown', (e) => {
+      if (this.disabled) return
+
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+
+      if (e.key === 'Enter') {
+        this.click()
+      }
+    })
+
+    this.addEventListener('keyup', (e) => {
+      if (this.disabled) return
+
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault()
+        this.click()
+      }
+    })
   }
 
   // Public methods proxy to internal button for convenience
@@ -232,8 +206,11 @@ export class UIButton extends HTMLElement {
   }
 
   set disabled(value: boolean) {
-    if (value) this.setAttribute('disabled', '')
-    else this.removeAttribute('disabled')
+    if (value) {
+      this.setAttribute('disabled', '')
+    } else {
+      this.removeAttribute('disabled')
+    }
   }
 
   get type(): string {

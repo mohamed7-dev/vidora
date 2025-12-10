@@ -2,26 +2,19 @@
   display: inline-block;
   width: var(--ui-icon-size, 1em);
   height: var(--ui-icon-size, 1em);
-  line-height: 1;
-  color: currentColor;
+  box-sizing: content-box !important;
 }
 
-.icon {
-  display: inline-block;
-  width: 100%;
-  height: 100%;
-}
-
-.icon svg {
+svg {
   display: block;
-  width: 100%;
   height: 100%;
+  width: 100%;
   fill: none;
   stroke: currentColor;
 }
 
 /* Optional spinning behavior */
-:host([spin]) .icon svg {
+:host([spin]) svg {
   animation: ui-spin 700ms linear infinite;
 }
 

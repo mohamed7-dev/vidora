@@ -33,6 +33,13 @@ const routes: Record<string, RouteDef> = {
       root.innerHTML = `<completed-page></completed-page>`
       await Promise.all([import('../components/completed-page/index')])
     }
+  },
+  '/test': {
+    async mount(root) {
+      document.title = _t('routes.completed.title') || 'Completed'
+      root.innerHTML = `<test-page></test-page>`
+      await Promise.all([import('../components/test-page/index')])
+    }
   }
 }
 

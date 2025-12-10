@@ -38,6 +38,12 @@ export const SIDEBAR_ITEMS: Record<string, Section> = {
         title: 'appSidebar.downloads.items.completed',
         page: 'completed',
         icon: 'circle-check-big'
+      },
+      {
+        id: 'app-sidebar-nav-item-completed',
+        title: 'test',
+        page: 'test',
+        icon: 'circle-check-big'
       }
     ]
   }
