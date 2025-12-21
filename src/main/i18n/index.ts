@@ -2,10 +2,10 @@ import { BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { promises as fs } from 'fs'
 import { is } from '@electron-toolkit/utils'
-import { EVENTS } from '../../shared/events'
 import { LoadedLocaleDictPayload, LocaleDict } from '../../shared/i18n'
 import { AppConfig } from '../../shared/types'
 import { readConfig } from '../app-config/config-api'
+import { USER_PREF_CHANNELS } from '../../shared/ipc/user-pref'
 
 const dictionariesCache: Record<string, LocaleDict> = {}
 
@@ -48,14 +48,14 @@ export async function loadAndBroadcastDict(locale: string): Promise<void> {
   const dict = await loadDict(locale)
 
   BrowserWindow.getAllWindows().forEach((w) =>
-    w.webContents.send(EVENTS.PREFERENCES.LOCALE.LOADED, {
+    w.webContents.send(USER_PREF_CHANNELS.LOCALE.LOADED, {
       locale,
       dict
     } satisfies LoadedLocaleDictPayload)
   )
 }
 function setupIPC(): void {
-  ipcMain.handle(EVENTS.PREFERENCES.LOCALE.LOAD, async (_e, locale?: string) => {
+  ipcMain.handle(USER_PREF_CHANNELS.LOCALE.LOAD, async (_e, locale?: string) => {
     const config = readConfig()
     const dict = await loadDict(locale ?? config.general.language)
     return dict

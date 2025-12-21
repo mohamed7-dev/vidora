@@ -2,32 +2,34 @@ import { initConfigCache, readConfig, updateConfig } from './config-api'
 import { AppConfig, DeepPartial } from '../../shared/types'
 import { initInternalConfigCache } from './internal-config-api'
 import { BrowserWindow, ipcMain } from 'electron'
-import { EVENTS } from '../../shared/events'
-import { DEFAULT_CONFIG } from './default-config'
+import { DEFAULT_CONFIG, InternalConfig } from './default-config'
+import { APP_CONFIG_CHANNELS } from '../../shared/ipc/app-config'
 
 /**
  * @description
  * This function registers the ipc listeners for config file.
  */
 function registerConfigIpc(): void {
-  ipcMain.handle(EVENTS.CONFIG.GET_APP_DEFAULTS, () => {
+  ipcMain.handle(APP_CONFIG_CHANNELS.GET_APP_DEFAULTS, () => {
     return DEFAULT_CONFIG
   })
 
   // async (for invoke)
-  ipcMain.handle(EVENTS.CONFIG.GET, () => {
+  ipcMain.handle(APP_CONFIG_CHANNELS.GET, () => {
     return readConfig()
   })
 
   // sync (for sendSync in preload)
-  ipcMain.on(EVENTS.CONFIG.GET, (event) => {
+  ipcMain.on(APP_CONFIG_CHANNELS.GET, (event) => {
     event.returnValue = readConfig()
   })
 
-  ipcMain.handle(EVENTS.CONFIG.UPDATE, (_e, patch: DeepPartial<AppConfig>) => {
+  ipcMain.handle(APP_CONFIG_CHANNELS.UPDATE, (_e, patch: DeepPartial<AppConfig>) => {
     const updated = updateConfig(patch)
     // broadcast updated config to all windows
-    BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(EVENTS.CONFIG.UPDATED, updated))
+    BrowserWindow.getAllWindows().forEach((w) =>
+      w.webContents.send(APP_CONFIG_CHANNELS.UPDATED, updated)
+    )
     return updated
   })
 }
@@ -37,15 +39,18 @@ function registerConfigIpc(): void {
  * Initialize user defined config, and the internal system configs.
  * This function runs synchronously
  */
-export function initConfig(): AppConfig {
+export function initConfig(): { appConfig: AppConfig; internalConfig: InternalConfig } {
   // ensure user config file is setup, read it, and cache it
   const appConfig = initConfigCache()
   if (!appConfig) {
-    throw new Error('Something went wrong while initializing app')
+    throw new Error('Something went wrong while initializing app config')
   }
   // ensure app internal config file is setup, read it, and cache it
-  initInternalConfigCache()
+  const internalConfig = initInternalConfigCache()
+  if (!internalConfig) {
+    throw new Error('Something went wrong while initializing app config')
+  }
   // register IPC for managing config file
   registerConfigIpc()
-  return appConfig
+  return { appConfig, internalConfig }
 }

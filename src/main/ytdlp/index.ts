@@ -1,6 +1,4 @@
-import { ipcMain } from 'electron'
-import { EVENTS } from '../../shared/events'
-import { getMediaInfo } from './get-media-info'
+import { setupMediaInfoIPC } from './get-media-info'
 import { ensureYtDlpPath } from './check-ytdlp'
 import { updateInternalConfig } from '../app-config/internal-config-api'
 
@@ -17,14 +15,10 @@ export async function setupYtdlp(): Promise<void> {
 /**
  * @description
  * This function registers the ipc listeners for downloads.
- * it registers a handler for the get_info event.
+ * it registers handlers for getting media info, download, ...etc
  */
 function handleYtdlpIPC(): void {
-  ipcMain.handle(EVENTS.DOWNLOADS.GET_INFO, async (_e, url: string) => {
-    if (!url || typeof url !== 'string') throw new Error('Invalid URL')
-    const info = await getMediaInfo(url)
-    return info
-  })
+  setupMediaInfoIPC()
 }
 
 /**

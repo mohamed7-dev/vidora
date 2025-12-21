@@ -1,59 +1,64 @@
 import { ipcMain, dialog, BrowserWindow } from 'electron'
-import fs from 'node:fs'
-import path from 'node:path'
-import { EVENTS } from '../../shared/events'
+import { mkdirSync, accessSync, statSync, writeFileSync, unlinkSync, constants } from 'node:fs'
+import { join } from 'node:path'
 import { updateConfig } from '../app-config/config-api'
 import { AppConfig } from '../../shared/types'
+import { USER_PREF_CHANNELS } from '../../shared/ipc/user-pref'
+import { complete, error } from './change-paths-status-bus'
 
-async function handleDownloadDirChange(event: Electron.IpcMainEvent): Promise<string | undefined> {
+async function handleDownloadDirChange(
+  event: Electron.IpcMainEvent,
+  channel: string
+): Promise<string | undefined> {
   const win = BrowserWindow.fromWebContents(event.sender)
   if (!win) return
-  //   begin('configDownloadDir', 'status.configDownloadDir.picking')
   const result = await dialog.showOpenDialog(win, { properties: ['openDirectory'] })
   if (result.canceled || result.filePaths.length === 0) {
-    // fail(
-    //   'configDownloadDir',
-    //   'User canceled directory selection',
-    //   'status.configDownloadDir.canceled'
-    // )
+    error(win, channel, {
+      message: 'User canceled directory selection',
+      messageKey: 'status.configDownloadDir.canceled',
+      source: 'download-path'
+    })
     return
   }
   const dir = result.filePaths[0]
   try {
-    const st = fs.statSync(dir)
+    const st = statSync(dir)
     if (!st.isDirectory()) {
-      //   fail(
-      //     'configDownloadDir',
-      //     'Selected path is not a directory',
-      //     'status.configDownloadDir.invalid'
-      //   )
+      error(win, channel, {
+        message: 'Selected path is not a directory',
+        messageKey: 'status.configDownloadDir.invalid',
+        source: 'download-path'
+      })
       return
     }
     // check writability by writing a temp file
-    const probe = path.join(dir, `.write-test-${Date.now()}`)
-    fs.writeFileSync(probe, 'ok')
-    fs.unlinkSync(probe)
+    const probe = join(dir, `.write-test-${Date.now()}`)
+    writeFileSync(probe, 'ok')
+    unlinkSync(probe)
   } catch (e) {
     console.error('Download directory validation failed:', e)
-    // fail('configDownloadDir', e, 'status.configDownloadDir.not_writable')
+    error(win, channel, {
+      message: 'Download directory validation failed',
+      messageKey: 'status.configDownloadDir.not_writable',
+      source: 'download-path',
+      cause: e instanceof Error ? e.message : String(e)
+    })
     return
   }
-  //   success('configDownloadDir', 'status.configDownloadDir.ready')
+
   return dir
 }
 
 function checkDownloadDir(downloadDir: AppConfig['downloads']['downloadDir']): boolean {
   // make sure download dir is exists, and writable
   try {
-    // ensure dir exists
-    fs.mkdirSync(downloadDir, { recursive: true })
-    fs.accessSync(downloadDir, fs.constants.W_OK)
+    mkdirSync(downloadDir, { recursive: true })
+    accessSync(downloadDir, constants.W_OK)
     return true
-  } catch {
-    return false
+  } catch (e) {
+    throw new Error(e instanceof Error ? e.message : 'Download directory validation failed')
   }
-
-  // TODO: deliver the state to the renderer
 }
 
 /**
@@ -61,23 +66,34 @@ function checkDownloadDir(downloadDir: AppConfig['downloads']['downloadDir']): b
  * This function registers the ipc listeners for download path change.
  */
 function initChangeDownloadPathIpc(): void {
-  ipcMain.on(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGE_GLOBAL, async (event) => {
+  const globalChannel = USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_GLOBAL_RESPONSE
+  ipcMain.on(USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_GLOBAL, async (event) => {
     // change download path globally
-    const dir = await handleDownloadDirChange(event)
+    const dir = await handleDownloadDirChange(event, globalChannel)
     if (!dir) return
     updateConfig({ downloads: { downloadDir: dir } })
     const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return
-    win.webContents.send(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGED_GLOBAL, dir)
+    complete(win, globalChannel, {
+      message: 'Download directory changed successfully',
+      messageKey: 'status.configDownloadDir.ready',
+      source: 'download-path'
+    })
   })
 
-  ipcMain.on(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGE_LOCAL, async (event) => {
+  const localChannel = USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_LOCAL_RESPONSE
+
+  ipcMain.on(USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_LOCAL, async (event) => {
     // change download path on single download
-    const dir = await handleDownloadDirChange(event)
+    const dir = await handleDownloadDirChange(event, localChannel)
     if (!dir) return
     const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return
-    win.webContents.send(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGED_LOCAL, dir)
+    complete(win, localChannel, {
+      message: 'Download directory changed successfully',
+      messageKey: 'status.configDownloadDir.ready',
+      source: 'download-path'
+    })
   })
 }
 

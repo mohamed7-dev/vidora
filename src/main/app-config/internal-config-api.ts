@@ -1,5 +1,5 @@
 import { InternalConfig } from './default-config'
-import fs from 'node:fs'
+import * as fs from 'node:fs'
 import { DEFAULT_INTERNAL_CONFIG } from './default-config'
 import { DeepPartial } from '../../shared/types'
 
@@ -9,11 +9,13 @@ let cachedConfig: InternalConfig | null = null
  * @description
  * This function caches the config file in memory for faster access.
  */
-export function initInternalConfigCache(): void {
+export function initInternalConfigCache(): InternalConfig | null {
   try {
     cachedConfig = readInternalConfig()
+    return cachedConfig
   } catch {
     cachedConfig = null
+    return null
   }
 }
 

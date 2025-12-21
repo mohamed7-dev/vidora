@@ -1,4 +1,4 @@
-import fs from 'node:fs'
+import { accessSync, constants, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { DEFAULT_CONFIG, DEFAULT_INTERNAL_CONFIG } from './default-config'
 import { AppConfig, DeepPartial } from '../../shared/types'
 import { performSideEffects } from './side-effects'
@@ -21,13 +21,10 @@ export function initConfigCache(): AppConfig | null {
 
 function ensureConfigFile(): void {
   try {
-    fs.accessSync(DEFAULT_INTERNAL_CONFIG.configFilePath, fs.constants.R_OK)
+    accessSync(DEFAULT_INTERNAL_CONFIG.configFilePath, constants.R_OK)
   } catch {
-    fs.mkdirSync(DEFAULT_INTERNAL_CONFIG.configFolderPath, { recursive: true })
-    fs.writeFileSync(
-      DEFAULT_INTERNAL_CONFIG.configFilePath,
-      JSON.stringify(DEFAULT_CONFIG, null, 2)
-    )
+    mkdirSync(DEFAULT_INTERNAL_CONFIG.configFolderPath, { recursive: true })
+    writeFileSync(DEFAULT_INTERNAL_CONFIG.configFilePath, JSON.stringify(DEFAULT_CONFIG, null, 2))
   }
 }
 
@@ -35,24 +32,21 @@ export function readConfig(): AppConfig {
   ensureConfigFile()
   if (cachedConfig) return cachedConfig
   try {
-    const raw = fs.readFileSync(DEFAULT_INTERNAL_CONFIG.configFilePath, 'utf8')
+    const raw = readFileSync(DEFAULT_INTERNAL_CONFIG.configFilePath, 'utf8')
     const parsed = JSON.parse(raw) as Partial<AppConfig>
     const merged: AppConfig = { ...DEFAULT_CONFIG, ...parsed }
     cachedConfig = merged
     return merged
   } catch {
-    fs.writeFileSync(
-      DEFAULT_INTERNAL_CONFIG.configFilePath,
-      JSON.stringify(DEFAULT_CONFIG, null, 2)
-    )
+    writeFileSync(DEFAULT_INTERNAL_CONFIG.configFilePath, JSON.stringify(DEFAULT_CONFIG, null, 2))
     cachedConfig = DEFAULT_CONFIG
     return DEFAULT_CONFIG
   }
 }
 
 export function writeConfig(config: AppConfig): void {
-  fs.mkdirSync(DEFAULT_INTERNAL_CONFIG.configFolderPath, { recursive: true })
-  fs.writeFileSync(DEFAULT_INTERNAL_CONFIG.configFilePath, JSON.stringify(config, null, 2))
+  mkdirSync(DEFAULT_INTERNAL_CONFIG.configFolderPath, { recursive: true })
+  writeFileSync(DEFAULT_INTERNAL_CONFIG.configFilePath, JSON.stringify(config, null, 2))
 }
 
 function mergeNamespaced(base: AppConfig, patch: DeepPartial<AppConfig>): AppConfig {

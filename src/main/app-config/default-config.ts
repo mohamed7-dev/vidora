@@ -1,8 +1,8 @@
-import path from 'node:path'
+import { join } from 'node:path'
 import { DATA } from '../../shared/data'
 import { AppConfig } from '../../shared/types'
 import { app } from 'electron'
-import os from 'node:os'
+import * as os from 'node:os'
 
 export interface InternalConfig {
   ytDlpPath: string
@@ -13,27 +13,27 @@ export interface InternalConfig {
   ffmpegPath: string
   jobsStorePath: string
 }
-const configDir = path.join(app.getPath('userData'), 'config')
+const configDir = join(app.getPath('userData'), 'config')
 /**
  * @description
  * Default Internal configuration meant to be accessible in main process only.
  */
 export const DEFAULT_INTERNAL_CONFIG: InternalConfig = {
   configFolderPath: configDir,
-  configFilePath: path.join(configDir, 'config.json'),
-  internalConfigFilePath: path.join(configDir, 'internal-config.json'),
+  configFilePath: join(configDir, 'config.json'),
+  internalConfigFilePath: join(configDir, 'internal-config.json'),
   downloadFolderPath: app.getPath('downloads'),
-  ytDlpPath: path.join(
+  ytDlpPath: join(
     app.getPath('userData'),
     'bin',
     os.platform() === 'win32' ? 'ytdlp.exe' : 'ytdlp'
   ),
-  ffmpegPath: path.join(
+  ffmpegPath: join(
     app.getPath('userData'),
     'bin',
     os.platform() === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
   ),
-  jobsStorePath: path.join(app.getPath('userData'), 'jobs')
+  jobsStorePath: join(app.getPath('userData'), 'jobs')
 }
 
 /**

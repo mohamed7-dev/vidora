@@ -1,9 +1,10 @@
 import { platform } from '@electron-toolkit/utils'
-import cp from 'node:child_process'
-import fs from 'node:fs'
-import os from 'node:os'
+import { execSync, spawn } from 'node:child_process'
+import { existsSync, promises } from 'node:fs'
+import * as os from 'node:os'
 import YTDlpWrapImport from 'yt-dlp-wrap-plus'
 import { readInternalConfig } from '../app-config/internal-config-api'
+import { begin, complete, error, progress } from './check-ytlp-status-bus'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImport
@@ -20,76 +21,88 @@ async function downloadYtdlp(path: string): Promise<void> {
  * @returns path to yt-dlp or null if it fails
  */
 async function checkYtdlp(): Promise<string | null> {
-  //   begin('ytdlp', 'status.ytdlp.checking')
+  begin()
   const ytDlpPath = readInternalConfig().ytDlpPath
 
   // prioritize env variable
   if (process.env.VIDORA_YTDLP_PATH) {
-    if (fs.existsSync(process.env.VIDORA_YTDLP_PATH)) {
-      //   success('ytdlp', 'status.ytdlp.ready')
+    if (existsSync(process.env.VIDORA_YTDLP_PATH)) {
+      complete()
       return String(process.env.VIDORA_YTDLP_PATH)
     }
-    // fail(
-    //   'ytdlp',
-    //   "VIDORA_YTDLP_PATH ENV variable is used, but the file doesn't exist there.",
-    //   'status.ytdlp.env_missing'
-    // )
+    error(
+      new Error("VIDORA_YTDLP_PATH ENV variable is used, but the file doesn't exist there."),
+      undefined,
+      'status.ytdlp.env_missing'
+    )
     return null
   }
 
   // on macos, freebsd we need to check for system-wide yt-dlp binaries
   if (platform.isMacOS) {
     const paths = ['/usr/local/bin/yt-dlp', '/opt/homebrew/bin/yt-dlp']
-    const foundPath = paths.find((p) => fs.existsSync(p))
+    const foundPath = paths.find((p) => existsSync(p))
     if (foundPath) {
-      //   success('ytdlp', 'status.ytdlp.ready')
+      complete()
       return foundPath
     }
   } else if (os.platform() === 'freebsd') {
     try {
-      const foundPath = cp.execSync('which yt-dlp').toString().trim()
-      if (fs.existsSync(foundPath)) {
-        // success('ytdlp', 'status.ytdlp.ready')
+      const foundPath = execSync('which yt-dlp').toString().trim()
+      if (existsSync(foundPath)) {
+        complete()
         return foundPath
       }
     } catch {
-      //   fail(
-      //     'ytdlp',
-      //     'No yt-dlp found in PATH on FreeBSD. Please install it.',
-      //     'status.ytdlp.not_found_freebsd'
-      //   )
+      error(
+        new Error('No yt-dlp found in PATH on FreeBSD. Please install it!'),
+        undefined,
+        'status.ytdlp.not_found_freebsd'
+      )
     }
   }
 
   // update ytdlp binaries if they exist
-  if (ytDlpPath && fs.existsSync(ytDlpPath)) {
-    cp.spawn(`"${ytDlpPath}"`, ['-U'], { shell: true })
+  if (ytDlpPath && existsSync(ytDlpPath)) {
+    spawn(`"${ytDlpPath}"`, ['-U'], { shell: true })
       .on('error', (err) => {
-        // don't fail the process when update goes wrong
-        // success('ytdlp', 'status.ytdlp.ready')
+        // don't fail the process when update goes wrong, but notify the user
+        error(err, 'Failed to update yt-dlp', 'status.ytdlp.update_failed')
         console.error('Failed to update yt-dlp:', err)
       })
       .stdout.on('data', (data) => {
-        // success('ytdlp', 'status.ytdlp.ready')
-        console.log('yt-dlp update check:', data.toString())
+        const text = data.toString()
+        console.log('yt-dlp update check:', text)
+        // Look for lines like: [download]  12.3% ...
+        const match = text.match(/\[download\]\s+([\d.]+)%/)
+        if (match) {
+          const pct = Number(match[1])
+          if (!Number.isNaN(pct)) {
+            progress(pct)
+          }
+        }
       })
     return ytDlpPath
   }
 
   // if binaries are not found in the default path, download it
   try {
-    await fs.promises.access(ytDlpPath)
-    // success('ytdlp', 'status.ytdlp.ready')
+    await promises.access(ytDlpPath)
+    complete()
     return ytDlpPath
   } catch {
     // if not found, download it into user data folder
     try {
       await downloadYtdlp(ytDlpPath)
-      //   success('ytdlp', 'status.ytdlp.ready')
+      complete()
       return ytDlpPath
     } catch (e) {
       console.error('Failed to download yt-dlp', e)
-      //   fail('ytdlp', 'Failed to download yt-dlp', 'status.ytdlp.download_failed')
+      error(
+        new Error('Failed to download yt-dlp'),
+        'Failed to download yt-dlp',
+        'status.ytdlp.download_failed'
+      )
       return null
     }
   }

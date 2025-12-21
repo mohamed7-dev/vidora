@@ -1,16 +1,16 @@
 import { BrowserWindow, Menu, Tray, nativeImage, app, clipboard } from 'electron'
-import path from 'node:path'
+import { join } from 'node:path'
 import { platform } from '@electron-toolkit/utils'
 import { AppConfig } from '../../shared/types'
 import { t } from '../../shared/i18n'
-import { EVENTS } from '../../shared/events'
+import { PASTE_LINK_CHANNELS } from '../../shared/ipc/paste-link'
 
 function getIconPath(): string {
   const base = app.isPackaged
-    ? path.join(process.resourcesPath, 'icons')
-    : path.join(__dirname, '../../../resources/icons')
+    ? join(process.resourcesPath, 'icons')
+    : join(__dirname, '../../../resources/icons')
   const file = platform.isMacOS ? 'icon-16.png' : 'icon-256.png'
-  return path.join(base, file)
+  return join(base, file)
 }
 
 function getWindow(): BrowserWindow | null {
@@ -48,7 +48,7 @@ async function init(): Promise<void> {
         if (!win) return
         win.show()
         if (app.dock) app.dock.show()
-        win.webContents.send(EVENTS.PASTE_LINK.PASTED, text)
+        win.webContents.send(PASTE_LINK_CHANNELS.PASTED, text)
       }
     },
     {

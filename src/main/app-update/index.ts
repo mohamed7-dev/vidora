@@ -8,7 +8,7 @@ import {
   onUpdateError
 } from './update-lib'
 import { ipcMain } from 'electron'
-import { EVENTS } from '../../shared/events'
+import { APP_UPDATE_CHANNELS, AppUpdateRendererToMainPayload } from '../../shared/ipc/app-update'
 
 autoUpdater.autoDownload = false
 
@@ -27,16 +27,18 @@ function checkForUpdate(): void {
 }
 
 function registerIPC(): void {
-  // install approved
-  ipcMain.handle(EVENTS.APP_UPDATE.INSTALL_APPROVAL_RESPONSE, onInstallApproved)
-
-  // download approved
-  ipcMain.handle(EVENTS.APP_UPDATE.DOWNLOAD_APPROVAL_RESPONSE, onDownloadApproved)
-
-  // check update manually triggered
-  ipcMain.on(EVENTS.APP_UPDATE.CHECK, () => {
-    checkForUpdate()
-  })
+  ipcMain.handle(
+    APP_UPDATE_CHANNELS.RENDERER_TO_MAIN,
+    (event, payload: AppUpdateRendererToMainPayload) => {
+      if (payload.action === 'install-approval') {
+        onInstallApproved(event, payload.approvalResponse)
+      } else if (payload.action === 'download-approval') {
+        onDownloadApproved(event, payload.approvalResponse)
+      } else if (payload.action === 'check') {
+        checkForUpdate()
+      }
+    }
+  )
 }
 
 export function initAppUpdate(): void {

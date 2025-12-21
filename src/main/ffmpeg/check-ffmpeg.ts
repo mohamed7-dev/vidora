@@ -1,8 +1,11 @@
-import fs from 'node:fs'
-import os from 'node:os'
-import cp from 'node:child_process'
-import https from 'node:https'
-import path from 'node:path'
+import { chmodSync, createWriteStream, existsSync, mkdirSync, promises, unlinkSync } from 'node:fs'
+import * as os from 'node:os'
+import { execSync } from 'node:child_process'
+import { get } from 'node:https'
+import { dirname, join } from 'node:path'
+import { readInternalConfig } from '../app-config/internal-config-api'
+import { begin, complete, error, progress } from './check-ffmpeg-status-bus'
+import { DATA } from '../../shared/data'
 
 const BASE_URL = 'https://github.com/mohamed7-dev/built-ffmpeg/releases/download/V6'
 
@@ -67,81 +70,79 @@ export class FfmpegDownloader {
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       // Ensure the directory exists
-      const dir = path.dirname(destinationPath)
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true })
+      const dir = dirname(destinationPath)
+      if (!existsSync(dir)) {
+        mkdirSync(dir, { recursive: true })
       }
 
       // Create write stream
-      const file = fs.createWriteStream(destinationPath)
+      const file = createWriteStream(destinationPath)
 
-      https
-        .get(
-          url,
-          {
-            headers: {
-              'User-Agent': 'vidora-ffmpeg-downloader'
-            }
-          },
-          (response) => {
-            // Follow redirects
-            if (response.statusCode === 301 || response.statusCode === 302) {
-              file.close()
-              fs.unlinkSync(destinationPath)
-              if (!response.headers.location) {
-                return reject(new Error('Redirect location not found'))
-              }
-              return this.downloadFile(response.headers.location, destinationPath, onProgress)
-                .then(resolve)
-                .catch(reject)
-            }
-
-            if (response.statusCode !== 200) {
-              file.close()
-              fs.unlinkSync(destinationPath)
-              return reject(new Error(`Failed to download: HTTP ${response.statusCode}`))
-            }
-
-            const totalBytes = parseInt(response.headers['content-length'] || '0', 10)
-            let downloadedBytes = 0
-
-            response.on('data', (chunk) => {
-              downloadedBytes += chunk.length
-              if (onProgress && totalBytes) {
-                onProgress(downloadedBytes, totalBytes)
-              }
-            })
-
-            response.pipe(file)
-
-            file.on('finish', () => {
-              file.close()
-
-              // Make the binary executable (Unix-like systems)
-              if (os.platform() !== 'win32') {
-                try {
-                  fs.chmodSync(destinationPath, 0o755)
-                } catch (err) {
-                  console.error('Failed to make ffmpeg executable:', err)
-                }
-              }
-
-              resolve()
-            })
+      get(
+        url,
+        {
+          headers: {
+            'User-Agent': `${DATA.appName}-ffmpeg-downloader`
           }
-        )
-        .on('error', (err) => {
-          file.close()
-          if (fs.existsSync(destinationPath)) {
-            fs.unlinkSync(destinationPath)
+        },
+        (response) => {
+          // Follow redirects
+          if (response.statusCode === 301 || response.statusCode === 302) {
+            file.close()
+            unlinkSync(destinationPath)
+            if (!response.headers.location) {
+              return reject(new Error('Redirect location not found'))
+            }
+            return this.downloadFile(response.headers.location, destinationPath, onProgress)
+              .then(resolve)
+              .catch(reject)
           }
-          reject(err)
-        })
+
+          if (response.statusCode !== 200) {
+            file.close()
+            unlinkSync(destinationPath)
+            return reject(new Error(`Failed to download: HTTP ${response.statusCode}`))
+          }
+
+          const totalBytes = parseInt(response.headers['content-length'] || '0', 10)
+          let downloadedBytes = 0
+
+          response.on('data', (chunk) => {
+            downloadedBytes += chunk.length
+            if (onProgress && totalBytes) {
+              onProgress(downloadedBytes, totalBytes)
+            }
+          })
+
+          response.pipe(file)
+
+          file.on('finish', () => {
+            file.close()
+
+            // Make the binary executable (Unix-like systems)
+            if (os.platform() !== 'win32') {
+              try {
+                chmodSync(destinationPath, 0o755)
+              } catch (err) {
+                console.error('Failed to make ffmpeg executable:', err)
+              }
+            }
+
+            resolve()
+          })
+        }
+      ).on('error', (err) => {
+        file.close()
+        if (existsSync(destinationPath)) {
+          unlinkSync(destinationPath)
+        }
+        reject(err)
+      })
 
       file.on('error', (err) => {
         file.close()
-        if (fs.existsSync(destinationPath)) {
-          fs.unlinkSync(destinationPath)
+        if (existsSync(destinationPath)) {
+          unlinkSync(destinationPath)
         }
         reject(err)
       })
@@ -241,67 +242,75 @@ export class FfmpegDownloader {
  * @returns path to ffmpeg or null if it fails
  */
 export async function checkFFmpeg(): Promise<string | null> {
-  const ffmpegPath = await import('../app-config/internal-config-api').then(
-    (mod) => mod.readInternalConfig().ffmpegPath
-  )
+  const ffmpegPath = readInternalConfig().ffmpegPath
 
-  // begin('ffmpeg', 'status.ffmpeg.checking')
+  begin()
   // if env variable exist, prioritize it
-  if (process.env.VIDORA_FFMPEG_PATH) {
-    if (fs.existsSync(process.env.VIDORA_FFMPEG_PATH)) {
-      // success('ffmpeg', 'status.ffmpeg.ready')
-      return String(process.env.VIDORA_FFMPEG_PATH)
+  if (process.env.YALLA_DOWNLOAD_FFMPEG_PATH) {
+    if (existsSync(process.env.YALLA_DOWNLOAD_FFMPEG_PATH)) {
+      complete()
+      return String(process.env.YALLA_DOWNLOAD_FFMPEG_PATH)
     }
-    // fail(
-    //   'ffmpeg',
-    //   "VIDORA_FFMPEG_PATH ENV variable is used, but the file doesn't exist there.",
-    //   'status.ffmpeg.env_missing'
-    // )
+    error(
+      new Error(
+        "YALLA_DOWNLOAD_FFMPEG_PATH ENV variable is used, but the file doesn't exist there."
+      ),
+      "YALLA_DOWNLOAD_FFMPEG_PATH ENV variable is used, but the file doesn't exist there.",
+      'status.ffmpeg.env_missing' // TODO: change
+    )
     return null
   }
 
   // if platform is bsd, then use ffmpeg from the system
   if (os.platform() === 'freebsd') {
     try {
-      const ffmpegPath = cp.execSync('which ffmpeg').toString().trim()
-      if (fs.existsSync(ffmpegPath)) {
-        // success('ffmpeg', 'status.ffmpeg.ready')
+      const ffmpegPath = execSync('which ffmpeg').toString().trim()
+      if (existsSync(ffmpegPath)) {
+        complete()
         return ffmpegPath
       }
     } catch {
-      // fail('ffmpeg', 'Ffmpeg is not found on freebsd', 'status.ffmpeg.not_found_freebsd')
+      error(
+        new Error('Ffmpeg is not found on freebsd'),
+        'Ffmpeg is not found on freebsd',
+        'status.ffmpeg.not_found_freebsd' // TODO: change
+      )
       return null
     }
   }
 
   // check if already downloaded in user data directory
   try {
-    await fs.promises.access(ffmpegPath)
-    // success('ffmpeg', 'status.ffmpeg.ready')
+    await promises.access(ffmpegPath)
+    complete()
     return ffmpegPath
   } catch {
     console.log('ffmpeg not found, downloading...')
     try {
       await FfmpegDownloader.downloadFfmpeg(ffmpegPath, (downloaded, total) => {
         const percent = Math.round((downloaded / total) * 100)
-        // progress('ffmpeg', percent)
+        progress(percent, 'Downloading ffmpeg...', 'status.ffmpeg.downloading') // TODO: change
       })
-      // success('ffmpeg', 'status.ffmpeg.ready')
+      complete()
       return ffmpegPath
     } catch (downloadError) {
       console.error('Failed to download ffmpeg:', downloadError)
       // Fallback: Try bundled ffmpeg if download fails
       const bundledPath =
         os.platform() === 'win32'
-          ? path.join(__dirname, '..', '..', 'ffmpeg.exe')
-          : path.join(__dirname, '..', '..', 'ffmpeg')
+          ? join(__dirname, '..', '..', 'ffmpeg.exe')
+          : join(__dirname, '..', '..', 'ffmpeg')
 
-      if (fs.existsSync(bundledPath)) {
+      if (existsSync(bundledPath)) {
         console.log('Using bundled ffmpeg as fallback')
-        // success('ffmpeg', 'status.ffmpeg.ready')
+        complete()
         return bundledPath
       }
-      // fail('ffmpeg', 'Failed to download ffmpeg', 'status.ffmpeg.download_failed')
+      error(
+        new Error('Failed to download ffmpeg and no bundled version found.'),
+        'Failed to download ffmpeg',
+        'status.ffmpeg.download_failed' // TODO: change
+      )
       throw new Error('Failed to download ffmpeg and no bundled version found.')
     }
   }

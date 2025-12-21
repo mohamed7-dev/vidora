@@ -2,6 +2,11 @@ import { YtdlpInfo } from '../../shared/downloads'
 import { readConfig } from '../app-config/config-api'
 import { ensureYtDlpPath } from './check-ytdlp'
 import YTDlpWrapImport from 'yt-dlp-wrap-plus'
+import { complete, begin, error } from './get-media-info-status-bus'
+import { ipcMain } from 'electron'
+import { MEDIA_INFO_CHANNELS } from '../../shared/ipc/get-media-info'
+
+export type MediaType = 'Single' | 'Playlist'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImport
@@ -10,7 +15,7 @@ export const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImpo
  * @description
  * Get media info from url.
  */
-export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
+export async function getMediaInfo(url: string, type: 'Single' | 'Playlist'): Promise<YtdlpInfo> {
   return new Promise((resolve, reject) => {
     const {
       downloader: { proxyServerUrl, cookiesFromBrowser, configPath }
@@ -31,7 +36,7 @@ export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
       url
     ].filter(Boolean) as string[]
 
-    // begin('ytdlp', 'status.ytdlp.fetching_info', { url, scope: 'getMediaInfo' })
+    begin()
 
     ensureYtDlpPath()
       .then((bp) => {
@@ -45,29 +50,44 @@ export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
           if (stdout) {
             try {
               const payload = JSON.parse(stdout)
-              //   success('ytdlp', 'status.ytdlp.info_ready', { scope: 'getMediaInfo' })
+              complete()
               resolve(payload)
             } catch (e) {
               const err = new Error(
                 'Failed to parse yt-dlp JSON output: ' + (stderr || (e as Error).message)
               )
-              //   fail('ytdlp', err, 'status.ytdlp.info_failed', { scope: 'getMediaInfo' })
+              error(err)
               reject(err)
             }
           } else {
             const err = new Error(stderr || `yt-dlp exited with a non-zero code.`)
-            // fail('ytdlp', err, 'status.ytdlp.info_failed', { scope: 'getMediaInfo' })
+            error(err)
             reject(err)
           }
         })
         ytdlpProcess.on('error', (err) => {
-          //   fail('ytdlp', err, 'status.ytdlp.info_failed', { scope: 'getMediaInfo' })
+          error(err)
           reject(err)
         })
       })
       .catch((e) => {
-        // fail('ytdlp', e, 'status.ytdlp.info_failed', { scope: 'getMediaInfo' })
+        error(e)
         reject(e)
       })
+  })
+}
+
+export function setupMediaInfoIPC(): void {
+  ipcMain.handle(MEDIA_INFO_CHANNELS.GET_INFO, async (_e, url: string, type: MediaType) => {
+    if (!url || typeof url !== 'string')
+      error(new Error('Invalid media url'), 'Invalid media url', 'url') // TODO: change
+    if (!type || typeof type !== 'string' || !['Single', 'Playlist'].includes(type))
+      error(
+        new Error('Invalid media type, only Single and Playlist are allowed'),
+        'Invalid media type, only Single and Playlist are allowed',
+        'type'
+      ) // TODO: change
+    const info = await getMediaInfo(url, type)
+    return info
   })
 }
