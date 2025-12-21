@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ui-dialog > closes via closeDialog and unmounts base 1`] = `"<ui-dialog > <slot name="trigger"></slot> </ui-dialog>"`;
+
+exports[`ui-dialog > mounts template when opened and shows overlay/panel 1`] = `"<ui-dialog data-open="" open=""> <div part="base" class="dialog" data-el="base" data-open> <div part="overlay" class="overlay" data-el="overlay" data-open></div> <div part="panel" class="panel" role="alertdialog" aria-modal="true" tabindex="-1" data-el="panel" data-open aria-hidden="false"> <header part="header" class="header" data-el="header"> <slot name="header"></slot> <ui-button class="close-btn" id="close-btn" variant="secondary" size="icon" style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px" part="close" data-el="x-btn"> <ui-icon slot="prefix" name="x"></ui-icon> </ui-button> </header> <div part="content" class="content" data-el="content"> <slot name="content"> </slot> </div> <footer part="footer" class="footer" data-el="footer"> <slot name="cancel"></slot> <slot name="footer"></slot> </footer> </div> </div><slot name="trigger"></slot> </ui-dialog>"`;
+
+exports[`ui-dialog > renders closed by default (no base mounted) 1`] = `"<ui-dialog > <slot name="trigger"></slot> </ui-dialog>"`;
