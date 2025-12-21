@@ -1,14 +1,14 @@
 <button part="base" type="button">
-  <span part="prefix" class="prefix" aria-hidden="true">
+  <span part="prefix" class="prefix" aria-hidden="true" data-el="prefix">
     <slot name="prefix"></slot>
   </span>
-  <span part="label" class="label">
-    <slot></slot>
+  <span part="label" class="label" data-el="label">
+    <slot name="label"></slot>
   </span>
-  <span part="suffix" class="suffix" aria-hidden="true">
+  <span part="suffix" class="suffix" aria-hidden="true" data-el="suffix">
     <slot name="suffix"></slot>
   </span>
-  <span part="spinner" class="spinner" aria-hidden="true">
+  <span part="spinner" class="spinner" aria-hidden="true" data-el="spinner">
     <slot name="spinner">
       <ui-icon name="loader-circle" spin></ui-icon>
     </slot>

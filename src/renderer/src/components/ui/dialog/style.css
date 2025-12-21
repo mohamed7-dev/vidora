@@ -138,12 +138,10 @@
 
 /* Internal close button*/
 :host .close-btn {
-  width: 27px;
-  height: 27px;
   display: none;
 }
 
 /* Show close button only when dialog is closable */
-.close-btn[data-closable] {
+.close-btn[data-show-x] {
   display: flex;
 }

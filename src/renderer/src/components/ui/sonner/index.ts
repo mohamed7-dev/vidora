@@ -1,8 +1,15 @@
 import template from './template.html?raw'
-import styleCss from './style.css?inline'
+import style from './style.css?inline'
 import { UIIcon } from '../icon'
 import { UIButton } from '../button'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '../lib/template-loader'
+import { createPresenceAnimator } from '../lib/animation'
 
+const UI_SONNER_NAME = 'ui-sonner'
+const ICONS = {
+  default: 'info',
+  destructive: 'triangle-alert'
+}
 export type SonnerVariant = 'default' | 'destructive'
 
 export type SonnerOptions = {
@@ -13,22 +20,13 @@ export type SonnerOptions = {
 }
 
 export class UISonner extends HTMLElement {
-  private static readonly sheet: CSSStyleSheet = (() => {
-    const s = new CSSStyleSheet()
-    s.replaceSync(styleCss)
-    return s
-  })()
+  private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
 
-  private static readonly tpl: HTMLTemplateElement = (() => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(template, 'text/html')
-    const inner = doc.querySelector('template')
-    const t = document.createElement('template')
-    t.innerHTML = inner ? inner.innerHTML : template
-    return t
-  })()
+  private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(template)
 
+  // refs
   private _rootEl: HTMLDivElement | null = null
+  private _toastTpl: HTMLTemplateElement | null = null
 
   constructor() {
     super()
@@ -36,79 +34,101 @@ export class UISonner extends HTMLElement {
   }
 
   connectedCallback(): void {
-    this.render()
+    this._render()
+    this._queryRefs()
   }
 
-  private render(): void {
+  private _render(): void {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = ''
     this.shadowRoot.adoptedStyleSheets = [UISonner.sheet]
     const frag = UISonner.tpl.content.cloneNode(true) as DocumentFragment
     this.shadowRoot.append(frag)
-    this._rootEl = this.shadowRoot.querySelector('.ui-sonner-root') as HTMLDivElement | null
+  }
+
+  private _queryRefs(): void {
+    if (!this.shadowRoot) return
+    this._rootEl = this.shadowRoot.querySelector('[data-el="root"]') as HTMLDivElement | null
+    this._toastTpl = this.shadowRoot.querySelector(
+      '[data-el="toast-template"]'
+    ) as HTMLTemplateElement | null
   }
 
   show(opts: SonnerOptions): void {
-    if (!this._rootEl) return
+    if (!this._rootEl || !this._toastTpl) return
+
     const variant: SonnerVariant = opts.variant || 'default'
-    const toast = document.createElement('div')
-    toast.className = 'ui-sonner-toast'
+
+    const frag = this._toastTpl.content.cloneNode(true) as DocumentFragment
+    const toast = frag.querySelector('[data-el="toast"]') as HTMLDivElement | null
+    const icon = frag.querySelector('[data-el="icon"]') as UIIcon | null
+    const titleEl = frag.querySelector('[data-el="title"]') as HTMLDivElement | null
+    const descEl = frag.querySelector('[data-el="description"]') as HTMLDivElement | null
+    const closeBtn = frag.querySelector('[data-el="close"]') as UIButton | null
+
+    if (!toast) return
+
     toast.setAttribute('data-variant', variant)
+    // Help assistive tech understand the severity of this notification.
+    toast.setAttribute('role', variant === 'destructive' ? 'alert' : 'status')
 
-    const icon = document.createElement('ui-icon') as UIIcon
-    icon.classList.add('ui-sonner-toast__icon')
-    icon.setAttribute('name', variant === 'destructive' ? 'triangle-alert' : 'info')
-
-    const content = document.createElement('div')
-    content.className = 'ui-sonner-toast__content'
-
-    if (opts.title) {
-      const titleEl = document.createElement('div')
-      titleEl.className = 'ui-sonner-toast__title'
-      titleEl.textContent = opts.title
-      content.append(titleEl)
+    if (icon) {
+      icon.setAttribute('name', ICONS[variant])
     }
 
-    if (opts.description) {
-      const descEl = document.createElement('div')
-      descEl.className = 'ui-sonner-toast__desc'
-      descEl.textContent = opts.description
-      content.append(descEl)
+    if (titleEl) {
+      titleEl.textContent = opts.title ?? ''
+      titleEl.toggleAttribute('hidden', !opts.title)
     }
 
-    const closeBtn = document.createElement('ui-button') as UIButton
-    closeBtn.classList.add('ui-sonner-toast__close')
-    closeBtn.setAttribute('variant', 'ghost')
-    closeBtn.setAttribute('size', 'icon')
-    const xIcon = document.createElement('ui-icon') as UIIcon
-    xIcon.setAttribute('name', 'x')
-    xIcon.setAttribute('slot', 'prefix')
-    closeBtn.append(xIcon)
+    if (descEl) {
+      descEl.textContent = opts.description ?? ''
+      descEl.toggleAttribute('hidden', !opts.description)
+    }
 
-    closeBtn.addEventListener('click', () => {
-      this._rootEl?.removeChild(toast)
-    })
+    const animator = createPresenceAnimator(
+      toast,
+      [
+        { opacity: 0, transform: 'translateY(8px)' },
+        { opacity: 1, transform: 'translateY(0)' }
+      ],
+      [
+        { opacity: 1, transform: 'translateY(0)' },
+        { opacity: 0, transform: 'translateY(8px)' }
+      ],
+      { duration: 200, easing: 'ease-out', fill: 'forwards' }
+    )
 
-    toast.append(icon, content, closeBtn)
-    this._rootEl.append(toast)
+    const removeToast = (): void => {
+      if (!toast.isConnected) return
+      void (async () => {
+        await animator.exit()
+        if (toast.isConnected) toast.remove()
+      })()
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', removeToast, { once: true })
+    }
+
+    this._rootEl.append(frag)
+
+    // Play entrance animation after mounting.
+    void animator.enter()
 
     const duration = typeof opts.duration === 'number' ? opts.duration : 5000
     if (duration > 0) {
-      window.setTimeout(() => {
-        if (toast.isConnected) {
-          this._rootEl?.removeChild(toast)
-        }
-      }, duration)
+      window.setTimeout(removeToast, duration)
     }
   }
 }
 
-if (!customElements.get('ui-sonner')) {
-  customElements.define('ui-sonner', UISonner)
+if (!customElements.get(UI_SONNER_NAME)) {
+  customElements.define(UI_SONNER_NAME, UISonner)
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'ui-sonner': UISonner
+    [UI_SONNER_NAME]: UISonner
   }
 }

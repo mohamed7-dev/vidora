@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html'
-import '../icon/index' // defines <ui-icon>
-import './index' // defines <ui-button>
+import '../icon/index'
+import './index'
 import type { UIButtonVariant, UIButtonSize } from './index'
 
 type ButtonArgs = {
@@ -11,6 +11,8 @@ type ButtonArgs = {
   loading: boolean
   toggle: boolean
   pressed: boolean
+  withPrefixIcon: boolean
+  withSuffixIcon: boolean
 }
 
 const meta: Meta<ButtonArgs> = {
@@ -22,7 +24,9 @@ const meta: Meta<ButtonArgs> = {
     disabled: false,
     loading: false,
     toggle: false,
-    pressed: false
+    pressed: false,
+    withPrefixIcon: false,
+    withSuffixIcon: false
   },
   argTypes: {
     label: { control: 'text' },
@@ -37,7 +41,9 @@ const meta: Meta<ButtonArgs> = {
     disabled: { control: 'boolean' },
     loading: { control: 'boolean' },
     toggle: { control: 'boolean' },
-    pressed: { control: 'boolean' }
+    pressed: { control: 'boolean' },
+    withPrefixIcon: { control: 'boolean' },
+    withSuffixIcon: { control: 'boolean' }
   }
 }
 
@@ -46,7 +52,17 @@ export default meta
 type Story = StoryObj<ButtonArgs>
 
 const renderButton = (args: ButtonArgs): string => {
-  const { label, variant, size, disabled, loading, toggle, pressed } = args
+  const {
+    label,
+    variant,
+    size,
+    disabled,
+    loading,
+    toggle,
+    pressed,
+    withPrefixIcon,
+    withSuffixIcon
+  } = args
 
   const attrs: string[] = []
 
@@ -59,7 +75,11 @@ const renderButton = (args: ButtonArgs): string => {
 
   return `
     <ui-button ${attrs.join(' ')}>
-      ${label}
+      ${withPrefixIcon ? '<ui-icon slot="prefix" name="youtube" aria-hidden="true"></ui-icon>' : ''}
+      <span slot="label">
+        ${label}
+      </span>
+      ${withSuffixIcon ? '<ui-icon slot="suffix" name="settings" aria-hidden="true"></ui-icon>' : ''}
     </ui-button>
   `
 }

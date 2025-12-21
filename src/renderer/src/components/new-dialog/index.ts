@@ -216,7 +216,7 @@ export class NewDialog extends HTMLElement {
       }
     })
     this.addEventListener('download:started', () => {
-      this._dialogEl?.close?.()
+      this._dialogEl?.closeDialog?.()
     })
   }
 
@@ -263,7 +263,7 @@ export class NewDialog extends HTMLElement {
   }
 
   close(): void {
-    if (this._dialogEl) this._dialogEl.close()
+    if (this._dialogEl) this._dialogEl.closeDialog()
     this.unmountDialog()
   }
 }

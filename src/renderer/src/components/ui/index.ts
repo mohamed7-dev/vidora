@@ -1,3 +1,12 @@
+export * from './lib/focus-scope/index'
+export * from './lib/focus-scope/focus-trap'
+export * from './lib/scroll-lock'
+export * from './lib/dismissable-layer'
+export * from './lib/slot-utils'
+export * from './lib/template-loader'
+export * from './lib/animation'
+export * from './presence/index'
+
 export { UIButton } from './button/index'
 export { UISheet } from './sheet/index'
 export { UIDialog } from './dialog/index'

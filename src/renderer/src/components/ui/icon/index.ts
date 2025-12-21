@@ -1,9 +1,17 @@
 import style from './style.css?inline'
 import { ICONS } from './icons'
+import { createStyleSheetFromStyle } from '../lib/template-loader'
+
+const UI_ICON_NAME = 'ui-icon'
+
+const ATTRIBUTES = {
+  NAME: 'name'
+}
 
 export class UIIcon extends HTMLElement {
+  private _stylesheet: CSSStyleSheet = createStyleSheetFromStyle(style)
   static get observedAttributes(): string[] {
-    return ['name']
+    return Object.values(ATTRIBUTES)
   }
 
   constructor() {
@@ -17,21 +25,18 @@ export class UIIcon extends HTMLElement {
   }
 
   attributeChangedCallback(name: string): void {
-    if (name === 'name') this._updateIcon()
+    if (name === ATTRIBUTES.NAME) this._updateIcon()
   }
 
   private _render(): void {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = ''
-
-    const sheet = new CSSStyleSheet()
-    sheet.replaceSync(style)
-    this.shadowRoot.adoptedStyleSheets = [sheet]
+    this.shadowRoot.adoptedStyleSheets = [this._stylesheet]
   }
 
   private _updateIcon(): void {
     if (!this.shadowRoot) return
-    const name = this.getAttribute('name') ?? ''
+    const name = this.name ?? ''
     const svg = ICONS[name]
     if (svg) {
       this.shadowRoot.innerHTML = svg
@@ -43,19 +48,19 @@ export class UIIcon extends HTMLElement {
   }
 
   get name(): string | null {
-    return this.getAttribute('name')
+    return this.getAttribute(ATTRIBUTES.NAME)
   }
 
   set name(v: string | null) {
-    if (v === null) this.removeAttribute('name')
-    else this.setAttribute('name', v)
+    if (v === null) this.removeAttribute(ATTRIBUTES.NAME)
+    else this.setAttribute(ATTRIBUTES.NAME, v)
   }
 }
 
-if (!customElements.get('ui-icon')) customElements.define('ui-icon', UIIcon)
+if (!customElements.get(UI_ICON_NAME)) customElements.define(UI_ICON_NAME, UIIcon)
 
 declare global {
   interface HTMLElementTagNameMap {
-    'ui-icon': UIIcon
+    [UI_ICON_NAME]: UIIcon
   }
 }

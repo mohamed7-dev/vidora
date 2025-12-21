@@ -1,3 +1,4 @@
+// Source: Lucide Icons
 // Icons designed to inherit currentColor and scale to the container.
 
 export const ICONS: Record<string, string> = {

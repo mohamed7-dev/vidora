@@ -1,21 +1,20 @@
 import template from './template.html?raw'
 import style from './style.css?inline'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '../lib/template-loader'
+
+const UI_TAB_NAME = 'ui-tabs'
+const ATTRIBUTES = {
+  VALUE: 'value'
+}
+
+type ChangeEventDetail = {
+  value: string
+}
 
 export class UITabs extends HTMLElement {
-  // Cache stylesheet and template per class for performance and to prevent FOUC
-  private static readonly sheet: CSSStyleSheet = (() => {
-    const s = new CSSStyleSheet()
-    s.replaceSync(style)
-    return s
-  })()
-  private static readonly tpl: HTMLTemplateElement = (() => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(template, 'text/html')
-    const inner = doc.querySelector('template')
-    const t = document.createElement('template')
-    t.innerHTML = inner ? inner.innerHTML : template
-    return t
-  })()
+  private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
+  private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(template)
+
   // refs
   private _listEl: HTMLElement | null = null
   private _triggerSlot: HTMLSlotElement | null = null
@@ -28,21 +27,19 @@ export class UITabs extends HTMLElement {
   }
 
   static get observedAttributes(): string[] {
-    return ['value']
+    return Object.values(ATTRIBUTES)
   }
 
   attributeChangedCallback(name: string): void {
-    if (name === 'value') {
+    if (name === ATTRIBUTES.VALUE) {
       this._syncSelection()
-      const v = this.value
-      this.dispatchEvent(
-        new CustomEvent('change', { detail: { value: v }, bubbles: true, composed: true })
-      )
+      this._onSelectionChange()
     }
   }
 
   connectedCallback(): void {
     this._render()
+    this._queryRefs()
     this._setupListeners()
     this._onTriggerSlotChange()
     this._onPanelSlotChange()
@@ -60,33 +57,64 @@ export class UITabs extends HTMLElement {
     }
   }
 
+  //---------------------------------------Setup----------------------------
   private _render(): void {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = ''
-    // attach cached stylesheet first to avoid FOUC
     this.shadowRoot.adoptedStyleSheets = [UITabs.sheet]
-    // append cached template content
     this.shadowRoot.append(UITabs.tpl.content.cloneNode(true))
-    // query refs
-    this._listEl = this.shadowRoot?.querySelector('[role="tablist"]') as HTMLElement | null
+  }
+
+  private _queryRefs(): void {
+    this._listEl = this.shadowRoot?.querySelector('[data-el="list"]') as HTMLElement | null
     this._triggerSlot = this.shadowRoot?.querySelector('slot[name="tab"]') as HTMLSlotElement | null
     this._panelSlot = this.shadowRoot?.querySelector('slot[name="panel"]') as HTMLSlotElement | null
   }
+
+  private _ensureInitialSelection(): void {
+    if (this.value) return
+    const first = this._getTriggers()[0]
+    const v = first?.getAttribute('data-value') || first?.getAttribute('value')
+    if (v) this.value = v
+  }
+
+  private _syncSelection(): void {
+    const value = this.value
+    const triggers = this._getTriggers()
+    const panels = this._getPanels()
+    for (const t of triggers) {
+      const tv = t.getAttribute('data-value') || t.getAttribute('value')
+      const selected = tv === value
+      t.toggleAttribute('data-selected', !!selected)
+      t.setAttribute('aria-selected', selected ? 'true' : 'false')
+      t.setAttribute('tabindex', selected ? '0' : '-1')
+    }
+
+    for (const p of panels) {
+      const pv = p.getAttribute('data-value') || p.getAttribute('value')
+      const shown = pv === value
+      p.toggleAttribute('data-selected', !!shown)
+      p.toggleAttribute('hidden', !shown)
+    }
+  }
+
+  private _onSelectionChange(): void {
+    const v = this.value
+    this.dispatchEvent(
+      new CustomEvent('change', {
+        detail: { value: v } as ChangeEventDetail,
+        bubbles: true,
+        composed: true
+      })
+    )
+  }
+
+  //--------------------------------Listeners---------------------------
 
   private _setupListeners(): void {
     this._triggerSlot?.addEventListener('slotchange', () => this._onTriggerSlotChange())
     this._panelSlot?.addEventListener('slotchange', () => this._onPanelSlotChange())
     this._listEl?.addEventListener('keydown', this._onKeydown)
-  }
-
-  private _getTriggers(): HTMLElement[] {
-    const nodes = this._triggerSlot?.assignedElements({ flatten: true }) ?? []
-    return nodes.filter((n) => n instanceof HTMLElement) as HTMLElement[]
-  }
-
-  private _getPanels(): HTMLElement[] {
-    const nodes = this._panelSlot?.assignedElements({ flatten: true }) ?? []
-    return nodes.filter((n) => n instanceof HTMLElement) as HTMLElement[]
   }
 
   private _onTriggerSlotChange(): void {
@@ -119,33 +147,6 @@ export class UITabs extends HTMLElement {
       p.setAttribute('role', 'tabpanel')
     }
     this._syncSelection()
-  }
-
-  private _ensureInitialSelection(): void {
-    if (this.value) return
-    const first = this._getTriggers()[0]
-    const v = first?.getAttribute('data-value') || first?.getAttribute('value')
-    if (v) this.value = v
-  }
-
-  private _syncSelection(): void {
-    const value = this.value
-    const triggers = this._getTriggers()
-    const panels = this._getPanels()
-    for (const t of triggers) {
-      const tv = t.getAttribute('data-value') || t.getAttribute('value')
-      const selected = tv === value
-      t.toggleAttribute('data-selected', !!selected)
-      t.setAttribute('aria-selected', selected ? 'true' : 'false')
-      t.setAttribute('tabindex', selected ? '0' : '-1')
-    }
-
-    for (const p of panels) {
-      const pv = p.getAttribute('data-value') || p.getAttribute('value')
-      const shown = pv === value
-      p.toggleAttribute('data-selected', !!shown)
-      p.toggleAttribute('hidden', !shown)
-    }
   }
 
   private _onKeydown = (e: KeyboardEvent): void => {
@@ -186,21 +187,37 @@ export class UITabs extends HTMLElement {
     }
   }
 
+  //-------------------------------------Utilities-----------------------------
+  private _getTriggers(): HTMLElement[] {
+    const nodes = this._triggerSlot?.assignedElements({ flatten: true }) ?? []
+    return nodes.filter((n) => n instanceof HTMLElement) as HTMLElement[]
+  }
+
+  private _getPanels(): HTMLElement[] {
+    const nodes = this._panelSlot?.assignedElements({ flatten: true }) ?? []
+    return nodes.filter((n) => n instanceof HTMLElement) as HTMLElement[]
+  }
+
+  //-------------------------------------Public API----------------------------
   get value(): string | null {
-    return this.getAttribute('value')
+    return this.getAttribute(ATTRIBUTES.VALUE)
   }
   set value(v: string | null) {
-    const current = this.getAttribute('value')
+    const current = this.value
     if (v === current) return
-    if (v === null) this.removeAttribute('value')
-    else this.setAttribute('value', v)
+    if (v === null) this.removeAttribute(ATTRIBUTES.VALUE)
+    else this.setAttribute(ATTRIBUTES.VALUE, v)
   }
 }
 
-if (!customElements.get('ui-tabs')) customElements.define('ui-tabs', UITabs)
+if (!customElements.get(UI_TAB_NAME)) customElements.define(UI_TAB_NAME, UITabs)
 
 declare global {
   interface HTMLElementTagNameMap {
-    'ui-tabs': UITabs
+    [UI_TAB_NAME]: UITabs
+  }
+
+  interface HTMLElementEventMap {
+    change: CustomEvent<ChangeEventDetail>
   }
 }

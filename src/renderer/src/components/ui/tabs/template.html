@@ -1,9 +1,9 @@
 <template>
-  <div part="base" class="root">
-    <div part="list" class="list" role="tablist" aria-orientation="horizontal">
+  <div part="base" class="root" data-el="base">
+    <div part="list" class="list" role="tablist" aria-orientation="horizontal" data-el="list">
       <slot name="tab"></slot>
     </div>
-    <div part="panels" class="panels">
+    <div part="panels" class="panels" data-el="panels">
       <slot name="panel"></slot>
     </div>
   </div>

@@ -1,13 +1,13 @@
-<template id="ui-alert-template">
+<template>
   <div part="base" class="ui-alert" data-el="root">
     <ui-icon part="icon" class="ui-alert_icon" data-el="icon"></ui-icon>
     <div part="content" class="ui-alert_content">
-      <div part="title" class="ui-alert_title">
+      <h2 part="title" class="ui-alert_title" data-el="title">
         <slot name="title"></slot>
-      </div>
-      <div part="description" class="ui-alert_description">
+      </h2>
+      <p part="description" class="ui-alert_description" data-el="description">
         <slot name="description"></slot>
-      </div>
+      </p>
     </div>
     <ui-button
       part="close"

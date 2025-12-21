@@ -1,3 +1,23 @@
 <template id="ui-sonner-template">
-  <div class="ui-sonner-root" part="root" aria-live="polite" aria-atomic="true"></div>
+  <div class="ui-sonner-root" data-el="root" part="root" aria-live="polite" aria-atomic="true">
+    <template data-el="toast-template">
+      <div class="ui-sonner-toast" data-el="toast">
+        <ui-icon class="ui-sonner-toast__icon" data-el="icon"></ui-icon>
+        <div class="ui-sonner-toast__content" data-el="content">
+          <h2 class="ui-sonner-toast__title" data-el="title"></h2>
+          <p class="ui-sonner-toast__desc" data-el="description"></p>
+        </div>
+        <ui-button
+          class="ui-sonner-toast__close"
+          data-el="close"
+          variant="ghost"
+          size="icon"
+          type="button"
+          aria-label="Close notification"
+        >
+          <ui-icon slot="prefix" name="x" aria-hidden="true"></ui-icon>
+        </ui-button>
+      </div>
+    </template>
+  </div>
 </template>

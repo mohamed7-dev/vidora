@@ -1,64 +1,32 @@
 @import url('../../../assets/reset.css');
 
-:host .overlay,
-:host .panel,
-:host .header,
-:host .content,
-:host .footer,
-:host .x-btn {
-  -webkit-app-region: no-drag;
-}
-
 :host {
   display: contents;
 }
 
-/* Base wrapper fills viewport and centers panel */
-:host .base {
+/* Override dialog base to always fill viewport and align sheet edges */
+:host ui-dialog::part(base) {
   position: fixed;
   inset: 0;
-  display: none;
-  z-index: 1000;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
   pointer-events: none;
 }
 
-/* Show base only when sheet is open */
-:host([data-open]) .base {
-  display: flex;
+/* Let dialog control when it is open; we only care about layout */
+:host ui-dialog[data-open]::part(base) {
   pointer-events: auto;
 }
 
-/* Overlay */
-:host .overlay {
-  position: fixed;
-  inset: 0;
-  /* Light mode default: darker scrim */
-  background: color-mix(in oklch, black 40%, transparent);
-  /* Blur content behind the overlay */
+/* Overlay tweaks stay mostly the same but we can rely on dialog styling */
+:host ui-dialog::part(overlay) {
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  opacity: 0;
-  pointer-events: none;
-  display: none;
-  visibility: hidden;
-  transition: opacity 0.2s ease;
-  z-index: 1001;
 }
 
-:host([data-open]) .overlay {
-  display: block;
-  opacity: 1;
-  pointer-events: auto;
-  visibility: visible;
-}
-
-/* Dark mode: lighter scrim to avoid over-darkening */
-:host-context(.dark) .overlay {
-  background: color-mix(in oklch, white 12%, transparent);
-}
-
-/* Panel */
-:host .panel {
+/* Sheet panel: reuse dialog panel but position against screen edge */
+:host ui-dialog::part(panel) {
   position: fixed;
   background: var(--ui-sheet-background, var(--card));
   color: var(--ui-sheet-foreground, var(--card-foreground));
@@ -69,117 +37,72 @@
   transition:
     transform 0.25s ease,
     opacity 0.2s ease;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
   z-index: 1002;
 }
 
-:host([data-open]) .panel {
-  display: flex;
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  will-change: opacity, transform;
-}
-
-:host .panel[data-side='right'],
-:host .panel[data-side='left'] {
+/* Horizontal sheets */
+:host ui-dialog[data-sheet-side='right']::part(panel),
+:host ui-dialog[data-sheet-side='left']::part(panel) {
   height: var(--ui-sheet-height, 100vh);
   width: var(--ui-sheet-width, min(420px, 90vw));
 }
 
-:host .panel[data-side='right'] {
+:host ui-dialog[data-sheet-side='right']::part(panel) {
   top: 0;
   right: 0;
   transform: translateX(100%);
 }
 
-:host .panel[data-side='left'] {
+:host ui-dialog[data-sheet-side='left']::part(panel) {
   top: 0;
   left: 0;
   transform: translateX(-100%);
 }
 
-:host .panel[data-side='top'],
-:host .panel[data-side='bottom'] {
+/* Vertical sheets */
+:host ui-dialog[data-sheet-side='top']::part(panel),
+:host ui-dialog[data-sheet-side='bottom']::part(panel) {
   height: var(--ui-sheet-height, min(50vh, 560px));
   width: var(--ui-sheet-width, 100vw);
 }
 
-:host .panel[data-side='top'] {
+:host ui-dialog[data-sheet-side='top']::part(panel) {
   top: 0;
   left: 0;
   transform: translateY(-100%);
 }
 
-:host .panel[data-side='bottom'] {
+:host ui-dialog[data-sheet-side='bottom']::part(panel) {
   bottom: 0;
   left: 0;
   transform: translateY(100%);
 }
 
-:host [data-open].panel[data-side='right'],
-:host [data-open].panel[data-side='left'],
-:host [data-open].panel[data-side='top'],
-:host [data-open].panel[data-side='bottom'] {
+/* When dialog is open, bring sheet into view */
+:host ui-dialog[data-open][data-sheet-side='right']::part(panel),
+:host ui-dialog[data-open][data-sheet-side='left']::part(panel),
+:host ui-dialog[data-open][data-sheet-side='top']::part(panel),
+:host ui-dialog[data-open][data-sheet-side='bottom']::part(panel) {
   transform: translate(0, 0);
-  opacity: 1;
-  pointer-events: auto;
 }
 
-/* panel header  */
-:host .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+/* Header/content/footer mostly reuse dialog but allow custom sheet spacing */
+:host ui-dialog::part(header) {
   padding: var(--ui-sheet-header-padding, 0.75rem 1rem 0.5rem);
 }
 
-/* Let header slotted content (tabs) occupy remaining space */
-:host .header ::slotted([slot='header']) {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-size: 0.7rem;
-  color: currentColor;
+:host ui-dialog::part(content) {
+  padding: var(--ui-sheet-content-padding, 0.75rem 1rem 0.75rem);
 }
 
-/* panel content */
-:host .content {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  overflow: auto;
-}
-
-/* panel footer  */
-:host .footer {
-  display: flex;
+:host ui-dialog::part(footer) {
   gap: 0.5rem;
   justify-content: flex-end;
   padding: 0;
   border-top: none;
 }
 
-/* Only show footer when content exists */
-:host .footer[data-has-footer] {
+:host ui-dialog::part(footer)[data-has-footer] {
   padding: var(--ui-sheet-footer-padding, 0.75rem 1rem 1rem);
   border-top: 1px solid var(--ui-sheet-border, var(--border));
-}
-
-/* Internal close button*/
-:host .x-btn {
-  width: 27px;
-  height: 27px;
-  display: none;
-}
-
-/* Show close button only when sheet is closable */
-:host .x-btn[data-closable] {
-  display: flex;
 }

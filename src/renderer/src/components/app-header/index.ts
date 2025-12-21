@@ -72,8 +72,8 @@ export class AppHeader extends HTMLElement {
     })
     this.dropdownEl?.addEventListener('dropdown-show', () => this._mountMenu())
     this.dropdownEl?.addEventListener('dropdown-after-hide', () => this._unmountMenu())
-    this.navSheet?.addEventListener('sheet-show', () => this._mountNavContent())
-    this.navSheet?.addEventListener('sheet-after-hide', () => this._unmountNavContent())
+    // this.navSheet?.addEventListener('sheet-show', () => this._mountNavContent())
+    // this.navSheet?.addEventListener('sheet-after-hide', () => this._unmountNavContent())
   }
 
   private _render(): void {
@@ -146,33 +146,33 @@ export class AppHeader extends HTMLElement {
     this._menuMounted = false
   }
 
-  private _mountNavContent(): void {
-    if (this._navMounted || !this.shadowRoot || !this.navSheet) return
-    const tpl = this.shadowRoot.querySelector(
-      '#app-header-navsheet-content-tpl'
-    ) as HTMLTemplateElement
-    if (!tpl) return
-    const frag = tpl.content.cloneNode(true) as DocumentFragment
-    const appended: HTMLElement[] = []
-    Array.from(frag.children).forEach((el) => {
-      const node = el as HTMLElement
-      node.setAttribute('data-owner', 'app-header-nav')
-      appended.push(node)
-    })
-    this.navSheet.append(...appended)
-    this._navListeners = new AbortController()
-    this._applyI18n()
-    this._navMounted = true
-  }
+  // private _mountNavContent(): void {
+  //   if (this._navMounted || !this.shadowRoot || !this.navSheet) return
+  //   const tpl = this.shadowRoot.querySelector(
+  //     '#app-header-navsheet-content-tpl'
+  //   ) as HTMLTemplateElement
+  //   if (!tpl) return
+  //   const frag = tpl.content.cloneNode(true) as DocumentFragment
+  //   const appended: HTMLElement[] = []
+  //   Array.from(frag.children).forEach((el) => {
+  //     const node = el as HTMLElement
+  //     node.setAttribute('data-owner', 'app-header-nav')
+  //     appended.push(node)
+  //   })
+  //   this.navSheet.append(...appended)
+  //   this._navListeners = new AbortController()
+  //   this._applyI18n()
+  //   this._navMounted = true
+  // }
 
-  private _unmountNavContent(): void {
-    if (!this._navMounted || !this.navSheet) return
-    this._navListeners?.abort()
-    this._navListeners = null
-    const nodes = this.navSheet.querySelectorAll('[data-owner="app-header-nav"]')
-    nodes.forEach((n) => n.remove())
-    this._navMounted = false
-  }
+  // private _unmountNavContent(): void {
+  //   if (!this._navMounted || !this.navSheet) return
+  //   this._navListeners?.abort()
+  //   this._navListeners = null
+  //   const nodes = this.navSheet.querySelectorAll('[data-owner="app-header-nav"]')
+  //   nodes.forEach((n) => n.remove())
+  //   this._navMounted = false
+  // }
 }
 
 if (!customElements.get('app-header')) customElements.define('app-header', AppHeader)

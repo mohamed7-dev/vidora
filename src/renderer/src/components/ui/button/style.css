@@ -38,6 +38,10 @@ button {
   cursor: pointer;
 }
 
+:host([block]) button {
+  width: 100%;
+}
+
 button:focus-visible {
   box-shadow: var(--focus-ring);
 }
@@ -51,16 +55,29 @@ button:focus-visible {
 /* Named Slots */
 .prefix,
 .suffix {
-  display: inline-flex;
+  display: none;
+}
+
+.prefix[data-has-prefix],
+.suffix[data-has-suffix] {
   align-items: center;
+  display: inline-flex;
 }
 
 .label {
+  display: none;
+}
+
+.label[data-has-label] {
   display: inline-flex;
   align-items: center;
 }
 
 .spinner {
+  display: none;
+}
+
+.spinner[data-has-spinner] {
   display: inline-flex;
   align-items: center;
 }

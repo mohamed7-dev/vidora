@@ -1,5 +1,16 @@
 @import url('../../../assets/reset.css');
 
+:root {
+  --tab-background: var(--tab-bg);
+  --tab-foreground: var(--tab-fg);
+  --selected-background: var(--selected-tab-bg);
+  --selected-foreground: var(--selected-tab-fg);
+  --list-width: var(--tabs-list-width);
+  --list-gap: var(--tabs-list-gap);
+  --list-max-width: var(--tabs-list-max-width);
+  --radius: var(--tab-radius);
+}
+
 :host {
   display: block;
   height: 100%;
@@ -17,26 +28,26 @@
 .list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-  gap: var(--ui-tabs-list-gap, 0.25rem);
-  width: var(--ui-tabs-list-width, 100%);
-  max-width: var(--ui-tabs-list-max-width, none);
+  gap: var(--list-gap, 0.25rem);
+  width: var(--list-width, 100%);
+  max-width: var(--list-max-width, none);
   margin-inline: auto;
 }
 
 ::slotted([slot='tab']) {
   appearance: none;
-  background: transparent;
-  color: var(--muted-foreground);
+  background: var(--tab-background, transparent);
+  color: var(--tab-foreground, var(--muted-foreground));
   border: none;
-  border-radius: calc(var(--radius) - 4px);
+  border-radius: var(--radius, calc(var(--radius) - 4px));
   cursor: pointer;
   width: 100%;
   text-align: center;
 }
 
 ::slotted([slot='tab'][data-selected]) {
-  background: var(--secondary);
-  color: var(--secondary-foreground);
+  background: var(--selected-background, var(--secondary));
+  color: var(--selected-foreground, var(--secondary-foreground));
 }
 
 /* Panels container should explicitly take the width */

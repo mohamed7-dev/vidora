@@ -1,18 +1,38 @@
 import type { Meta, StoryObj } from '@storybook/html'
 import './index'
 
-const meta: Meta = {
-  title: 'UI/Icon'
+type IconArgs = {
+  name: string
+  spin: boolean
+}
+
+const meta: Meta<IconArgs> = {
+  title: 'UI/Icon',
+  args: {
+    name: 'settings',
+    spin: false
+  },
+  argTypes: {
+    name: { control: 'text' },
+    spin: { control: 'boolean' }
+  }
 }
 
 export default meta
 
-type Story = StoryObj
+const renderIcon = (args: IconArgs): string => {
+  const { name, spin } = args
 
-export const Settings: Story = {
-  render: () => `<ui-icon name="settings"></ui-icon>`
+  const attrs: string[] = []
+
+  if (name) attrs.push(`name="${name}"`)
+  if (spin) attrs.push('spin')
+
+  return `<ui-icon ${attrs.join(' ')}></ui-icon>`
 }
 
-export const Loader: Story = {
-  render: () => `<ui-icon name="loader-circle" spin></ui-icon>`
+type Story = StoryObj<IconArgs>
+
+export const Playground: Story = {
+  render: (args) => renderIcon(args)
 }
