@@ -1,5 +1,5 @@
 export const DATA = {
-  appName: 'Vidora',
+  appName: 'Yalla-download',
   /* eslint-disable-next-line no-useless-escape */
   proxyServerPattern: '^(http://|https://|socks5://)?[a-zA-Z0-9.]+:[\d]+$',
   videoQualities: [
