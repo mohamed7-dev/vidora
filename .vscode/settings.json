@@ -8,6 +8,6 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "cSpell.words": ["Incompleted", "prefs", "TANZIL", "vidora", "YALLA", "ytdlp"],
-  "conventionalCommits.scopes": ["main", "renderer", "shared", "testing"]
+  "cSpell.words": ["checkmark", "Incompleted", "prefs", "TANZIL", "vidora", "YALLA", "ytdlp"],
+  "conventionalCommits.scopes": ["main", "renderer", "shared", "testing", "preload"]
 }

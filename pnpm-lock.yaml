@@ -21,8 +21,8 @@ importers:
         specifier: ^6.3.9
         version: 6.6.2
       yt-dlp-wrap-plus:
-        specifier: ^2.3.20
-        version: 2.3.20
+        specifier: ^2.4.3
+        version: 2.4.3
     devDependencies:
       '@electron-toolkit/eslint-config-prettier':
         specifier: ^3.0.0
@@ -48,6 +48,9 @@ importers:
       '@types/node':
         specifier: ^22.18.6
         version: 22.18.11
+      '@vitest/ui':
+        specifier: 4.0.15
+        version: 4.0.15(vitest@4.0.15)
       electron:
         specifier: ^38.1.2
         version: 38.3.0
@@ -83,7 +86,7 @@ importers:
         version: 7.1.11(@types/node@22.18.11)(tsx@4.20.6)
       vitest:
         specifier: ^4.0.15
-        version: 4.0.15(@types/node@22.18.11)(jsdom@27.3.0(postcss@8.5.6))(tsx@4.20.6)
+        version: 4.0.15(@types/node@22.18.11)(@vitest/ui@4.0.15)(jsdom@27.3.0(postcss@8.5.6))(tsx@4.20.6)
 
 packages:
 
@@ -673,6 +676,9 @@ packages:
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
+  '@polka/url@1.0.0-next.29':
+    resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
+
   '@rollup/rollup-android-arm-eabi@4.52.5':
     resolution: {integrity: sha512-8c1vW4ocv3UOMp9K+gToY5zL2XiiVw3k7f1ksf4yO1FlDFQ1C2u72iACFnSOceJFsWskc2WZNqeRhFRPzv+wtQ==}
     cpu: [arm]
@@ -1110,6 +1116,11 @@ packages:
 
   '@vitest/spy@4.0.15':
     resolution: {integrity: sha512-+EIjOJmnY6mIfdXtE/bnozKEvTC4Uczg19yeZ2vtCz5Yyb0QQ31QWVQ8hswJ3Ysx/K2EqaNsVanjr//2+P3FHw==}
+
+  '@vitest/ui@4.0.15':
+    resolution: {integrity: sha512-sxSyJMaKp45zI0u+lHrPuZM1ZJQ8FaVD35k+UxVrha1yyvQ+TZuUYllUixwvQXlB7ixoDc7skf3lQPopZIvaQw==}
+    peerDependencies:
+      vitest: 4.0.15
 
   '@vitest/utils@2.0.5':
     resolution: {integrity: sha512-d8HKbqIcya+GR67mkZbrzhS5kKhtp8dQLcmRZLGTscGVg7yImT82cIrhtn2L8+VujWcy6KZweApgNmPsTAO/UQ==}
@@ -1850,6 +1861,9 @@ packages:
       picomatch:
         optional: true
 
+  fflate@0.8.2:
+    resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
+
   file-entry-cache@8.0.0:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
     engines: {node: '>=16.0.0'}
@@ -2451,6 +2465,10 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  mrmime@2.0.1:
+    resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
+    engines: {node: '>=10'}
+
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
@@ -2831,6 +2849,10 @@ packages:
     resolution: {integrity: sha512-a2B9Y0KlNXl9u/vsW6sTIu9vGEpfKu2wRV6l1H3XEas/0gUIzGzBoP/IouTcUQbm9JWZLH3COxyn03TYlFax6w==}
     engines: {node: '>=10'}
 
+  sirv@3.0.2:
+    resolution: {integrity: sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==}
+    engines: {node: '>=18'}
+
   slice-ansi@3.0.0:
     resolution: {integrity: sha512-pSyv7bSTC7ig9Dcgbw9AuRNUb5k5V6oDudjZoMBSr13qpLBG7tB+zgCkARjq7xIUgdz5P1Qe8u+rSGdouOOIyQ==}
     engines: {node: '>=8'}
@@ -2996,6 +3018,10 @@ packages:
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
+
+  totalist@3.0.1:
+    resolution: {integrity: sha512-sf4i37nQ2LBx4m3wB74y+ubopq6W/dIzXg0FDGjsYnZHVa1Da8FH853wlL2gtUhg+xJXjfk3kUZS3BRoQeoQBQ==}
+    engines: {node: '>=6'}
 
   tough-cookie@6.0.0:
     resolution: {integrity: sha512-kXuRi1mtaKMrsLUxz3sQYvVl37B0Ns6MzfrtV5DvJceE9bPyspOqk9xxv7XbZWcfLWbFmm997vl83qUWVJA64w==}
@@ -3286,8 +3312,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  yt-dlp-wrap-plus@2.3.20:
-    resolution: {integrity: sha512-vKQfQMvvSbTta+mrRrMFYm+e/vkbHK5X9L2LiO3JRVHUmEjzpk8qdFpQwp27FPIA7nLR17AZA5gG9yEVcF3avQ==}
+  yt-dlp-wrap-plus@2.4.3:
+    resolution: {integrity: sha512-D/Q1/gipu8hEmairp5gRyWQE+BsfJanALbkzTxWdTC/LRXlCq00vDdscFxvVrypXT5UGf6KP1gtrKFV087uCEw==}
 
   zip-stream@4.1.1:
     resolution: {integrity: sha512-9qv4rlDiopXg4E69k+vMHjNN63YFMe9sZMrdlvKnCjlCRWeCBswPPMPUfx+ipsAWq1LXHe70RcbaHdJJpS6hyQ==}
@@ -3857,6 +3883,8 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
+  '@polka/url@1.0.0-next.29': {}
+
   '@rollup/rollup-android-arm-eabi@4.52.5':
     optional: true
 
@@ -4364,6 +4392,17 @@ snapshots:
       tinyspy: 3.0.2
 
   '@vitest/spy@4.0.15': {}
+
+  '@vitest/ui@4.0.15(vitest@4.0.15)':
+    dependencies:
+      '@vitest/utils': 4.0.15
+      fflate: 0.8.2
+      flatted: 3.3.3
+      pathe: 2.0.3
+      sirv: 3.0.2
+      tinyglobby: 0.2.15
+      tinyrainbow: 3.0.3
+      vitest: 4.0.15(@types/node@22.18.11)(@vitest/ui@4.0.15)(jsdom@27.3.0(postcss@8.5.6))(tsx@4.20.6)
 
   '@vitest/utils@2.0.5':
     dependencies:
@@ -5276,6 +5315,8 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.3
 
+  fflate@0.8.2: {}
+
   file-entry-cache@8.0.0:
     dependencies:
       flat-cache: 4.0.1
@@ -5902,6 +5943,8 @@ snapshots:
 
   mkdirp@1.0.4: {}
 
+  mrmime@2.0.1: {}
+
   ms@2.1.3: {}
 
   nanoid@3.3.11: {}
@@ -6314,6 +6357,12 @@ snapshots:
     dependencies:
       semver: 7.7.3
 
+  sirv@3.0.2:
+    dependencies:
+      '@polka/url': 1.0.0-next.29
+      mrmime: 2.0.1
+      totalist: 3.0.1
+
   slice-ansi@3.0.0:
     dependencies:
       ansi-styles: 4.3.0
@@ -6483,6 +6532,8 @@ snapshots:
     dependencies:
       is-number: 7.0.0
 
+  totalist@3.0.1: {}
+
   tough-cookie@6.0.0:
     dependencies:
       tldts: 7.0.19
@@ -6599,7 +6650,7 @@ snapshots:
       fsevents: 2.3.3
       tsx: 4.20.6
 
-  vitest@4.0.15(@types/node@22.18.11)(jsdom@27.3.0(postcss@8.5.6))(tsx@4.20.6):
+  vitest@4.0.15(@types/node@22.18.11)(@vitest/ui@4.0.15)(jsdom@27.3.0(postcss@8.5.6))(tsx@4.20.6):
     dependencies:
       '@vitest/expect': 4.0.15
       '@vitest/mocker': 4.0.15(vite@7.1.11(@types/node@22.18.11)(tsx@4.20.6))
@@ -6623,6 +6674,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 22.18.11
+      '@vitest/ui': 4.0.15(vitest@4.0.15)
       jsdom: 27.3.0(postcss@8.5.6)
     transitivePeerDependencies:
       - jiti
@@ -6734,7 +6786,7 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  yt-dlp-wrap-plus@2.3.20: {}
+  yt-dlp-wrap-plus@2.4.3: {}
 
   zip-stream@4.1.1:
     dependencies:
