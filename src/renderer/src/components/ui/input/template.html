@@ -1,5 +1,19 @@
 <template id="ui-input-template">
-  <div part="base" class="root">
-    <input part="control" class="control" />
+  <div part="base" class="root" data-el="root">
+    <label part="label" class="label" data-el="label">
+      <slot name="label"></slot>
+    </label>
+
+    <div part="field" class="field" data-el="field">
+      <input part="control" class="control" />
+    </div>
+
+    <p part="description" class="description" data-el="description">
+      <slot name="description"></slot>
+    </p>
+
+    <p part="error" class="error" data-el="error">
+      <slot name="error"></slot>
+    </p>
   </div>
 </template>

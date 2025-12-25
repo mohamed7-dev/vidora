@@ -1,3 +1,15 @@
 <template id="app-sidebar-content-template">
-  <nav id="app-sidebar-content-nav" class="nav"></nav>
+  <nav class="nav__container" data-el="nav-container"></nav>
+  <template data-el="nav-section-template">
+    <div class="nav__section" data-el="nav-section">
+      <h2 class="nav__section-title" data-el="nav-section-title"></h2>
+      <div class="nav__section-items" data-el="nav-section-items"></div>
+    </div>
+  </template>
+  <template data-el="nav-item-template">
+    <a class="nav__item" data-el="nav-item">
+      <ui-icon class="nav__item-icon" data-el="nav-item-icon"></ui-icon>
+      <span class="nav__item-label" data-el="nav-item-label"></span>
+    </a>
+  </template>
 </template>

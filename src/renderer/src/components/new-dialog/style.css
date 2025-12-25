@@ -1,38 +1,34 @@
 @import url('../../assets/reset.css');
 
-:host([hide-trigger]) .new-dialog__trigger-button {
+:host([hide-trigger]) .dialog__trigger {
   display: none;
 }
 
 /* dialog  */
-
 :host ui-dialog::part(panel) {
-  width: 32rem;
+  width: 38rem;
   min-height: 12rem;
   max-height: 90vh;
   height: auto;
 }
 
 /* header  */
-
-.new-dialog__header__wrapper {
+.header__wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* tabs buttons */
-
-@media (max-width: 640px) {
-  .new-dialog__header__button {
-    --ui-button-direction: column;
-  }
+/* content */
+.dialog__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
-/* content */
-.new-dialog__header__wrapper,
-.new-dialog__content__article {
+.header__wrapper,
+.dialog__content-article {
   display: none;
 }
 
@@ -55,16 +51,12 @@ ui-dialog[data-active-screen='media-loading'] .media-loading-screen-header {
 /* media url screen  */
 .media-url-screen-content {
   flex-direction: column;
-  align-items: center;
   gap: 1rem;
+  align-items: start;
 }
 
-.media-url-screen-content label {
-  align-self: start;
-}
-
-.media-url-screen-content ui-input {
-  width: 100%;
+.media-url-screen-content .validate__button {
+  align-self: center;
 }
 
 /* media loading screen  */

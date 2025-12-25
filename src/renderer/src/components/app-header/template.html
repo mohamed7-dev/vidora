@@ -14,12 +14,10 @@
         >
           <ui-icon slot="prefix" name="ellipsis-vertical"></ui-icon>
         </ui-button>
-      </ui-dropdown>
-      <template id="app-header-dropdown-menu-tpl">
         <ui-button
           slot="menu-item"
           class="app-header__dropdown-menu-item"
-          id="app-header-menu-preferences"
+          data-el="dropdown-menu-preferences-btn"
           variant="ghost"
           block
         >
@@ -28,7 +26,8 @@
         <ui-button slot="menu-item" class="app-header__dropdown-menu-item" variant="ghost" block>
           <span slot="label" data-i18n="appHeader.actionsMenu.about"></span>
         </ui-button>
-      </template>
+      </ui-dropdown>
+
       <!-- TODO: will be back once we fix the bug in notification-popover -->
       <!-- <notification-popover></notification-popover> -->
       <preferences-dialog></preferences-dialog>

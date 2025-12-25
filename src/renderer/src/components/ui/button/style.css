@@ -15,6 +15,7 @@ button {
   all: unset;
   box-sizing: border-box;
   display: inline-flex;
+  flex-direction: var(--ui-button-direction, row);
   align-items: center;
   justify-content: center;
   gap: var(--ui-button-gap, 0.5rem);

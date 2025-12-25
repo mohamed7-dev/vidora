@@ -1,18 +1,18 @@
 <template>
-  <div part="base" class="root">
-    <header part="head" class="header-wrapper">
+  <section part="base" class="root">
+    <header part="head" class="header__wrapper">
       <h1 data-i18n="home.pageTitle"></h1>
     </header>
-    <div part="content" class="content-wrapper">
-      <article class="content-box">
-        <img alt="logo" data-logo />
+    <div part="content" class="content__wrapper">
+      <article class="content__box">
+        <img alt="logo" data-el="logo-image" />
         <h2 data-i18n="home.cardTitle"></h2>
         <p data-i18n="home.cardMessage"></p>
-        <ui-button size="lg" id="add-download-button">
+        <ui-button size="lg" data-el="add-download-btn">
           <span slot="label" data-i18n="home.cardButtonTitle"></span>
         </ui-button>
         <new-dialog hide-trigger></new-dialog>
       </article>
     </div>
-  </div>
+  </section>
 </template>

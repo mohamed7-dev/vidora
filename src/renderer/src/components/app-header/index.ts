@@ -1,41 +1,31 @@
 import '../preferences-dialog/index'
 import '../new-dialog/index'
+import '../app-sidebar/content/index'
+
 // import '../notification-popover/index' // will be back once we fix the bug
-import template from './template.html?raw'
-import styleCss from './style.css?inline'
+import html from './template.html?raw'
+import style from './style.css?inline'
 import { DATA } from '@root/shared/data'
 import { UIButton, UIDialog, UISheet } from '../ui'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '../ui/lib/template-loader'
+import { NAV_ITEM_CLICKED_EVENT } from '../app-sidebar/content'
+
+const APP_HEADER_NAME = 'app-header'
 
 export class AppHeader extends HTMLElement {
-  // Cache stylesheet and template per class for performance and to prevent FOUC
-  private static readonly sheet: CSSStyleSheet = (() => {
-    const s = new CSSStyleSheet()
-    s.replaceSync(styleCss)
-    return s
-  })()
-  private static readonly tpl: HTMLTemplateElement = (() => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(template, 'text/html')
-    const inner = doc.querySelector('template')
-    const t = document.createElement('template')
-    t.innerHTML = inner ? inner.innerHTML : template
-    return t
-  })()
+  private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
+  private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
 
   // refs
   private btnMin: UIButton | null = null
   private btnMax: UIButton | null = null
   private btnClose: UIButton | null = null
-  private menuPreferences: HTMLElement | null = null
   private appTitle: HTMLElement | null = null
   private prefsDialog: UIDialog | null = null
-  private dropdownEl: HTMLElement | null = null
+  private dropdownMenuPrefButton: UIButton | null = null
   private navSheet: UISheet | null = null
 
   // states
-  private _menuMounted = false
-  private _menuListeners: AbortController | null = null
-  private _navMounted = false
   private _navListeners: AbortController | null = null
 
   private t = window.api?.i18n?.t || (() => undefined)
@@ -49,31 +39,12 @@ export class AppHeader extends HTMLElement {
     this._queryRefs()
     this._init()
     this._applyListeners()
-    this._dismissSheetOnClick()
     this._applyI18n()
   }
 
-  private _dismissSheetOnClick(): void {
-    if (!this.navSheet) return
-    this.navSheet.addEventListener('nav-item-click', () => {
-      this.navSheet?.close()
-    })
-  }
-
-  private _applyListeners(): void {
-    this.btnMin?.addEventListener('click', () => {
-      window.api?.window?.minimize()
-    })
-    this.btnMax?.addEventListener('click', () => {
-      window.api?.window?.toggleMaximize()
-    })
-    this.btnClose?.addEventListener('click', () => {
-      window.api?.window?.close()
-    })
-    this.dropdownEl?.addEventListener('dropdown-show', () => this._mountMenu())
-    this.dropdownEl?.addEventListener('dropdown-after-hide', () => this._unmountMenu())
-    // this.navSheet?.addEventListener('sheet-show', () => this._mountNavContent())
-    // this.navSheet?.addEventListener('sheet-after-hide', () => this._unmountNavContent())
+  disconnectedCallback(): void {
+    this._navListeners?.abort()
+    this._navListeners = null
   }
 
   private _render(): void {
@@ -88,11 +59,59 @@ export class AppHeader extends HTMLElement {
     this.btnMin = this.shadowRoot.querySelector('#chrome-controls-minimize') as UIButton
     this.btnMax = this.shadowRoot.querySelector('#chrome-controls-maximize') as UIButton
     this.btnClose = this.shadowRoot.querySelector('#chrome-controls-close') as UIButton
-    this.menuPreferences = null
     this.appTitle = this.shadowRoot.querySelector('#app-header-title') as HTMLElement
     this.prefsDialog = this.shadowRoot.querySelector('preferences-dialog') as UIDialog
-    this.dropdownEl = this.shadowRoot.querySelector('ui-dropdown') as HTMLElement
+    this.dropdownMenuPrefButton = this.shadowRoot.querySelector(
+      "[data-el='dropdown-menu-preferences-btn']"
+    ) as UIButton
     this.navSheet = this.shadowRoot.querySelector('ui-sheet') as UISheet
+  }
+
+  private _applyListeners(): void {
+    // Reset previous controller (if any) to avoid accumulating listeners
+    this._navListeners?.abort()
+    this._navListeners = new AbortController()
+
+    const signal = this._navListeners.signal
+
+    this.btnMin?.addEventListener(
+      'click',
+      () => {
+        window.api?.window?.minimize()
+      },
+      { signal }
+    )
+    this.btnMax?.addEventListener(
+      'click',
+      () => {
+        window.api?.window?.toggleMaximize()
+      },
+      { signal }
+    )
+    this.btnClose?.addEventListener(
+      'click',
+      () => {
+        window.api?.window?.close()
+      },
+      { signal }
+    )
+
+    // dismisses sheet on clicking
+    this.navSheet?.addEventListener(
+      NAV_ITEM_CLICKED_EVENT,
+      () => {
+        this.navSheet?.closeSheet()
+      },
+      { signal }
+    )
+    // trigger pref dialog on click
+    this.dropdownMenuPrefButton?.addEventListener(
+      'click',
+      () => {
+        this.prefsDialog?.openDialog()
+      },
+      { signal }
+    )
   }
 
   private _init(): void {
@@ -106,79 +125,12 @@ export class AppHeader extends HTMLElement {
       el.textContent = this.t(el.getAttribute('data-i18n') as string) ?? ''
     })
   }
-
-  private _mountMenu(): void {
-    if (this._menuMounted || !this.shadowRoot || !this.dropdownEl) return
-    const tpl = this.shadowRoot.querySelector(
-      '#app-header-dropdown-menu-tpl'
-    ) as HTMLTemplateElement
-    if (!tpl) return
-    const frag = tpl.content.cloneNode(true) as DocumentFragment
-    const appended: HTMLElement[] = []
-    Array.from(frag.children).forEach((el) => {
-      const node = el as HTMLElement
-      node.setAttribute('data-owner', 'app-header')
-      appended.push(node)
-    })
-    this.dropdownEl.append(...appended)
-    this._menuListeners = new AbortController()
-    this.menuPreferences = this.shadowRoot.querySelector(
-      '#app-header-menu-preferences'
-    ) as HTMLElement
-    this.menuPreferences?.addEventListener(
-      'click',
-      () => {
-        this.prefsDialog?.openDialog()
-      },
-      { signal: this._menuListeners.signal }
-    )
-    this._applyI18n()
-    this._menuMounted = true
-  }
-
-  private _unmountMenu(): void {
-    if (!this._menuMounted || !this.dropdownEl) return
-    this._menuListeners?.abort()
-    this._menuListeners = null
-    const nodes = this.dropdownEl.querySelectorAll('[data-owner="app-header"]')
-    nodes.forEach((n) => n.remove())
-    this.menuPreferences = null
-    this._menuMounted = false
-  }
-
-  // private _mountNavContent(): void {
-  //   if (this._navMounted || !this.shadowRoot || !this.navSheet) return
-  //   const tpl = this.shadowRoot.querySelector(
-  //     '#app-header-navsheet-content-tpl'
-  //   ) as HTMLTemplateElement
-  //   if (!tpl) return
-  //   const frag = tpl.content.cloneNode(true) as DocumentFragment
-  //   const appended: HTMLElement[] = []
-  //   Array.from(frag.children).forEach((el) => {
-  //     const node = el as HTMLElement
-  //     node.setAttribute('data-owner', 'app-header-nav')
-  //     appended.push(node)
-  //   })
-  //   this.navSheet.append(...appended)
-  //   this._navListeners = new AbortController()
-  //   this._applyI18n()
-  //   this._navMounted = true
-  // }
-
-  // private _unmountNavContent(): void {
-  //   if (!this._navMounted || !this.navSheet) return
-  //   this._navListeners?.abort()
-  //   this._navListeners = null
-  //   const nodes = this.navSheet.querySelectorAll('[data-owner="app-header-nav"]')
-  //   nodes.forEach((n) => n.remove())
-  //   this._navMounted = false
-  // }
 }
 
-if (!customElements.get('app-header')) customElements.define('app-header', AppHeader)
+if (!customElements.get(APP_HEADER_NAME)) customElements.define(APP_HEADER_NAME, AppHeader)
 
 declare global {
   interface HTMLElementTagNameMap {
-    'app-header': AppHeader
+    [APP_HEADER_NAME]: AppHeader
   }
 }

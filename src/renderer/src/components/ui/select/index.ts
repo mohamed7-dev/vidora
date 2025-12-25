@@ -1,17 +1,26 @@
-import template from './template.html?raw'
+import html from './template.html?raw'
 import style from './style.css?inline'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '../lib/template-loader'
 
-const VALUE_ATTR = 'value'
-const DISABLED_ATTR = 'disabled'
+const ATTRIBUTES = {
+  PLACEHOLDER: 'placeholder',
+  VALUE: 'value',
+  DISABLED: 'disabled'
+}
+
 const SELECTED_ATTR = 'data-selected'
-const OPTION_TAG = 'ui-option'
-const PLACEHOLDER_ATTR = 'placeholder'
+const DISABLED_ATTR = 'data-disabled'
+const VALUE_ATTR = 'value'
 
 export class UISelect extends HTMLElement {
+  private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
+  private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
+  // refs
   private _triggerBtn: HTMLButtonElement | null = null
   private _panelEl: HTMLElement | null = null
-  private _valueSpan: HTMLElement | null = null
+  private _triggerLabel: HTMLElement | null = null
   private _slotEl: HTMLSlotElement | null = null
+  // states
   private _aborters = new WeakMap<HTMLElement, AbortController>()
   private _isOpen = false
   private _activeIndex = -1
@@ -22,38 +31,26 @@ export class UISelect extends HTMLElement {
   }
 
   static get observedAttributes(): string[] {
-    return [VALUE_ATTR, DISABLED_ATTR, PLACEHOLDER_ATTR]
+    return Object.values(ATTRIBUTES)
   }
 
   attributeChangedCallback(name: string): void {
-    if (name === VALUE_ATTR) this._syncFromValue()
-    if (name === DISABLED_ATTR) this._syncDisabled()
-    if (name === PLACEHOLDER_ATTR) this._syncPlaceholder()
-  }
-
-  private _syncPlaceholder(): void {
-    const placeholder = this.getAttribute(PLACEHOLDER_ATTR)
-    if (this._valueSpan) {
-      const hasValue = this.getAttribute(VALUE_ATTR)
-      if (!hasValue) this._valueSpan.textContent = placeholder
+    switch (name) {
+      case ATTRIBUTES.VALUE:
+        this._syncValue()
+        break
+      case ATTRIBUTES.DISABLED:
+        this._syncDisabled()
+        break
+      case ATTRIBUTES.PLACEHOLDER:
+        this._syncPlaceholder()
+        break
     }
   }
 
   connectedCallback(): void {
-    const parser = new DOMParser()
-    const tree = parser.parseFromString(template, 'text/html')
-    const tpl = tree.querySelector<HTMLTemplateElement>('template')
-    if (!tpl) return
-    const content = tpl.content.cloneNode(true)
-
-    const styleEl = document.createElement('style')
-    styleEl.textContent = style
-    this.shadowRoot?.append(styleEl, content)
-
-    this._triggerBtn = this.shadowRoot?.querySelector('[data-trigger]') as HTMLButtonElement | null
-    this._panelEl = this.shadowRoot?.querySelector('[data-panel]') as HTMLElement | null
-    this._valueSpan = this.shadowRoot?.querySelector('[data-value]') as HTMLElement | null
-    this._slotEl = this.shadowRoot?.querySelector('slot') as HTMLSlotElement | null
+    this._render()
+    this._queryRefs()
 
     if (this._panelEl && !this._panelEl.hasAttribute('tabindex')) {
       this._panelEl.setAttribute('tabindex', '-1')
@@ -63,9 +60,26 @@ export class UISelect extends HTMLElement {
 
     this._bindTrigger()
     this._bindOptions()
-    this._syncFromValue()
+    this._syncValue()
     this._syncDisabled()
     this._syncPlaceholder()
+  }
+
+  private _render(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.adoptedStyleSheets = [UISelect.sheet]
+    this.shadowRoot.append(UISelect.tpl.content.cloneNode(true))
+  }
+
+  private _queryRefs(): void {
+    this._triggerBtn = this.shadowRoot?.querySelector(
+      '[data-el="trigger"]'
+    ) as HTMLButtonElement | null
+    this._panelEl = this.shadowRoot?.querySelector('[data-el="panel"]') as HTMLElement | null
+    this._triggerLabel = this.shadowRoot?.querySelector(
+      '[data-el="trigger-label"]'
+    ) as HTMLElement | null
+    this._slotEl = this.shadowRoot?.querySelector('slot') as HTMLSlotElement | null
   }
 
   disconnectedCallback(): void {
@@ -117,32 +131,6 @@ export class UISelect extends HTMLElement {
     this._aborters = new WeakMap()
   }
 
-  private _optionsArray(): HTMLElement[] {
-    return Array.from(this.querySelectorAll<HTMLElement>(OPTION_TAG))
-  }
-
-  private _toggle(): void {
-    this._isOpen ? this._close() : this._open()
-  }
-
-  private _open(): void {
-    if (this._isOpen || !this._panelEl) return
-    this._isOpen = true
-    this._panelEl.toggleAttribute('data-open', true)
-    this._triggerBtn?.setAttribute('aria-expanded', 'true')
-    this._setActiveToCurrent()
-    document.addEventListener('mousedown', this._handleOutsideClick, { capture: true })
-  }
-
-  private _close(): void {
-    if (!this._isOpen || !this._panelEl) return
-    this._isOpen = false
-    this._panelEl.toggleAttribute('data-open', false)
-    this._triggerBtn?.setAttribute('aria-expanded', 'false')
-    this._clearActive()
-    document.removeEventListener('mousedown', this._handleOutsideClick, { capture: true })
-  }
-
   private _handleOutsideClick = (event: MouseEvent): void => {
     if (!this._isOpen) return
     const path = event.composedPath()
@@ -151,29 +139,9 @@ export class UISelect extends HTMLElement {
     }
   }
 
-  private _syncFromValue(): void {
-    const currentValue = this.value
-    const options = this._optionsArray()
-    let labelToShow = this.getAttribute('placeholder') ?? ''
-    for (const opt of options) {
-      const optValue = opt.getAttribute(VALUE_ATTR)
-      const selected = optValue === currentValue
-      opt.toggleAttribute(SELECTED_ATTR, !!selected)
-      if (selected) labelToShow = opt.textContent?.trim() ?? ''
-    }
-    if (this._valueSpan) {
-      this._valueSpan.textContent = labelToShow || this.getAttribute('placeholder') || ''
-    }
-  }
-
-  private _syncDisabled(): void {
-    const isDisabled = this.disabled
-    this._triggerBtn?.toggleAttribute('disabled', isDisabled)
-  }
-
   private _handleSlotChange = (): void => {
     this._bindOptions()
-    this._syncFromValue()
+    this._syncValue()
   }
 
   private _handleKeydown = (event: KeyboardEvent): void => {
@@ -216,6 +184,33 @@ export class UISelect extends HTMLElement {
       this._close()
       this._triggerBtn?.focus()
     }
+  }
+
+  //----------------------------------Utils-----------------------------------------
+  private _optionsArray(): HTMLElement[] {
+    return Array.from(this.querySelectorAll<HTMLElement>('ui-option'))
+  }
+
+  private _toggle(): void {
+    this._isOpen ? this._close() : this._open()
+  }
+
+  private _open(): void {
+    if (this._isOpen || !this._panelEl) return
+    this._isOpen = true
+    this._panelEl.toggleAttribute('data-open', true)
+    this._triggerBtn?.setAttribute('aria-expanded', 'true')
+    this._setActiveToCurrent()
+    document.addEventListener('mousedown', this._handleOutsideClick, { capture: true })
+  }
+
+  private _close(): void {
+    if (!this._isOpen || !this._panelEl) return
+    this._isOpen = false
+    this._panelEl.toggleAttribute('data-open', false)
+    this._triggerBtn?.setAttribute('aria-expanded', 'false')
+    this._clearActive()
+    document.removeEventListener('mousedown', this._handleOutsideClick, { capture: true })
   }
 
   private _setActiveToCurrent(): void {
@@ -262,24 +257,56 @@ export class UISelect extends HTMLElement {
     }
     this._activeIndex = -1
   }
+  //----------------------------------Sync States-----------------------------------
 
-  get value(): string | null {
-    return this.getAttribute(VALUE_ATTR)
+  private _syncDisabled(): void {
+    this._triggerBtn?.toggleAttribute('disabled', this.disabled)
   }
 
-  set value(newValue: string | null) {
-    if (newValue === null) this.removeAttribute(VALUE_ATTR)
-    else this.setAttribute(VALUE_ATTR, newValue)
+  private _syncPlaceholder(): void {
+    if (this._triggerLabel) {
+      if (!this.value) this._triggerLabel.textContent = this.placeholder
+    }
+  }
+
+  private _syncValue(): void {
+    const currentValue = this.value
+    const options = this._optionsArray()
+    let labelToShow = this.placeholder
+    for (const opt of options) {
+      const optValue = opt.getAttribute('value')
+      const selected = optValue === currentValue
+      opt.toggleAttribute(SELECTED_ATTR, !!selected)
+      if (selected) labelToShow = opt.textContent?.trim() ?? ''
+    }
+    if (this._triggerLabel) {
+      this._triggerLabel.textContent = labelToShow
+    }
+  }
+  //------------------------------------Public API-----------------------------------
+
+  get value(): string | null {
+    return this.getAttribute(ATTRIBUTES.VALUE)
+  }
+
+  set value(value: string) {
+    this.setAttribute(ATTRIBUTES.VALUE, value)
   }
 
   get disabled(): boolean {
-    return this.hasAttribute('disabled')
+    return this.hasAttribute(ATTRIBUTES.DISABLED)
   }
 
   set disabled(value: boolean) {
-    if (value) this.setAttribute('disabled', '')
-    else this.removeAttribute('disabled')
-    this._syncDisabled()
+    if (value) this.setAttribute(ATTRIBUTES.DISABLED, '')
+    else this.removeAttribute(ATTRIBUTES.DISABLED)
+  }
+  get placeholder(): string {
+    return this.getAttribute(ATTRIBUTES.PLACEHOLDER) ?? ''
+  }
+
+  set placeholder(value: string) {
+    this.setAttribute(ATTRIBUTES.PLACEHOLDER, value)
   }
 }
 

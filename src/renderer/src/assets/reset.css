@@ -28,3 +28,29 @@ select,
   -webkit-user-select: text;
   user-select: text;
 }
+
+/* Remove UA outline for all elements */
+*:focus {
+  outline: none;
+}
+/* Firefox-specific inner focus for buttons/inputs */
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+  border: 0;
+}
+
+/* Default focus style for interactive elements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role='button']:focus-visible,
+[role='checkbox']:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--ring);
+  border-radius: calc(var(--radius) - 4px);
+}

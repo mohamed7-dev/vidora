@@ -1,51 +1,48 @@
-<template id="new-dialog-template">
+<template>
   <ui-dialog show-x-button alert data-active-screen="media-url">
     <ui-button
-      class="new-dialog__trigger-button"
-      id="trigger-button"
+      class="dialog__trigger"
       slot="trigger"
       variant="ghost"
       size="icon"
-      style="--ui-button-icon-size: 22px"
+      data-el="trigger-btn"
     >
       <ui-icon slot="prefix" name="plus"></ui-icon>
     </ui-button>
-    <header slot="header" class="new-dialog__header">
-      <div class="new-dialog__header__wrapper media-url-screen-header" data-screen="media-url">
+    <header slot="header" class="dialog__header">
+      <div class="header__wrapper media-url-screen-header" data-screen="media-url">
         <h1 data-i18n="newDownload.mediaUrlScreen.title"></h1>
       </div>
-      <div
-        class="new-dialog__header__wrapper media-loading-screen-header"
-        data-screen="media-loading"
-      >
+      <div class="header__wrapper media-loading-screen-header" data-screen="media-loading">
         <h1 data-i18n="newDownload.mediaLoadingScreen.title"></h1>
       </div>
-      <div class="new-dialog__header__wrapper media-info-screen-header" data-screen="media-info">
+      <div class="header__wrapper media-info-screen-header" data-screen="media-info">
         <h1 data-i18n="newDownload.mediaInfoScreen.title"></h1>
       </div>
     </header>
-    <section aria-label="content" slot="content" class="new-dialog__content">
-      <ui-alert variant="destructive" hidden closable>
-        <span slot="title">hello</span>
-        <span slot="description">description</span>
-      </ui-alert>
-      <article
-        class="new-dialog__content__article media-url-screen-content"
-        data-screen="media-url"
-      >
-        <label for="media-url-input" data-i18n="newDownload.mediaUrlScreen.label"></label>
+    <section slot="content" class="dialog__content">
+      <ui-alert variant="destructive" data-el="alert" hidden closable></ui-alert>
+      <article class="dialog__content-article media-url-screen-content" data-screen="media-url">
         <ui-input
-          id="media-url-input"
+          data-el="media-url-input"
           placeholder="newDownload.mediaUrlScreen.placeholder"
-          dir="ltr"
-          autofocus
-        ></ui-input>
-        <ui-button size="lg" id="validate-button">
+          block
+        >
+          <span slot="label" data-i18n="newDownload.mediaUrlScreen.label"></span>
+        </ui-input>
+        <div class="media-url__mode">
+          <ui-checkbox variant="secondary" data-el="playlist-mode-checkbox">
+            <span slot="label" data-i18n="newDownload.mediaUrlScreen.mode.single">
+              Is Playlist?
+            </span>
+          </ui-checkbox>
+        </div>
+        <ui-button size="lg" data-el="validate-button" class="validate__button">
           <span slot="label" data-i18n="newDownload.mediaUrlScreen.validateButton"></span>
         </ui-button>
       </article>
       <article
-        class="new-dialog__content__article media-loading-screen-content"
+        class="dialog__content-article media-loading-screen-content"
         data-screen="media-loading"
       >
         <ui-icon style="--ui-icon-size: 2rem" name="loader-circle" spin></ui-icon>
@@ -54,13 +51,10 @@
           role="status"
           aria-live="polite"
           data-i18n="newDownload.mediaLoadingScreen.loadingText"
+          data-el="loader-text"
         ></p>
       </article>
-      <article
-        slot="header"
-        class="new-dialog__content__article media-info-screen-content"
-        data-screen="media-info"
-      >
+      <article class="dialog__content-article media-info-screen-content" data-screen="media-info">
         <media-info-screen></media-info-screen>
       </article>
     </section>

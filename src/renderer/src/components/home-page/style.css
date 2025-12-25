@@ -10,7 +10,7 @@
   height: 100vh;
 }
 
-.content-wrapper {
+.content__wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -18,7 +18,7 @@
   height: 100%;
 }
 
-.content-box {
+.content__box {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,6 +26,6 @@
   text-align: center;
 }
 
-.content-box img {
+.content__box img {
   width: 10rem;
 }

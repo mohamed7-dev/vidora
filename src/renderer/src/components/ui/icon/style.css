@@ -1,16 +1,15 @@
+@import url('../../../assets/reset.css');
+
 :host {
   display: inline-block;
-  width: var(--ui-icon-size, 1em);
-  height: var(--ui-icon-size, 1em);
-  box-sizing: content-box !important;
 }
 
 svg {
   display: block;
-  height: 100%;
-  width: 100%;
+  width: var(--ui-icon-size, 1em);
+  height: var(--ui-icon-size, 1em);
   fill: none;
-  stroke: currentColor;
+  stroke: var(--ui-icon-stroke-color, currentColor);
 }
 
 /* Optional spinning behavior */

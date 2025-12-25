@@ -1,11 +1,31 @@
-<template id="ui-checkbox-template">
-  <label class="root" part="root">
-    <input class="native" part="input" type="checkbox" />
-    <span class="control" part="control">
-      <svg class="icon" part="icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </span>
-    <span class="label" part="label"><slot></slot></span>
-  </label>
+<template>
+  <div class="root" part="root">
+    <!-- <input class="native" part="input" type="checkbox" data-el="native" /> -->
+
+    <div class="field" part="field" data-el="field">
+      <span class="checkmark" part="control" data-el="checkmark">
+        <svg class="icon" part="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M20 6L9 17l-5-5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </span>
+      <label part="label" class="label" data-el="label">
+        <slot name="label"></slot>
+      </label>
+    </div>
+
+    <p part="description" class="description" data-el="description">
+      <slot name="description"></slot>
+    </p>
+
+    <p part="error" class="error" data-el="error">
+      <slot name="error"></slot>
+    </p>
+  </div>
 </template>

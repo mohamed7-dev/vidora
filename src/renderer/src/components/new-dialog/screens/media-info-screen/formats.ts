@@ -1,6 +1,6 @@
 // Utilities for processing yt-dlp formats and building options for UI rendering
 
-import { YtdlpInfo } from '@root/shared/downloads'
+import { YtdlpInfo } from '@root/shared/ipc/get-media-info'
 
 export type YtDlpFormat = {
   format_id?: string
@@ -13,6 +13,7 @@ export type YtDlpFormat = {
   filesize?: number
   filesize_approx?: number
   format_note?: string
+  tbr?: number
 }
 
 export type VideoOption = {
@@ -67,7 +68,36 @@ export class MediaInfoProcessor {
       return { video: [], audio: [], bestHeight: 0, audioPresent: false, isPlaylist }
     }
 
-    // Select best height
+    // Use a non-breaking space for more consistent visual padding in the labels
+    const NON_BREAKING_SPACE = '\u00A0'
+
+    // First pass: determine the maximum label widths for video and audio quality columns
+    let widestVideoLabel = 0
+    let widestAudioLabel = 0
+    for (const fmt of formats) {
+      if (!fmt) continue
+
+      // For video formats we measure the height+fps label (e.g. "1080p60")
+      if (fmt.video_ext !== 'none' && fmt.vcodec !== 'none') {
+        const videoLabel = `${fmt.height ?? '???'}p${fmt.fps === 60 ? '60' : ''}`
+        if (videoLabel.length > widestVideoLabel) widestVideoLabel = videoLabel.length
+      }
+
+      // For audio-only formats we measure the human readable quality note
+      if (fmt.acodec !== 'none' && fmt.video_ext === 'none') {
+        const qualityNote = String(fmt.format_note || 'Unknown quality')
+        if (qualityNote.length > widestAudioLabel) widestAudioLabel = qualityNote.length
+      }
+    }
+
+    // Fixed column paddings for extension, codec and size columns
+    const videoQualityColWidth = widestVideoLabel
+    const audioQualityColWidth = widestAudioLabel
+    const extColWidth = 5
+    const codecColWidth = 5
+    const sizeColWidth = 10
+
+    // Compute the preferred video height based on user preference and available formats
     let bestMatchHeight = 0
     for (const f of formats) {
       if (
@@ -87,64 +117,122 @@ export class MediaInfoProcessor {
       if (heights.length) bestMatchHeight = Math.max(...heights)
     }
 
-    // Choose codec for that height
+    // Decide which codec to prefer for the chosen height (falling back to any if preference not present)
     const availableCodecs = new Set(
       formats
         .filter((f) => f && f.height === bestMatchHeight && f.vcodec)
         .map((f) => String(f.vcodec).split('.')[0])
     )
-    const finalCodec = availableCodecs.has(videoCodec)
+    const preferredCodec = availableCodecs.has(videoCodec)
       ? videoCodec
       : [...availableCodecs][availableCodecs.size - 1]
 
     const video: VideoOption[] = []
     const audio: AudioOption[] = []
 
-    let isAVideoSelected = false
-    const toSize = (fmt: YtDlpFormat): number | undefined => {
-      const n = fmt.filesize ?? fmt.filesize_approx
-      return typeof n === 'number' && isFinite(n) ? n : undefined
+    // Helper: approximate byte size from filesize, filesize_approx or duration*tbr
+    const durationSec = this._extractDurationFromInfo(info) ?? 0
+    const deriveSizeBytes = (fmt: YtDlpFormat): { bytes?: number; approximate: boolean } => {
+      if (typeof fmt.filesize === 'number' && isFinite(fmt.filesize)) {
+        return { bytes: fmt.filesize, approximate: false }
+      }
+      if (typeof fmt.filesize_approx === 'number' && isFinite(fmt.filesize_approx)) {
+        return { bytes: fmt.filesize_approx, approximate: true }
+      }
+      if (durationSec > 0 && typeof fmt.tbr === 'number' && isFinite(fmt.tbr)) {
+        // Rough estimate similar in spirit to the original logic: derive MB from duration * bitrate
+        const approxMb = (durationSec * fmt.tbr) / 8192
+        return { bytes: approxMb * 1_000_000, approximate: true }
+      }
+      return { bytes: undefined, approximate: false }
     }
-    const fmtSize = (n?: number): string =>
-      n ? `${(n / 1_000_000).toFixed(2)} MB` : 'Unknown size'
 
+    // Helper: format the size label, prefixing with ~ when it's only an approximation
+    const formatSizeLabel = (bytes?: number, isApprox?: boolean): string => {
+      if (!bytes || !isFinite(bytes)) return 'Unknown size'
+      const mbStr = (bytes / 1_000_000).toFixed(2) + ' MB'
+      return (isApprox ? '~' : '') + mbStr
+    }
+
+    let hasSelectedVideo = false
+
+    // Second pass: build the video and audio option descriptors, mirroring the padding rules
     for (const f of formats) {
       if (!f) continue
-      const size = toSize(f)
+
+      const { bytes, approximate } = deriveSizeBytes(f)
+      const sizeLabel = formatSizeLabel(bytes, approximate)
+
+      // Handle formats that contain a video stream
       if (f.video_ext !== 'none' && f.vcodec !== 'none') {
+        // Optionally hide some webm/vp* entries when the user does not want extra formats
         if (!showMoreFormats && (f.ext === 'webm' || String(f.vcodec || '').startsWith('vp')))
           continue
+
         let selected = false
         if (
-          !isAVideoSelected &&
+          !hasSelectedVideo &&
           f.height === bestMatchHeight &&
-          String(f.vcodec || '').startsWith(String(finalCodec || ''))
-        )
-          selected = isAVideoSelected = true
-        const quality = `${f.height ?? '???'}p${f.fps === 60 ? '60' : ''}`
-        const vcodecStr = showMoreFormats ? ` | ${String(f.vcodec || '').split('.')[0]}` : ''
-        const hasAudio = f.acodec !== 'none'
-        const display = `${quality.padEnd(6, ' ')} | ${String(f.ext || '').padEnd(5, ' ')}${vcodecStr} | ${fmtSize(size)}${hasAudio ? ' 🔊' : ''}`
+          String(f.vcodec || '').startsWith(String(preferredCodec || ''))
+        ) {
+          selected = true
+          hasSelectedVideo = true
+        }
+
+        const qualityLabel = `${f.height ?? '???'}p${f.fps === 60 ? '60' : ''}`
+        const hasAudioTrack = f.acodec !== 'none'
+
+        const paddedQuality = qualityLabel.padEnd(videoQualityColWidth + 1, NON_BREAKING_SPACE)
+        const paddedExt = String(f.ext || '').padEnd(extColWidth, NON_BREAKING_SPACE)
+        const paddedSize = sizeLabel.padEnd(sizeColWidth, NON_BREAKING_SPACE)
+
+        let display: string
+        if (showMoreFormats) {
+          const vcodecShort = String(f.vcodec || '').split('.')[0]
+          const paddedCodec = vcodecShort.padEnd(codecColWidth, NON_BREAKING_SPACE)
+          display = `${paddedQuality} | ${paddedExt} | ${paddedCodec} | ${paddedSize}${hasAudioTrack ? ' 🔊' : ''}`
+        } else {
+          display = `${paddedQuality} | ${paddedExt} | ${paddedSize}${hasAudioTrack ? ' 🔊' : ''}`
+        }
+
         video.push({
           id: String(f.format_id ?? ''),
           ext: String(f.ext ?? ''),
           height: f.height,
           fps: f.fps,
           vcodec: f.vcodec,
-          hasAudio,
-          sizeBytes: size,
+          hasAudio: hasAudioTrack,
+          sizeBytes: bytes,
           display,
           selected
         })
-      } else if (f.acodec !== 'none' && f.video_ext === 'none') {
+      }
+
+      // Handle audio-only formats
+      else if (f.acodec !== 'none' && f.video_ext === 'none') {
+        // Optionally hide webm audio entries unless the user wants all formats
         if (!showMoreFormats && f.ext === 'webm') continue
+
         const audioExt = f.ext === 'webm' ? 'opus' : String(f.ext || '')
-        const note = String(f.format_note || 'Unknown quality')
-        const display = `${note.padEnd(15, ' ')} | ${audioExt.padEnd(5, ' ')} | ${fmtSize(size)}`
-        audio.push({ id: String(f.format_id ?? ''), ext: audioExt, note, sizeBytes: size, display })
+        const audioQuality = String(f.format_note || 'Unknown quality')
+
+        const paddedQuality = audioQuality.padEnd(audioQualityColWidth, NON_BREAKING_SPACE)
+        const paddedExt = audioExt.padEnd(extColWidth, NON_BREAKING_SPACE)
+        const paddedSize = sizeLabel.padEnd(sizeColWidth, NON_BREAKING_SPACE)
+
+        const display = `${paddedQuality} | ${paddedExt} | ${paddedSize}`
+
+        audio.push({
+          id: String(f.format_id ?? ''),
+          ext: audioExt,
+          note: audioQuality,
+          sizeBytes: bytes,
+          display
+        })
       }
     }
 
+    // Boolean indicating whether there is at least one usable audio track in any format
     const audioPresent = formats.some((ff) => ff?.acodec && ff.acodec !== 'none')
     return { video, audio, bestHeight: bestMatchHeight, audioPresent, isPlaylist }
   }

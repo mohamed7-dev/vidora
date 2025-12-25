@@ -1,6 +1,10 @@
+import './components/ui/index'
+import './components/app-header/index'
+import './components/app-sidebar/index'
+import './components/app-scrim/index'
 import { initRouter, navigate, normalizePath } from './lib/router'
 import { UISonner } from './components/ui'
-import { SPA_NAVIGATE_EVENT, SPANavigateEventDetailsPayload } from '@root/shared/navigate'
+import { SPANavigateChannelPayload, NAVIGATION_CHANNELS } from '@root/shared/ipc/navigation'
 
 class App {
   private sonner: UISonner | null = null
@@ -33,8 +37,8 @@ class App {
   private initRouter(): void {
     initRouter()
     // Listen to preload-dispatched SPA navigation events
-    window.addEventListener(SPA_NAVIGATE_EVENT, ((e: Event) => {
-      const detail = (e as CustomEvent<SPANavigateEventDetailsPayload>).detail
+    window.addEventListener(NAVIGATION_CHANNELS.TO, ((e: Event) => {
+      const detail = (e as CustomEvent<SPANavigateChannelPayload>).detail
       void navigate(normalizePath(detail.page))
     }) as EventListener)
   }

@@ -1,13 +1,31 @@
 @import url('../../../../assets/reset.css');
-@import url('../../../../assets/utils.css');
 
 :host {
   width: 100%;
+  height: auto;
+  /* Do not let this screen stretch to fill the parent vertically */
+  flex: 0 0 auto;
 }
 
-@media (max-width: 640px) {
-  .media-info-tab_trigger {
-    --ui-button-direction: column;
+/* Ensure the tabs container itself also shrinks to its content height */
+:host ui-tabs {
+  height: auto;
+  flex: 0 0 auto;
+}
+
+:host ui-tabs::part(panels) {
+  /* Let panels size to their content instead of stretching to fill */
+  height: auto;
+  flex: 0 0 auto;
+}
+
+.tab__trigger {
+  --ui-button-direction: column;
+}
+
+@media (min-width: 640px) {
+  .tab__trigger {
+    --ui-button-direction: row;
   }
 }
 
@@ -31,8 +49,11 @@
   width: 5rem;
 }
 
-.tab-content__sections-container {
+.tab__content-sections-container {
   align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 /* subtitles  */
@@ -42,11 +63,5 @@
 }
 
 area-section::part(base) {
-  gap: 1rem;
-}
-
-.tab-content__sections-container {
-  display: flex;
-  flex-direction: column;
   gap: 1rem;
 }

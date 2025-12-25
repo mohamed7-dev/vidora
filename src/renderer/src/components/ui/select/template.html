@@ -1,5 +1,5 @@
-<template id="ui-select-template">
-  <div class="root" data-select>
+<template>
+  <div class="root" data-el="root">
     <ui-button
       type="button"
       class="trigger"
@@ -8,10 +8,10 @@
       aria-expanded="false"
       variant="outline"
     >
-      <span slot="label" data-value></span>
+      <span slot="label" data-el="trigger-label"></span>
       <ui-icon slot="prefix" name="chevrons-up-down"></ui-icon>
     </ui-button>
-    <div class="panel" data-panel role="listbox">
+    <div class="panel" data-el="panel" role="listbox">
       <slot></slot>
     </div>
   </div>

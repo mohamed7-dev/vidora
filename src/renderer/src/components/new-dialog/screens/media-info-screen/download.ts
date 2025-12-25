@@ -1,5 +1,5 @@
-import { YtdlpInfo } from '@root/shared/downloads'
-import { DownloadArgs, DownloadJobPayload } from '@root/shared/jobs'
+import { DownloadArgs, DownloadJobPayload } from '@root/shared/ipc/download-jobs'
+import { YtdlpInfo } from '@root/shared/ipc/get-media-info'
 
 type ConstructorOpts = {
   type: 'Video' | 'Audio'

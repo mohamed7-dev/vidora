@@ -14,13 +14,7 @@
   box-sizing: border-box;
   padding: 0.75rem;
   padding-top: calc(var(--toolbar-height) + 1rem);
-}
-
-/* Hidden on small screens */
-@media (max-width: 767px) {
-  .sidebar {
-    display: none;
-  }
+  display: none;
 }
 
 /* Visible on medium+ screens */

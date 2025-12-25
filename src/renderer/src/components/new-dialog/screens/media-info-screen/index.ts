@@ -1,39 +1,34 @@
 import '../../../area-section/index'
 import '../../../area-article/index'
-import template from './template.html?raw'
-import styleCss from './style.css?inline'
-import { YtdlpInfo } from '@root/shared/downloads'
+import html from './template.html?raw'
+import style from './style.css?inline'
 import { MediaInfoProcessor, type Preferences, type VideoOption, type AudioOption } from './formats'
 import type { UIInput } from '../../../ui/input/index'
 import { DownloadProcessor } from './download'
-import { AppConfig } from '@root/shared/types'
 import { UIButton, UICheckbox, UISelect } from '@renderer/components/ui'
+import {
+  createStyleSheetFromStyle,
+  createTemplateFromHtml
+} from '@renderer/components/ui/lib/template-loader'
+import { AppConfig } from '@root/shared/ipc/app-config'
+import { YtdlpInfo } from '@root/shared/ipc/get-media-info'
+import { localizeElementsText } from '@renderer/lib/utils'
+
+const MEDIA_INFO_NAME = 'media-info-screen'
+export const DOWNLOAD_STARTED_EVENT_NAME = 'download:started'
 
 export class MediaInfoScreen extends HTMLElement {
-  // Cache stylesheet and template per class for performance and to prevent FOUC
-  private static readonly sheet: CSSStyleSheet = (() => {
-    const s = new CSSStyleSheet()
-    s.replaceSync(styleCss)
-    return s
-  })()
+  private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
 
-  private static readonly tpl: HTMLTemplateElement = (() => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(template, 'text/html')
-    const inner = doc.querySelector('template')
-    const t = document.createElement('template')
-    t.innerHTML = inner ? inner.innerHTML : template
-    return t
-  })()
+  private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
 
   // State
-  private t = window.api.i18n?.t ?? (() => '')
   private _config: AppConfig | null = null
   private _info: YtdlpInfo | null = null
   private _videoOptions: VideoOption[] = []
   private _audioOptions: AudioOption[] = []
 
-  // private _audioPresent = false
+  private _audioPresent = false
   private _isPlaylist = false
   private _processor: MediaInfoProcessor | null = null
   private _durationSec: number | null = null
@@ -43,7 +38,9 @@ export class MediaInfoScreen extends HTMLElement {
   private _url: string | null = null
 
   //refs
+  private _tabsEl: HTMLElement | null = null
   private _videoFormatSelect: UISelect | null = null
+  private _audioFormatSelect: UISelect | null = null
   private _audioForVideoFormatSelect: UISelect | null = null
   private _timeStartEl: UIInput | null = null
   private _timeEndEl: UIInput | null = null
@@ -51,6 +48,7 @@ export class MediaInfoScreen extends HTMLElement {
   private _downloadPathChangeBtn: UIButton | null = null
   private _subtitlesCheckbox: UICheckbox | null = null
   private _startDownloadBtn: UIButton | null = null
+
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
@@ -58,77 +56,51 @@ export class MediaInfoScreen extends HTMLElement {
 
   async connectedCallback(): Promise<void> {
     this._render()
-    this._config = await window.api.config.getConfig()
     this._cacheRefs()
-    this._initRefs()
-    this._applyI18n()
+    this._config = await window.api.config.getConfig()
+    this._init()
+    localizeElementsText(this.shadowRoot as ShadowRoot)
     this._setupListeners()
   }
 
   private _render(): void {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = ''
-    // attach cached stylesheet first to avoid FOUC
     this.shadowRoot.adoptedStyleSheets = [MediaInfoScreen.sheet]
-    // append cached template content
     this.shadowRoot.append(MediaInfoScreen.tpl.content.cloneNode(true))
   }
 
   private _cacheRefs(): void {
     if (!this.shadowRoot) return
+    this._tabsEl = this.shadowRoot.querySelector('[data-el="tabs"]') as HTMLElement | null
     this._videoFormatSelect = this.shadowRoot.querySelector(
-      '#video-format-select'
+      '[data-el="video-format-select"]'
+    ) as UISelect | null
+    this._audioFormatSelect = this.shadowRoot.querySelector(
+      '[data-el="audio-format-select"]'
     ) as UISelect | null
     this._audioForVideoFormatSelect = this.shadowRoot.querySelector(
-      '#audio-for-video-format-select'
+      '[data-el="audio-for-video-format-select"]'
     ) as UISelect | null
     this._downloadPathTextEl = this.shadowRoot.querySelector(
-      '#download-path-text'
+      '[data-el="download-path-text"]'
     ) as HTMLElement | null
     this._downloadPathChangeBtn = this.shadowRoot.querySelector(
-      '#download-path-change-btn'
+      '[data-el="download-path-change-btn"]'
     ) as UIButton | null
     this._subtitlesCheckbox = this.shadowRoot.querySelector(
-      '#subtitles-checkbox'
+      '[data-el="subtitles-checkbox"]'
     ) as UICheckbox | null
-    this._timeStartEl = this.shadowRoot.querySelector('#time-start') as UIInput | null
-    this._timeEndEl = this.shadowRoot.querySelector('#time-end') as UIInput | null
-    this._startDownloadBtn = this.shadowRoot.querySelector('#start-download-btn') as UIButton | null
+    this._timeStartEl = this.shadowRoot.querySelector(
+      '[data-el="time-start-input"]'
+    ) as UIInput | null
+    this._timeEndEl = this.shadowRoot.querySelector('[data-el="time-end-input"]') as UIInput | null
+    this._startDownloadBtn = this.shadowRoot.querySelector(
+      '[data-el="start-download-btn"]'
+    ) as UIButton | null
   }
 
-  private _applyI18n(): void {
-    if (!this.shadowRoot) return
-    // labels translations
-    this.shadowRoot.querySelectorAll('[label]').forEach((el) => {
-      el.setAttribute('label', this.t(el.getAttribute('label') ?? ''))
-    })
-
-    // text content translations
-    this.shadowRoot.querySelectorAll('[data-i18n]').forEach((el) => {
-      const key = el.getAttribute('data-i18n')
-      if (key) {
-        el.textContent = this.t(key)
-      }
-      const placeholder = el.getAttribute('placeholder')
-      if (placeholder) {
-        el.setAttribute('placeholder', this.t(placeholder))
-      }
-    })
-
-    // placeholder translations
-    this.shadowRoot.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
-      const key = el.getAttribute('data-i18n-placeholder')
-      if (key) el.setAttribute('placeholder', this.t(key))
-    })
-
-    // aria-label translations
-    this.shadowRoot.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
-      const key = el.getAttribute('data-i18n-aria-label')
-      if (key) el.setAttribute('aria-label', this.t(key))
-    })
-  }
-
-  private async _initRefs(): Promise<void> {
+  private async _init(): Promise<void> {
     if (!this._downloadPathTextEl || !this._config) return
     this._downloadPathTextEl.textContent = this._config.downloads.downloadDir
     this._selectedDownloadPath = this._config.downloads.downloadDir
@@ -136,31 +108,50 @@ export class MediaInfoScreen extends HTMLElement {
 
   private _setupListeners(): void {
     // download path
-    this._downloadPathChangeBtn?.addEventListener('click', () => {
-      window.api.mediaPreferences.changeMediaDownloadPath()
-    })
+    this._downloadPathChangeBtn?.addEventListener('click', this._handleChangePathClick)
 
     // download path change
-    window.api.mediaPreferences.changedMediaDownloadPath((path) => {
-      if (!this._downloadPathTextEl) return
-      this._downloadPathTextEl.textContent = path
-      this._selectedDownloadPath = path
+    window.api.preferences.downloadPath.changedLocal((path) => {
+      this._handleChangedPath(path)
     })
 
     // subtitles
     this._subtitlesCheckbox?.addEventListener('change', () => {
-      this._subtitlesChecked = this._subtitlesCheckbox?.checked ?? false
+      this._handleSubtitlesCheckboxChange()
     })
 
-    // start download
+    // start download: use active tab as discriminator between Video and Audio modes
     this._startDownloadBtn?.addEventListener('click', async () => {
-      await this._startDownload().then(() => {
-        this.dispatchEvent(new CustomEvent('download:started', { bubbles: true, composed: true }))
-      })
+      await this._handleStartDownloadClick()
     })
 
     // time inputs
     this._bindTimeInputEvents()
+  }
+
+  private _handleChangePathClick(): void {
+    window.api.preferences.downloadPath.changeLocal()
+  }
+
+  private _handleChangedPath(path: string): void {
+    if (!this._downloadPathTextEl) return
+    this._downloadPathTextEl.textContent = path
+    this._selectedDownloadPath = path
+  }
+
+  private _handleSubtitlesCheckboxChange(): void {
+    this._subtitlesChecked = this._subtitlesCheckbox?.checked ?? false
+  }
+
+  // Decide which download type to run based on the currently active tab value
+  private async _handleStartDownloadClick(): Promise<void> {
+    const tabValue = (this._tabsEl?.getAttribute('value') || 'video').toString()
+    const kind: 'Video' | 'Audio' = tabValue === 'audio' ? 'Audio' : 'Video'
+    await this._startDownload(kind).then(() => {
+      this.dispatchEvent(
+        new CustomEvent(DOWNLOAD_STARTED_EVENT_NAME, { bubbles: true, composed: true })
+      )
+    })
   }
 
   private _bindTimeInputEvents(): void {
@@ -177,7 +168,9 @@ export class MediaInfoScreen extends HTMLElement {
     }
   }
 
-  private async _startDownload(): Promise<void> {
+  // Build and enqueue a download job, sharing common options and using the kind (Video/Audio)
+  // as the only discriminator for how formats are interpreted.
+  private async _startDownload(kind: 'Video' | 'Audio'): Promise<void> {
     const duration = this._durationSec ?? 0
     const start = this._timeStartEl?.value ?? ''
     const end = this._timeEndEl?.value ?? ''
@@ -187,42 +180,28 @@ export class MediaInfoScreen extends HTMLElement {
     this._verifyAndClipRange()
 
     // Snapshot current UI selects
-    if (!this._url) return
+    if (!this._url || !this._info) return
+    const isVideo = kind === 'Video'
     const processor = new DownloadProcessor({
       url: this._url,
-      type: 'Video',
+      type: kind,
       info: this._info as YtdlpInfo,
       duration,
       startInput: start,
       endInput: end,
       subtitles,
       downloadDir: this._selectedDownloadPath,
-      videoFormat: this._videoFormatSelect?.getAttribute('value') ?? '',
-      audioForVideoFormat: this._audioForVideoFormatSelect?.getAttribute('value') ?? ''
+      videoFormat: isVideo ? (this._videoFormatSelect?.getAttribute('value') ?? '') : '',
+      audioForVideoFormat: isVideo
+        ? (this._audioForVideoFormatSelect?.getAttribute('value') ?? '')
+        : '',
+      audioFormat: this._audioFormatSelect?.getAttribute('value') ?? ''
     })
     const downloadJob = processor.build()
     if (!downloadJob) return
-    await window.api.jobs.add(downloadJob)
+    await window.api.downloadJobs.add(downloadJob)
     console.log('download job:', downloadJob)
     console.log('fetched info:', this._info)
-  }
-
-  get url(): string | null {
-    return this._url
-  }
-
-  set url(value: string | null) {
-    this._url = value
-  }
-
-  get info(): YtdlpInfo | null {
-    return this._info
-  }
-
-  set info(value: YtdlpInfo | null) {
-    this._info = value
-    void this._ensureProcessorThenCalcVideoLength(value)
-    void this._ensureProcessorThenHandleFormats(value)
   }
 
   private async _initMediaProcessor(): Promise<void> {
@@ -309,7 +288,7 @@ export class MediaInfoScreen extends HTMLElement {
     const res = this._processor.processVideoFormats(value)
     this._videoOptions = res.video
     this._audioOptions = res.audio
-    // this._audioPresent = res.audioPresent
+    this._audioPresent = res.audioPresent
     this._isPlaylist = res.isPlaylist
     this.toggleAttribute('data-is-playlist', this._isPlaylist)
     this._renderFormatSelects()
@@ -346,18 +325,46 @@ export class MediaInfoScreen extends HTMLElement {
         this._audioForVideoFormatSelect.appendChild(optEl)
       }
     }
+    if (this._audioFormatSelect) {
+      this._audioFormatSelect.innerHTML = ''
+      for (const a of this._audioOptions) {
+        const optEl = document.createElement('ui-option')
+        optEl.setAttribute('value', `${a.id}|${a.ext}`)
+        optEl.textContent = a.display
+        this._audioFormatSelect.appendChild(optEl)
+      }
+    }
+  }
+
+  //------------------------------Public API-----------------------------
+  get url(): string | null {
+    return this._url
+  }
+
+  set url(value: string | null) {
+    this._url = value
+  }
+
+  get info(): YtdlpInfo | null {
+    return this._info
+  }
+
+  set info(value: YtdlpInfo | null) {
+    this._info = value
+    void this._ensureProcessorThenCalcVideoLength(value)
+    void this._ensureProcessorThenHandleFormats(value)
   }
 }
-if (!customElements.get('media-info-screen')) {
-  customElements.define('media-info-screen', MediaInfoScreen)
+if (!customElements.get(MEDIA_INFO_NAME)) {
+  customElements.define(MEDIA_INFO_NAME, MediaInfoScreen)
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'media-info-screen': MediaInfoScreen
+    [MEDIA_INFO_NAME]: MediaInfoScreen
   }
 
   interface HTMLElementEventMap {
-    'download:started': CustomEvent<void>
+    [DOWNLOAD_STARTED_EVENT_NAME]: CustomEvent<void>
   }
 }

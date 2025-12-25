@@ -1,17 +1,17 @@
 <template>
-  <div part="base" class="ui-alert" data-el="root">
-    <ui-icon part="icon" class="ui-alert_icon" data-el="icon"></ui-icon>
-    <div part="content" class="ui-alert_content">
-      <h2 part="title" class="ui-alert_title" data-el="title">
+  <div part="base" class="root" data-el="root">
+    <ui-icon part="icon" class="icon" data-el="icon"></ui-icon>
+    <div part="content" class="content">
+      <h2 part="title" class="title" data-el="title">
         <slot name="title"></slot>
       </h2>
-      <p part="description" class="ui-alert_description" data-el="description">
+      <p part="description" class="description" data-el="description">
         <slot name="description"></slot>
       </p>
     </div>
     <ui-button
       part="close"
-      class="ui-alert_close"
+      class="close"
       type="button"
       data-el="close-btn"
       aria-label="Close"

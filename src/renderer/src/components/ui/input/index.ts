@@ -1,64 +1,101 @@
 import template from './template.html?raw'
-import resetStyle from '@renderer/assets/reset.css?raw'
 import style from './style.css?inline'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '../lib/template-loader'
 
-const VALUE_ATTR = 'value'
-const PLACEHOLDER_ATTR = 'placeholder'
-const TYPE_ATTR = 'type'
-const DISABLED_ATTR = 'disabled'
-const INVALID_ATTR = 'invalid'
+const UI_INPUT_NAME = 'ui-input'
+const ATTRIBUTES = {
+  VALUE: 'value',
+  PLACEHOLDER: 'placeholder',
+  TYPE: 'type',
+  DISABLED: 'disabled',
+  INVALID: 'invalid',
+  VARIANT: 'variant',
+  SIZE: 'size',
+  AUTO_FOCUS: 'autofocus'
+}
+export type UIInputSizes = 'sm' | 'md' | 'lg' | 'default'
+export type UIInputVariants = 'default' | 'underline'
 
 export type UIInputValueDetail = { value: string }
 
 export class UIInput extends HTMLElement {
-  static formAssociated = true
+  private static readonly _template: HTMLTemplateElement = createTemplateFromHtml(template)
+  private static readonly _sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
+  private static _idCounter = 0
   private _inputEl: HTMLInputElement | null = null
+  private _labelEl: HTMLElement | null = null
+  private _descriptionEl: HTMLElement | null = null
+  private _errorEl: HTMLElement | null = null
+  private _labelSlot: HTMLSlotElement | null = null
+  private _descriptionSlot: HTMLSlotElement | null = null
+  private _errorSlot: HTMLSlotElement | null = null
+  // states
   private _attrObserver: MutationObserver | null = null
   private _eventsAborter: AbortController | null = null
+  private _internals: ElementInternals | null = null
+  // Tracks the original value at the time the element was first connected,
+  // similar to a native input's defaultValue.
+  private _defaultValue: string | null = null
 
-  // private _internals: ElementInternals | null = null
+  static formAssociated = true
 
-  constructor() {
-    super()
-    this.attachShadow({ mode: 'open', delegatesFocus: true })
-    // if ((this as unknown as { attachInternals?: () => ElementInternals }).attachInternals) {
-    //   this._internals = (
-    //     this as unknown as { attachInternals: () => ElementInternals }
-    //   ).attachInternals()
-    // }
-  }
   static get observedAttributes(): string[] {
-    return [VALUE_ATTR, PLACEHOLDER_ATTR, TYPE_ATTR, DISABLED_ATTR, INVALID_ATTR]
+    return Object.values(ATTRIBUTES)
   }
 
   attributeChangedCallback(name: string): void {
-    if (!this._inputEl) return
-    if (name === VALUE_ATTR) this._inputEl.value = this.getAttribute(VALUE_ATTR) ?? ''
-    else if (name === PLACEHOLDER_ATTR)
-      this._inputEl.placeholder = this.getAttribute(PLACEHOLDER_ATTR) ?? ''
-    else if (name === TYPE_ATTR) this._inputEl.type = this.getAttribute(TYPE_ATTR) ?? 'text'
-    else if (name === DISABLED_ATTR) this._inputEl.disabled = this.hasAttribute(DISABLED_ATTR)
-    else if (name === INVALID_ATTR) {
-      const invalid = this.hasAttribute(INVALID_ATTR)
-      if (invalid) this._inputEl.setAttribute('aria-invalid', 'true')
-      else this._inputEl.removeAttribute('aria-invalid')
+    switch (name) {
+      case ATTRIBUTES.VALUE:
+        this._syncValue()
+        break
+      case ATTRIBUTES.PLACEHOLDER:
+        this._syncPlaceholder()
+        break
+      case ATTRIBUTES.TYPE:
+        this._syncType()
+        break
+      case ATTRIBUTES.DISABLED:
+        this._syncDisabled()
+        break
+      case ATTRIBUTES.INVALID:
+        this._syncInvalid()
+        break
+      case ATTRIBUTES.AUTO_FOCUS:
+        this._syncAutoFocus()
     }
   }
-  connectedCallback(): void {
-    this.render()
+  constructor() {
+    super()
+    this.attachShadow({ mode: 'open', delegatesFocus: true })
+    if (this.attachInternals) {
+      this._internals = this.attachInternals()
+    }
+  }
 
-    this._syncAll()
+  connectedCallback(): void {
+    this._render()
+    this._queryRefs()
+
+    // Capture the initial default value once, based on the initial attribute.
+    if (this._defaultValue === null) {
+      this._defaultValue = this.getAttribute(ATTRIBUTES.VALUE) ?? ''
+    }
+
+    this._syncWrapperVisibility()
+    this._wireA11y()
     this._bindEvents()
     this._syncAllAttributesToInner()
     this._observeAttributeChanges()
 
-    if (!this.hasAttribute('variant')) this.setAttribute('variant', 'default')
-    if (!this.hasAttribute('size')) this.setAttribute('size', 'md')
-
-    // Support autofocus semantics even within dialogs by focusing after mount
-    if (this.hasAttribute('autofocus')) {
-      requestAnimationFrame(() => this.focus())
-    }
+    // sync attributes
+    this._syncValue()
+    this._syncPlaceholder()
+    this._syncDisabled()
+    this._syncInvalid()
+    this._syncType()
+    this.size = this.size ?? 'default'
+    this.variant = this.variant ?? 'default'
+    this._syncAutoFocus()
   }
 
   disconnectedCallback(): void {
@@ -68,39 +105,77 @@ export class UIInput extends HTMLElement {
     this._eventsAborter = null
   }
 
-  private render(): void {
-    const parser = new DOMParser()
-    const tree = parser.parseFromString(template, 'text/html')
-    const tpl = tree.querySelector<HTMLTemplateElement>('template')
-    if (!tpl) return
-    const content = tpl.content.cloneNode(true)
-
-    const styleEl = document.createElement('style')
-    styleEl.textContent = resetStyle + style
-    this.shadowRoot?.append(styleEl, content)
-
-    this._inputEl = this.shadowRoot?.querySelector('input') as HTMLInputElement | null
+  private _render(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    this.shadowRoot.adoptedStyleSheets = [UIInput._sheet]
+    const frag = UIInput._template.content.cloneNode(true) as DocumentFragment
+    this.shadowRoot.append(frag)
   }
 
+  private _queryRefs(): void {
+    if (!this.shadowRoot) return
+    this._inputEl = this.shadowRoot.querySelector('input') as HTMLInputElement | null
+    this._labelEl = this.shadowRoot.querySelector('[data-el="label"]') as HTMLElement | null
+    this._descriptionEl = this.shadowRoot.querySelector(
+      '[data-el="description"]'
+    ) as HTMLElement | null
+    this._errorEl = this.shadowRoot.querySelector('[data-el="error"]') as HTMLElement | null
+    this._labelSlot = this.shadowRoot!.querySelector('slot[name="label"]')
+    this._descriptionSlot = this.shadowRoot!.querySelector('slot[name="description"]')
+    this._errorSlot = this.shadowRoot!.querySelector('slot[name="error"]')
+  }
+
+  private _wireA11y(): void {
+    if (!this._inputEl) return
+
+    const idBase = `${UI_INPUT_NAME}-${UIInput._idCounter++}`
+
+    if (!this._inputEl.id) {
+      this._inputEl.id = `${idBase}-input`
+    }
+
+    if (this._labelEl) {
+      if (!this._labelEl.id) {
+        this._labelEl.id = `${idBase}-label`
+      }
+      this._inputEl.setAttribute('aria-labelledby', this._labelEl.id)
+    }
+
+    const describedByIds: string[] = []
+    if (this._descriptionEl) {
+      if (!this._descriptionEl.id) {
+        this._descriptionEl.id = `${idBase}-description`
+      }
+      describedByIds.push(this._descriptionEl.id)
+    }
+    if (this._errorEl) {
+      if (!this._errorEl.id) {
+        this._errorEl.id = `${idBase}-error`
+      }
+      describedByIds.push(this._errorEl.id)
+    }
+
+    if (describedByIds.length > 0) {
+      this._inputEl.setAttribute('aria-describedby', describedByIds.join(' '))
+    }
+  }
   private _bindEvents(): void {
     if (!this._inputEl) return
     this._eventsAborter?.abort()
     this._eventsAborter = new AbortController()
     const signal = this._eventsAborter.signal
-
+    this._labelSlot?.addEventListener('slotchange', () => this._syncWrapperVisibility())
+    this._descriptionSlot?.addEventListener('slotchange', () => this._syncWrapperVisibility())
+    this._errorSlot?.addEventListener('slotchange', () => this._syncWrapperVisibility())
     this._inputEl.addEventListener(
       'input',
       () => {
-        this.setAttribute(VALUE_ATTR, this._inputEl?.value ?? '')
+        this.value = this._inputEl?.value ?? ''
+        this._internals?.setFormValue(this.value)
+        this.invalid = !this._inputEl?.validity.valid
         this.dispatchEvent(
           new CustomEvent<UIInputValueDetail>('input', {
-            bubbles: true,
-            composed: true,
-            detail: { value: this.value }
-          })
-        )
-        this.dispatchEvent(
-          new CustomEvent<UIInputValueDetail>('ui-input', {
             bubbles: true,
             composed: true,
             detail: { value: this.value }
@@ -112,16 +187,11 @@ export class UIInput extends HTMLElement {
     this._inputEl.addEventListener(
       'change',
       () => {
-        this.setAttribute(VALUE_ATTR, this._inputEl?.value ?? '')
+        this.value = this._inputEl?.value ?? ''
+        this._internals?.setFormValue(this.value)
+        this.invalid = !this._inputEl?.validity.valid
         this.dispatchEvent(
           new CustomEvent<UIInputValueDetail>('change', {
-            bubbles: true,
-            composed: true,
-            detail: { value: this.value }
-          })
-        )
-        this.dispatchEvent(
-          new CustomEvent<UIInputValueDetail>('ui-change', {
             bubbles: true,
             composed: true,
             detail: { value: this.value }
@@ -148,6 +218,7 @@ export class UIInput extends HTMLElement {
     this._inputEl.addEventListener(
       'blur',
       (e: FocusEvent) => {
+        this.invalid = !this._inputEl?.validity.valid
         this.dispatchEvent(
           new FocusEvent('blur', {
             bubbles: true,
@@ -160,14 +231,22 @@ export class UIInput extends HTMLElement {
     )
   }
 
-  private _syncAll(): void {
-    if (!this._inputEl) return
-    this._inputEl.value = this.getAttribute(VALUE_ATTR) ?? ''
-    this._inputEl.placeholder = this.getAttribute(PLACEHOLDER_ATTR) ?? ''
-    this._inputEl.type = this.getAttribute(TYPE_ATTR) ?? 'text'
-    this._inputEl.disabled = this.hasAttribute(DISABLED_ATTR)
-    if (this.hasAttribute(INVALID_ATTR)) this._inputEl.setAttribute('aria-invalid', 'true')
-    else this._inputEl.removeAttribute('aria-invalid')
+  private _syncWrapperVisibility(): void {
+    const hasSlotContent = (slot: HTMLSlotElement | null): boolean =>
+      (slot?.assignedNodes({ flatten: true }) ?? []).some(
+        (n) => !(n.nodeType === Node.TEXT_NODE && n.textContent?.trim() === '')
+      )
+
+    if (this._labelEl) {
+      this._labelEl.hidden = !hasSlotContent(this._labelSlot)
+    }
+    if (this._descriptionEl) {
+      this._descriptionEl.hidden = !hasSlotContent(this._descriptionSlot)
+    }
+    if (this._errorEl) {
+      // Error is only shown when there's content AND the field is invalid
+      this._errorEl.hidden = !this.invalid || !hasSlotContent(this._errorSlot)
+    }
   }
 
   // Mirror all host attributes (except a small denylist) to internal input
@@ -179,7 +258,16 @@ export class UIInput extends HTMLElement {
 
   private _syncAllAttributesToInner(): void {
     if (!this._inputEl) return
-    const deny = new Set(['id', 'class', 'style', 'slot', INVALID_ATTR, 'variant', 'size', 'block'])
+    const deny = new Set([
+      'id',
+      'class',
+      'style',
+      'slot',
+      // managed internally for validity/a11y
+      'aria-invalid',
+      'aria-errormessage',
+      ...Object.values(ATTRIBUTES)
+    ])
 
     // Remove attributes absent on host
     for (const attr of Array.from(this._inputEl.attributes)) {
@@ -196,46 +284,69 @@ export class UIInput extends HTMLElement {
     }
   }
 
-  // API
-  get value(): string {
-    return this.getAttribute(VALUE_ATTR) ?? ''
+  //-------------------------------------Sync States-------------------------------------
+  private _syncValue(): void {
+    if (!this._inputEl) return
+    this._inputEl.value = this.value
   }
 
-  set value(v: string) {
-    this.setAttribute(VALUE_ATTR, v)
-    if (this._inputEl) this._inputEl.value = v
+  private _syncPlaceholder(): void {
+    if (!this._inputEl) return
+    if (this.placeholder) {
+      this._inputEl.placeholder = this.placeholder
+    }
   }
 
-  get placeholder(): string | null {
-    return this.getAttribute(PLACEHOLDER_ATTR)
+  private _syncType(): void {
+    if (!this._inputEl) return
+    this._inputEl.type = this.type
   }
 
-  set placeholder(v: string | null) {
-    if (v === null) this.removeAttribute(PLACEHOLDER_ATTR)
-    else this.setAttribute(PLACEHOLDER_ATTR, v)
-    if (this._inputEl) this._inputEl.placeholder = v ?? ''
+  private _syncDisabled(): void {
+    if (!this._inputEl) return
+    this._inputEl.disabled = this.disabled
   }
 
-  get type(): string {
-    return this.getAttribute(TYPE_ATTR) ?? 'text'
+  private _syncInvalid(): void {
+    if (!this._inputEl) return
+    if (this.invalid) {
+      this._inputEl.setAttribute('aria-invalid', 'true')
+      this._internals?.setValidity({ customError: true }, 'Invalid', this._inputEl)
+      if (this._errorEl?.id) {
+        this._inputEl.setAttribute('aria-errormessage', this._errorEl.id)
+      }
+    } else {
+      this._inputEl.removeAttribute('aria-invalid')
+      this._inputEl.removeAttribute('aria-errormessage')
+      this._internals?.setValidity({})
+    }
   }
 
-  set type(v: string) {
-    this.setAttribute(TYPE_ATTR, v)
-    if (this._inputEl) this._inputEl.type = v
+  private _syncAutoFocus(): void {
+    // Support autofocus semantics even within dialogs by focusing after mount
+    if (this.hasAttribute('autofocus')) {
+      requestAnimationFrame(() => this.focus())
+    }
   }
 
-  get disabled(): boolean {
-    return this.hasAttribute(DISABLED_ATTR)
+  //-------------------------------------Public API-------------------------------------
+
+  /**
+   * Called by the browser when the containing form is reset.
+   * Restores the value to its initial attribute, clears invalid state,
+   * and updates the form-associated value.
+   */
+  formResetCallback(): void {
+    const initial = this._defaultValue ?? ''
+    this.value = initial
+    if (this._inputEl) {
+      this._inputEl.value = initial
+    }
+    this.invalid = false
+    this._internals?.setFormValue(this.value)
+    this._syncWrapperVisibility()
   }
 
-  set disabled(v: boolean) {
-    if (v) this.setAttribute(DISABLED_ATTR, '')
-    else this.removeAttribute(DISABLED_ATTR)
-    if (this._inputEl) this._inputEl.disabled = v
-  }
-
-  // Proxies for convenience
   focus(options?: FocusOptions): void {
     this._inputEl?.focus(options)
   }
@@ -247,12 +358,69 @@ export class UIInput extends HTMLElement {
   select(): void {
     this._inputEl?.select()
   }
-}
 
-customElements.define('ui-input', UIInput)
+  get value(): string {
+    return this.getAttribute(ATTRIBUTES.VALUE) ?? ''
+  }
+  set value(v: string) {
+    this.setAttribute(ATTRIBUTES.VALUE, v)
+  }
+
+  get placeholder(): string | null {
+    return this.getAttribute(ATTRIBUTES.PLACEHOLDER)
+  }
+  set placeholder(v: string | null) {
+    if (v === null) this.removeAttribute(ATTRIBUTES.PLACEHOLDER)
+    else this.setAttribute(ATTRIBUTES.PLACEHOLDER, v)
+  }
+
+  get type(): HTMLInputElement['type'] {
+    return (this.getAttribute(ATTRIBUTES.TYPE) as HTMLInputElement['type']) ?? 'text'
+  }
+  set type(v: HTMLInputElement['type']) {
+    this.setAttribute(ATTRIBUTES.TYPE, v)
+  }
+
+  get disabled(): boolean {
+    return this.hasAttribute(ATTRIBUTES.DISABLED)
+  }
+  set disabled(v: boolean) {
+    if (v) this.setAttribute(ATTRIBUTES.DISABLED, '')
+    else this.removeAttribute(ATTRIBUTES.DISABLED)
+  }
+
+  get invalid(): boolean {
+    return this.hasAttribute(ATTRIBUTES.INVALID)
+  }
+  set invalid(v: boolean) {
+    if (v) this.setAttribute(ATTRIBUTES.INVALID, '')
+    else this.removeAttribute(ATTRIBUTES.INVALID)
+  }
+
+  get size(): UIInputSizes {
+    return (this.getAttribute(ATTRIBUTES.SIZE) as UIInputSizes) ?? 'default'
+  }
+  set size(v: UIInputSizes) {
+    this.setAttribute(ATTRIBUTES.SIZE, v ?? 'default')
+  }
+
+  get variant(): UIInputVariants {
+    return (this.getAttribute(ATTRIBUTES.VARIANT) as UIInputVariants) ?? 'default'
+  }
+  set variant(v: UIInputVariants) {
+    this.setAttribute(ATTRIBUTES.VARIANT, v ?? 'default')
+  }
+}
+if (!customElements.get(UI_INPUT_NAME)) {
+  customElements.define(UI_INPUT_NAME, UIInput)
+}
 
 declare global {
   interface HTMLElementTagNameMap {
-    'ui-input': UIInput
+    [UI_INPUT_NAME]: UIInput
+  }
+
+  interface HTMLFormControlsCollection {
+    [UI_INPUT_NAME]: UIInput
   }
 }

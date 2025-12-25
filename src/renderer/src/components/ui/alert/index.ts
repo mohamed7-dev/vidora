@@ -10,7 +10,9 @@ const ICONS = {
 const ATTRIBUTES = {
   VARIANT: 'variant',
   CLOSABLE: 'closable',
-  HIDDEN: 'hidden'
+  HIDDEN: 'hidden',
+  TITLE: 'title',
+  DESCRIPTION: 'description'
 }
 const UI_ALERT_EVENTS = {
   CLOSE: 'ui-alert-close'
@@ -42,14 +44,22 @@ export class UIAlert extends HTMLElement {
   }
 
   attributeChangedCallback(name: string): void {
-    if (name === ATTRIBUTES.VARIANT) {
-      this._syncVariant()
-    }
-    if (name === ATTRIBUTES.CLOSABLE) {
-      this._syncClosable()
-    }
-    if (name === ATTRIBUTES.HIDDEN) {
-      this._syncHidden()
+    switch (name) {
+      case ATTRIBUTES.VARIANT:
+        this._syncVariant()
+        break
+      case ATTRIBUTES.CLOSABLE:
+        this._syncClosable()
+        break
+      case ATTRIBUTES.HIDDEN:
+        this._syncHidden()
+        break
+      case ATTRIBUTES.TITLE:
+        this._syncTitle()
+        break
+      case ATTRIBUTES.DESCRIPTION:
+        this._syncDescription()
+        break
     }
   }
 
@@ -59,6 +69,8 @@ export class UIAlert extends HTMLElement {
     this._syncVariant()
     this._syncClosable()
     this._syncHidden()
+    this._syncTitle()
+    this._syncDescription()
     this._applyListeners()
   }
 
@@ -105,9 +117,7 @@ export class UIAlert extends HTMLElement {
 
   private _syncVariant(): void {
     const variant = this.variant
-    if (this.rootEl) {
-      this.rootEl.setAttribute('data-variant', variant)
-    }
+    this.variant = variant
 
     if (this.iconEl) {
       const iconName = variant === 'destructive' ? ICONS.destructive : ICONS.default
@@ -117,6 +127,7 @@ export class UIAlert extends HTMLElement {
     variant === 'destructive'
       ? this.setAttribute('role', 'alert')
       : this.setAttribute('role', 'status')
+
     variant === 'destructive'
       ? this.setAttribute('aria-live', 'assertive')
       : this.setAttribute('aria-live', 'polite')
@@ -130,6 +141,20 @@ export class UIAlert extends HTMLElement {
 
   private _syncHidden(): void {
     this.style.display = this.hidden ? 'none' : ''
+  }
+
+  private _syncTitle(): void {
+    if (!this.titleEl) return
+    const attr = this.getAttribute(ATTRIBUTES.TITLE)
+    if (attr == null) return
+    this.titleEl.textContent = attr
+  }
+
+  private _syncDescription(): void {
+    if (!this.descriptionEl) return
+    const attr = this.getAttribute(ATTRIBUTES.DESCRIPTION)
+    if (attr == null) return
+    this.descriptionEl.textContent = attr
   }
 
   private _applyListeners(): void {
@@ -182,6 +207,30 @@ export class UIAlert extends HTMLElement {
       this.removeAttribute(ATTRIBUTES.HIDDEN)
     } else {
       this.setAttribute(ATTRIBUTES.HIDDEN, '')
+    }
+  }
+
+  get alertTitle(): string {
+    return this.getAttribute(ATTRIBUTES.TITLE) ?? ''
+  }
+
+  set alertTitle(value: string) {
+    if (!value) {
+      this.removeAttribute(ATTRIBUTES.TITLE)
+    } else {
+      this.setAttribute(ATTRIBUTES.TITLE, value)
+    }
+  }
+
+  get alertDescription(): string {
+    return this.getAttribute(ATTRIBUTES.DESCRIPTION) ?? ''
+  }
+
+  set alertDescription(value: string) {
+    if (!value) {
+      this.removeAttribute(ATTRIBUTES.DESCRIPTION)
+    } else {
+      this.setAttribute(ATTRIBUTES.DESCRIPTION, value)
     }
   }
 }

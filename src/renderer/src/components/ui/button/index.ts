@@ -1,4 +1,5 @@
 import { createStyleSheetFromStyle } from '../lib/template-loader'
+import { submitAssociatedForm, resetAssociatedForm } from '../lib/form-control'
 import style from './style.css?inline'
 import template from './template.html?raw'
 
@@ -180,7 +181,7 @@ export class UIButton extends HTMLElement {
       { signal }
     )
 
-    // Toggle behavior
+    // Click behavior: toggle + optional form integration
     this._buttonEl.addEventListener(
       'click',
       (event) => {
@@ -188,6 +189,23 @@ export class UIButton extends HTMLElement {
           event.preventDefault()
           event.stopImmediatePropagation()
           return
+        }
+
+        // Form integration: when used as a submit or reset button, trigger the
+        // associated form's action via a temporary native button. This ensures
+        // constraint validation and submit events behave like a real <button>.
+        if (this.type === 'submit') {
+          event.preventDefault()
+          submitAssociatedForm(
+            this,
+            this as HTMLElement & { name?: string | null; value?: string | null }
+          )
+        } else if (this.type === 'reset') {
+          event.preventDefault()
+          resetAssociatedForm(
+            this,
+            this as HTMLElement & { name?: string | null; value?: string | null }
+          )
         }
         // Toggle behavior: when [toggle] is present, flip pressed state on click
         if (this.toggle) {

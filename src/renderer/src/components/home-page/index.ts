@@ -1,55 +1,75 @@
-import template from './template.html?raw'
-import styleCss from './style.css?inline'
-import resetStyle from '@renderer/assets/reset.css?inline'
+import html from './template.html?raw'
+import style from './style.css?inline'
 import appLogoUrl from '@renderer/assets/logo.svg?url'
 import { UIButton } from '../ui'
-import { NewDialog } from '../new-dialog'
+import { NewDialog } from '../new-dialog/index'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '../ui/lib/template-loader'
+import { localizeElementsText } from '@renderer/lib/utils'
+
+const HOME_PAGE_NAME = 'home-page'
 
 export class HomePage extends HTMLElement {
-  private t = window.api.i18n?.t ?? (() => '')
-  private addDownloadBtn: UIButton | null = null
+  private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
+  private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
+
+  // refs
+  private _addDownloadBtn: UIButton | null = null
+  private _logoImg: HTMLImageElement | null = null
+  private _newDialog: NewDialog | null = null
+
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
   }
 
-  async connectedCallback(): Promise<void> {
-    await this.render()
-    this.setListeners()
-    this.applyI18n()
+  connectedCallback(): void {
+    this._render()
+    this._queryRefs()
+    this._init()
+    this._setupListeners()
+    this.shadowRoot && localizeElementsText(this.shadowRoot)
   }
 
-  async render(): Promise<void> {
-    const parser = new DOMParser()
-    const tree = parser.parseFromString(template, 'text/html')
-    const tpl = tree.querySelector<HTMLTemplateElement>('template')
-    if (!tpl) return
-    const content = tpl.content.cloneNode(true)
-    const sheet = new CSSStyleSheet()
-    await sheet.replace(resetStyle + styleCss)
-    this.shadowRoot!.adoptedStyleSheets = [sheet]
-    this.shadowRoot?.append(content)
-    const img = this.shadowRoot?.querySelector<HTMLImageElement>('img[data-logo]')
-    if (img) img.src = appLogoUrl
-    this.addDownloadBtn = this.shadowRoot?.querySelector('#add-download-button') as UIButton
+  disconnectedCallback(): void {
+    this._addDownloadBtn?.removeEventListener('click', this._openNewDialog)
   }
 
-  setListeners(): void {
-    if (!this.addDownloadBtn) return
-    this.addDownloadBtn.addEventListener('click', () => {
-      const newDialog = this.shadowRoot?.querySelector('new-dialog') as NewDialog
-      if (newDialog) newDialog.open()
-    })
+  private _render(): void {
+    if (!this.shadowRoot) return
+    this.shadowRoot.innerHTML = ''
+    this.shadowRoot.adoptedStyleSheets = [HomePage.sheet]
+    this.shadowRoot.append(HomePage.tpl.content.cloneNode(true))
   }
 
-  private applyI18n(): void {
-    const elements = this.shadowRoot?.querySelectorAll('[data-i18n]')
-    elements?.forEach((elem) => {
-      const content = elem.getAttribute('data-i18n')
-      if (!content) return
-      elem.textContent = this.t(content)
-    })
+  private _queryRefs(): void {
+    if (!this.shadowRoot) return
+    this._logoImg = this.shadowRoot?.querySelector('[data-el="logo-image"]') as HTMLImageElement
+    this._addDownloadBtn = this.shadowRoot?.querySelector(
+      '[data-el="add-download-btn"]'
+    ) as UIButton
+    this._newDialog = this.shadowRoot?.querySelector('new-dialog') as NewDialog
+  }
+
+  private _init(): void {
+    if (!this._logoImg) return
+    this._logoImg.src = appLogoUrl
+  }
+
+  private _openNewDialog = (): void => {
+    if (this._newDialog) this._newDialog.open()
+  }
+
+  private _setupListeners(): void {
+    this._addDownloadBtn?.addEventListener('click', this._openNewDialog)
   }
 }
 
-customElements.define('home-page', HomePage)
+if (!customElements.get(HOME_PAGE_NAME)) {
+  customElements.define(HOME_PAGE_NAME, HomePage)
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    [HOME_PAGE_NAME]: HomePage
+  }
+}
