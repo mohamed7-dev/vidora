@@ -25,91 +25,90 @@ export type AppUpdateMainToRendererPayload =
       message: string
       messageKey: string
       updateInfo: UpdateInfo
-      cause?: string
-      progress?: string
-      updateDownloadedInfo?: UpdateDownloadedEvent
-      progressInfo?: ProgressInfo
+      // cause?: string
+      // updateDownloadedInfo?: UpdateDownloadedEvent
+      // progressInfo?: ProgressInfo
     }
   | {
       action: 'download-progress'
-      progress: number
       message: string
       messageKey: string
-      cause?: string
-      updateInfo?: UpdateInfo
-      updateDownloadedInfo?: UpdateDownloadedEvent
       progressInfo: ProgressInfo
+      // cause?: string
+      // updateInfo?: UpdateInfo
+      // updateDownloadedInfo?: UpdateDownloadedEvent
     }
   | {
       action: 'downloaded-successfully'
       message: string
       messageKey: string
       updateDownloadedInfo: UpdateDownloadedEvent
-      cause?: string
-      progress?: string
-      updateInfo?: UpdateInfo
-      progressInfo?: ProgressInfo
+      // cause?: string
+      // progress?: string
+      // updateInfo?: UpdateInfo
+      // progressInfo?: ProgressInfo
     }
   | {
       action: 'download-approval-success'
       message: string
       messageKey: string
       payload: { link: string }
-      updateDownloadedInfo?: UpdateDownloadedEvent
-      cause?: string
-      progress?: string
-      updateInfo?: UpdateInfo
-      progressInfo?: ProgressInfo
+      // updateDownloadedInfo?: UpdateDownloadedEvent
+      // cause?: string
+      // progress?: string
+      // updateInfo?: UpdateInfo
+      // progressInfo?: ProgressInfo
     }
   | {
       action: 'download-approval-fail'
       message: string
       messageKey: string
       cause: string
-      updateDownloadedInfo?: UpdateDownloadedEvent
-      progress?: string
-      updateInfo?: UpdateInfo
-      progressInfo?: ProgressInfo
+      // updateDownloadedInfo?: UpdateDownloadedEvent
+      // progress?: string
+      // updateInfo?: UpdateInfo
+      // progressInfo?: ProgressInfo
     }
   | {
       action: 'install-approval-success'
       message: string
       messageKey: string
-      updateDownloadedInfo?: UpdateDownloadedEvent
-      cause?: string
-      progress?: string
-      updateInfo?: UpdateInfo
-      progressInfo?: ProgressInfo
+      // payload?: { link: string }
+      // updateDownloadedInfo?: UpdateDownloadedEvent
+      // cause?: string
+      // progress?: string
+      // updateInfo?: UpdateInfo
+      // progressInfo?: ProgressInfo
     }
   | {
       action: 'install-approval-fail'
       message: string
       messageKey: string
       cause: string
-      updateDownloadedInfo?: UpdateDownloadedEvent
-      progress?: string
-      updateInfo?: UpdateInfo
-      progressInfo?: ProgressInfo
+      // updateDownloadedInfo?: UpdateDownloadedEvent
+      // progress?: string
+      // updateInfo?: UpdateInfo
+      // progressInfo?: ProgressInfo
     }
   | {
       action: 'installed-successfully'
       message: string
       messageKey: string
-      cause?: string
-      progress?: string
-      updateInfo?: UpdateInfo
-      updateDownloadedInfo?: UpdateDownloadedEvent
-      progressInfo?: ProgressInfo
+      // cause?: string
+      // progress?: string
+      // updateInfo?: UpdateInfo
+      // updateDownloadedInfo?: UpdateDownloadedEvent
+      // progressInfo?: ProgressInfo
     }
   | {
       action: 'error'
       message: string
       messageKey: string
       cause: string
-      progress?: string
-      updateInfo?: UpdateInfo
-      updateDownloadedInfo?: UpdateDownloadedEvent
-      progressInfo?: ProgressInfo
+      // progress?: string
+      // updateInfo?: UpdateInfo
+      // updateDownloadedInfo?: UpdateDownloadedEvent
+      // progressInfo?: ProgressInfo
     }
 // State Machine -> "download-available" -> "download-approval" -> "download-progress" -> "downloaded-successfully" -> "install-approval" -> "installed-successfully"
 
