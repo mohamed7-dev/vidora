@@ -1,48 +1,57 @@
 import { clipboard, contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { EVENTS } from '../shared/events'
-import { AppConfig, DeepPartial } from '../shared/types'
-import { DownloadJobPayload, Job, JobStatus, JobsUpdateEvent, ListJobsParams } from '../shared/jobs'
 import { initTheme } from './theme'
-import { DownloadAppUpdateApprovalRes, InstallAppUpdateApprovalRes } from '../shared/app-update'
 import { type PreloadApi } from './types'
 import { LoadedLocaleDictPayload, t } from '../shared/i18n'
 import { initI18n } from './i18n'
-import { SPA_NAVIGATE_EVENT, SPANavigateEventDetailsPayload } from '../shared/navigate'
+import { APP_CONTROLS_CHANNELS } from '../shared/ipc/app-controls'
+import { WINDOWS_CONTROLS_CHANNELS } from '../shared/ipc/window-controls'
+import { MEDIA_INFO_CHANNELS, MediaInfoChannelPayload } from '../shared/ipc/get-media-info'
+import { PASTE_LINK_CHANNELS } from '../shared/ipc/paste-link'
+import { NAVIGATION_CHANNELS, SPANavigateChannelPayload } from '../shared/ipc/navigation'
+import { APP_CONFIG_CHANNELS, AppConfig } from '../shared/ipc/app-config'
+import { APP_UPDATE_CHANNELS, ApprovalRes } from '../shared/ipc/app-update'
+import { DOWNLOAD_JOBS_CHANNELS, JobsUpdateEvent } from '../shared/ipc/download-jobs'
+import { USER_PREF_CHANNELS } from '../shared/ipc/user-pref'
 
 void initTheme()
 void initI18n()
 
 const api = {
   app: {
-    relaunch: (): void => ipcRenderer.send(EVENTS.APP.RELAUNCH)
-  },
-  downloads: {
-    getInfo: async (url: string) => ipcRenderer.invoke(EVENTS.DOWNLOADS.GET_INFO, url)
-  },
-  pasteLink: {
-    showMenu: (): void => ipcRenderer.send(EVENTS.PASTE_LINK.SHOW_MENU),
-    onPaste: (callback: (text: string) => void): (() => void) => {
-      const handler = (_e: unknown, text: string): void => callback(text)
-      ipcRenderer.on(EVENTS.PASTE_LINK.PASTED, handler)
-      return () => ipcRenderer.removeListener(EVENTS.PASTE_LINK.PASTED, handler)
-    }
-  },
-  clipboard: {
-    readText: async (): Promise<string> => clipboard.readText(),
-    writeText: async (text: string): Promise<void> => clipboard.writeText(text)
+    relaunch: () => ipcRenderer.send(APP_CONTROLS_CHANNELS.RELAUNCH)
   },
   window: {
-    minimize: (): void => ipcRenderer.send(EVENTS.WINDOW.MINIMIZE),
-    toggleMaximize: (): void => ipcRenderer.send(EVENTS.WINDOW.MAXIMIZE),
-    close: (): void => ipcRenderer.send(EVENTS.WINDOW.CLOSE),
-    reload: (): void => ipcRenderer.send(EVENTS.WINDOW.RELOAD)
+    minimize: () => ipcRenderer.send(WINDOWS_CONTROLS_CHANNELS.MINIMIZE),
+    toggleMaximize: () => ipcRenderer.send(WINDOWS_CONTROLS_CHANNELS.MAXIMIZE),
+    close: () => ipcRenderer.send(WINDOWS_CONTROLS_CHANNELS.CLOSE),
+    reload: () => ipcRenderer.send(WINDOWS_CONTROLS_CHANNELS.RELOAD)
+  },
+  clipboard: {
+    readText: async () => clipboard.readText(),
+    writeText: async (text) => clipboard.writeText(text)
+  },
+  downloads: {
+    getInfo: async (url) => ipcRenderer.invoke(MEDIA_INFO_CHANNELS.GET_INFO, url),
+    onGettingInfo: (callback) => {
+      const handler = (_e: unknown, payload: MediaInfoChannelPayload): void => callback(payload)
+      ipcRenderer.on(MEDIA_INFO_CHANNELS.STATUS, handler)
+      return () => ipcRenderer.removeListener(MEDIA_INFO_CHANNELS.STATUS, handler)
+    }
+  },
+  pasteLink: {
+    showMenu: () => ipcRenderer.send(PASTE_LINK_CHANNELS.SHOW_MENU),
+    onPaste: (callback) => {
+      const handler = (_e: unknown, text: string): void => callback(text)
+      ipcRenderer.on(PASTE_LINK_CHANNELS.PASTED, handler)
+      return () => ipcRenderer.removeListener(PASTE_LINK_CHANNELS.PASTED, handler)
+    }
   },
   navigation: {
-    navigate: (page: string): void => {
+    navigate: (page) => {
       // Broadcast to the renderer world for SPA routing
       try {
-        const ev = new CustomEvent<SPANavigateEventDetailsPayload>(SPA_NAVIGATE_EVENT, {
+        const ev = new CustomEvent<SPANavigateChannelPayload>(NAVIGATION_CHANNELS.TO, {
           detail: { page }
         })
 
@@ -52,91 +61,79 @@ const api = {
       }
     }
   },
+  config: {
+    getAppDefaults: async () => ipcRenderer.invoke(APP_CONFIG_CHANNELS.GET_APP_DEFAULTS),
+    getConfig: async () => ipcRenderer.invoke(APP_CONFIG_CHANNELS.GET),
+    updateConfig: async (patch) => ipcRenderer.invoke(APP_CONFIG_CHANNELS.UPDATE, patch),
+    onUpdated: (cb) => {
+      const handler = (_: unknown, cfg: AppConfig): void => cb(cfg)
+      ipcRenderer.on(APP_CONFIG_CHANNELS.UPDATED, handler)
+      return () => ipcRenderer.removeListener(APP_CONFIG_CHANNELS.UPDATED, handler)
+    }
+  },
   preferences: {
     downloadPath: {
-      changeLocal: (): void => ipcRenderer.send(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGE_LOCAL),
-      changedLocal: (callback: (location: string) => void): (() => void) => {
+      changeLocal: () => ipcRenderer.send(USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_LOCAL),
+      changedLocal: (callback) => {
         const handler = (_e: unknown, location: string): void => callback(location)
-        ipcRenderer.on(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGED_LOCAL, handler)
+        ipcRenderer.on(USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_LOCAL_RESPONSE, handler)
         return () =>
-          ipcRenderer.removeListener(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGED_LOCAL, handler)
+          ipcRenderer.removeListener(
+            USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_LOCAL_RESPONSE,
+            handler
+          )
       },
-      changeGlobal: (): void => ipcRenderer.send(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGE_GLOBAL),
-      changedGlobal: (callback: (location: string) => void): (() => void) => {
+      changeGlobal: () => ipcRenderer.send(USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_GLOBAL),
+      changedGlobal: (callback) => {
         const handler = (_e: unknown, location: string): void => callback(location)
-        ipcRenderer.on(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGED_GLOBAL, handler)
+        ipcRenderer.on(USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_GLOBAL_RESPONSE, handler)
         return () =>
-          ipcRenderer.removeListener(EVENTS.PREFERENCES.DOWNLOAD_PATH.CHANGED_GLOBAL, handler)
+          ipcRenderer.removeListener(
+            USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_GLOBAL_RESPONSE,
+            handler
+          )
       }
     },
     ytdlpConfigPath: {
-      change: (): void => ipcRenderer.send(EVENTS.PREFERENCES.YTDLP_FILE_PATH.CHANGE),
-      changed: (callback: (location: string) => void): (() => void) => {
+      change: () => ipcRenderer.send(USER_PREF_CHANNELS.YTDLP_FILE_PATH.CHANGE),
+      changed: (callback) => {
         const handler = (_e: unknown, location: string): void => callback(location)
-        ipcRenderer.on(EVENTS.PREFERENCES.YTDLP_FILE_PATH.CHANGED, handler)
-        return () => ipcRenderer.removeListener(EVENTS.PREFERENCES.YTDLP_FILE_PATH.CHANGED, handler)
+        ipcRenderer.on(USER_PREF_CHANNELS.YTDLP_FILE_PATH.CHANGE_RESPONSE, handler)
+        return () =>
+          ipcRenderer.removeListener(USER_PREF_CHANNELS.YTDLP_FILE_PATH.CHANGE_RESPONSE, handler)
       }
     }
   },
-
-  config: {
-    getAppDefaults: async (): Promise<AppConfig> =>
-      ipcRenderer.invoke(EVENTS.CONFIG.GET_APP_DEFAULTS),
-    getConfig: async (): Promise<AppConfig> => ipcRenderer.invoke(EVENTS.CONFIG.GET),
-    updateConfig: async (patch: DeepPartial<AppConfig>): Promise<AppConfig> =>
-      ipcRenderer.invoke(EVENTS.CONFIG.UPDATE, patch),
-    onUpdated: (cb: (cfg: AppConfig) => void): (() => void) => {
-      const handler = (_: unknown, cfg: AppConfig): void => cb(cfg)
-      ipcRenderer.on(EVENTS.CONFIG.UPDATED, handler)
-      return () => ipcRenderer.removeListener(EVENTS.CONFIG.UPDATED, handler)
-    }
-  },
   i18n: {
-    loadLocale: async (locale: string): Promise<Record<string, unknown>> =>
-      ipcRenderer.invoke(EVENTS.PREFERENCES.LOCALE.LOAD, locale),
-    onLocaleChanged: (callback: (info: LoadedLocaleDictPayload) => void): (() => void) => {
+    loadLocale: async (locale) => ipcRenderer.invoke(USER_PREF_CHANNELS.LOCALE.LOAD, locale),
+    onLocaleChanged: (callback) => {
       const handler = (_e: Electron.IpcRendererEvent, info: LoadedLocaleDictPayload): void =>
         callback(info)
-      ipcRenderer.on(EVENTS.PREFERENCES.LOCALE.LOADED, handler)
-      return () => ipcRenderer.removeListener(EVENTS.PREFERENCES.LOCALE.LOADED, handler)
+      ipcRenderer.on(USER_PREF_CHANNELS.LOCALE.LOADED, handler)
+      return () => ipcRenderer.removeListener(USER_PREF_CHANNELS.LOCALE.LOADED, handler)
     },
-    t: (phrase: string): string => t(phrase)
+    t: (phrase) => t(phrase)
   },
-  // status: {
-  //   getSnapshot: async (): Promise<import('../shared/status').StatusSnapshot> =>
-  //     ipcRenderer.invoke(EVENTS.STATUS.SNAPSHOT),
-  //   onUpdate: (cb: (snap: import('../shared/status').StatusSnapshot) => void): (() => void) => {
-  //     const handler = (_: unknown, snap: import('../shared/status').StatusSnapshot): void =>
-  //       cb(snap)
-  //     ipcRenderer.on(EVENTS.STATUS.UPDATE, handler)
-  //     return () => ipcRenderer.removeListener(EVENTS.STATUS.UPDATE, handler)
-  //   }
-  // },
   downloadJobs: {
-    add: async (payload: DownloadJobPayload): Promise<Job> =>
-      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.ADD, payload),
-    list: async (params?: ListJobsParams): Promise<Job[]> =>
-      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.LIST, params),
-    updateStatus: async (id: string, status: JobStatus): Promise<Job | null> =>
-      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.UPDATE_STATUS, id, status),
-    remove: async (id: string): Promise<boolean> =>
-      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.REMOVE, id),
-    pause: async (id: string): Promise<Job | null> =>
-      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.PAUSE, id),
-    resume: async (id: string): Promise<Job | null> =>
-      ipcRenderer.invoke(EVENTS.DOWNLOAD_JOBS.RESUME, id),
-    onUpdated: (cb: (evt: JobsUpdateEvent) => void): (() => void) => {
+    add: async (payload) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.ADD, payload),
+    list: async (params) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.LIST, params),
+    updateStatus: async (id, status) =>
+      ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.UPDATE_STATUS, id, status),
+    remove: async (id: string) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.REMOVE, id),
+    pause: async (id: string) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.PAUSE, id),
+    resume: async (id: string) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.RESUME, id),
+    onUpdated: (cb) => {
       const handler = (_: unknown, evt: JobsUpdateEvent): void => cb(evt)
-      ipcRenderer.on(EVENTS.DOWNLOAD_JOBS.UPDATED, handler)
-      return () => ipcRenderer.removeListener(EVENTS.DOWNLOAD_JOBS.UPDATED, handler)
+      ipcRenderer.on(DOWNLOAD_JOBS_CHANNELS.STATUS_BUS, handler)
+      return () => ipcRenderer.removeListener(DOWNLOAD_JOBS_CHANNELS.STATUS_BUS, handler)
     }
   },
   appUpdate: {
-    check: () => ipcRenderer.send(EVENTS.APP_UPDATE.CHECK),
-    respondToDownloadApproval: (res: DownloadAppUpdateApprovalRes) =>
-      ipcRenderer.invoke(EVENTS.APP_UPDATE.DOWNLOAD_APPROVAL_RESPONSE, res),
-    respondToInstallApproval: (res: InstallAppUpdateApprovalRes) =>
-      ipcRenderer.invoke(EVENTS.APP_UPDATE.INSTALL_APPROVAL_RESPONSE, res)
+    respondToDownloadApproval: (res: ApprovalRes) =>
+      ipcRenderer.invoke(APP_UPDATE_CHANNELS.RENDERER_TO_MAIN, res),
+    respondToInstallApproval: (res: ApprovalRes) =>
+      ipcRenderer.invoke(APP_UPDATE_CHANNELS.RENDERER_TO_MAIN, res)
+    // add main to renderer listeners
   }
 } satisfies PreloadApi
 

@@ -1,17 +1,17 @@
 import { ipcRenderer } from 'electron'
-import { EVENTS } from '../shared/events'
 import { LoadedLocaleDictPayload, LocaleDict, setLoadedLanguage, setLocale } from '../shared/i18n'
+import { USER_PREF_CHANNELS } from '../shared/ipc/user-pref'
 
 async function initI18nLoader(): Promise<void> {
   let currentLocale = ''
   let loadedLanguage: LocaleDict = {}
 
   try {
-    loadedLanguage = await ipcRenderer.invoke(EVENTS.PREFERENCES.LOCALE.LOAD)
+    loadedLanguage = await ipcRenderer.invoke(USER_PREF_CHANNELS.LOCALE.LOAD)
   } catch {
     // fallback: try English
     try {
-      loadedLanguage = await ipcRenderer.invoke(EVENTS.PREFERENCES.LOCALE.LOAD, 'en')
+      loadedLanguage = await ipcRenderer.invoke(USER_PREF_CHANNELS.LOCALE.LOAD, 'en')
       currentLocale = 'en'
     } catch {
       loadedLanguage = {}
@@ -31,7 +31,7 @@ export function initI18n(): void {
   // so we have to manually invoke get locale event to get each time
   initI18nLoader()
 
-  ipcRenderer.on(EVENTS.PREFERENCES.LOCALE.LOADED, async (_e, info: LoadedLocaleDictPayload) => {
+  ipcRenderer.on(USER_PREF_CHANNELS.LOCALE.LOADED, async (_e, info: LoadedLocaleDictPayload) => {
     setLocale(info.locale)
     setLoadedLanguage(info.dict)
   })

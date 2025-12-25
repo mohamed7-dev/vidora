@@ -1,8 +1,15 @@
-import { DownloadAppUpdateApprovalRes, InstallAppUpdateApprovalRes } from '../shared/app-update'
-import { YtdlpInfo } from '../shared/downloads'
 import { LoadedLocaleDictPayload } from '../shared/i18n'
-import { DownloadJobPayload, Job, JobStatus, JobsUpdateEvent, ListJobsParams } from '../shared/jobs'
-import { AppConfig, DeepPartial } from '../shared/types'
+import { AppConfig } from '../shared/ipc/app-config'
+import { ApprovalRes } from '../shared/ipc/app-update'
+import {
+  DownloadJobPayload,
+  Job,
+  JobStatus,
+  JobsUpdateEvent,
+  ListJobsParams
+} from '../shared/ipc/download-jobs'
+import { MediaInfoChannelPayload, YtdlpInfo } from '../shared/ipc/get-media-info'
+import { DeepPartial } from '../shared/types'
 
 export type PreloadApi = {
   app: {
@@ -58,15 +65,11 @@ export type PreloadApi = {
     onUpdated: (cb: (evt: JobsUpdateEvent) => void) => () => void
   }
   appUpdate: {
-    check: () => void
-    respondToDownloadApproval: (res: DownloadAppUpdateApprovalRes) => void
-    respondToInstallApproval: (res: InstallAppUpdateApprovalRes) => void
+    respondToDownloadApproval: (res: ApprovalRes) => void
+    respondToInstallApproval: (res: ApprovalRes) => void
   }
   downloads: {
     getInfo: (url: string) => Promise<YtdlpInfo>
+    onGettingInfo: (cb: (payload: MediaInfoChannelPayload) => void) => () => void
   }
-  // status: {
-  //   getSnapshot: () => Promise<StatusSnapshot>
-  //   onUpdate: (cb: (snap: StatusSnapshot) => void) => () => void
-  // }
 }

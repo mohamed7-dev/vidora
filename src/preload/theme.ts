@@ -1,7 +1,6 @@
 import { ipcRenderer } from 'electron'
-import { EVENTS } from '../shared/events'
-import { AppConfig } from '../shared/types'
 import { DATA } from '../shared/data'
+import { APP_CONFIG_CHANNELS, AppConfig } from '../shared/ipc/app-config'
 
 function applyThemeToRoot(themeName: string, isDark: boolean): void {
   const apply = (root: HTMLElement): void => {
@@ -53,7 +52,7 @@ export function applyInitialTheme(): void {
 
 export function startThemeWatcher(): void {
   // React to config updates
-  ipcRenderer.on(EVENTS.CONFIG.UPDATED, (_e, cfg: AppConfig) => {
+  ipcRenderer.on(APP_CONFIG_CHANNELS.UPDATED, (_e, cfg: AppConfig) => {
     try {
       const themeName = cfg?.general?.theme || 'system'
       const mode = resolveThemeMode(themeName)
@@ -106,7 +105,7 @@ function onSystemChange(): void {
 
 function safeGetConfigThemeName(): string {
   try {
-    const v = ipcRenderer.sendSync(EVENTS.CONFIG.GET) as AppConfig
+    const v = ipcRenderer.sendSync(APP_CONFIG_CHANNELS.GET) as AppConfig
     const theme = v.general.theme
     return typeof theme === 'string' && theme ? theme : 'system'
   } catch {
