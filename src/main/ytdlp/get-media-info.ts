@@ -1,12 +1,9 @@
-import { YtdlpInfo } from '../../shared/downloads'
 import { readConfig } from '../app-config/config-api'
 import { ensureYtDlpPath } from './check-ytdlp'
 import YTDlpWrapImport from 'yt-dlp-wrap-plus'
 import { complete, begin, error } from './get-media-info-status-bus'
 import { ipcMain } from 'electron'
-import { MEDIA_INFO_CHANNELS } from '../../shared/ipc/get-media-info'
-
-export type MediaType = 'Single' | 'Playlist'
+import { MEDIA_INFO_CHANNELS, YtdlpInfo } from '../../shared/ipc/get-media-info'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImport
@@ -15,13 +12,14 @@ export const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImpo
  * @description
  * Get media info from url.
  */
-export async function getMediaInfo(url: string, type: 'Single' | 'Playlist'): Promise<YtdlpInfo> {
+export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
   return new Promise((resolve, reject) => {
     const {
       downloader: { proxyServerUrl, cookiesFromBrowser, configPath }
     } = readConfig()
     const useCookies = cookiesFromBrowser && cookiesFromBrowser !== 'none'
-    const args = [
+    let args: string[] = []
+    args = [
       '-j',
       '--no-playlist',
       '--no-warnings',
@@ -77,17 +75,17 @@ export async function getMediaInfo(url: string, type: 'Single' | 'Playlist'): Pr
   })
 }
 
+// Journey
+//  1. renderer sends url via (GET_INFO channel), and subscribes the the (status bus channel)
+//  2. main calls getMediaInfo -> getMediaInfo calls yt-dlp (status shared via bus)
+//  3. main returns info via (GET_INFO channel)
+//  4. renderer displays info
+
 export function setupMediaInfoIPC(): void {
-  ipcMain.handle(MEDIA_INFO_CHANNELS.GET_INFO, async (_e, url: string, type: MediaType) => {
+  ipcMain.handle(MEDIA_INFO_CHANNELS.GET_INFO, async (_e, url: string) => {
     if (!url || typeof url !== 'string')
       error(new Error('Invalid media url'), 'Invalid media url', 'url') // TODO: change
-    if (!type || typeof type !== 'string' || !['Single', 'Playlist'].includes(type))
-      error(
-        new Error('Invalid media type, only Single and Playlist are allowed'),
-        'Invalid media type, only Single and Playlist are allowed',
-        'type'
-      ) // TODO: change
-    const info = await getMediaInfo(url, type)
+    const info = await getMediaInfo(url)
     return info
   })
 }

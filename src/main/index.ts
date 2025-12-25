@@ -4,7 +4,7 @@ import { electronApp, optimizer, is, platform } from '@electron-toolkit/utils'
 import { readConfig } from './app-config/config-api'
 import { setupApp } from './setup/index'
 import { getIsQuitting, isTrayEnabled } from './user-pref/tray'
-import { pauseAllIncompletedJobs } from './jobs/download-jobs'
+import { pauseAllIncompletedJobs } from './download-jobs/download-jobs'
 
 function createWindow(): void {
   const iconPath = app.isPackaged

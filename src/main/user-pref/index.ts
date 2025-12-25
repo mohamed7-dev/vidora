@@ -1,7 +1,7 @@
-import { AppConfig } from '../../shared/types'
 import { initDownloadPath } from './download-path'
 import { initYtdlpConfigPath } from './ytdlp-config-file-path'
 import { initTray } from './tray'
+import { AppConfig } from '../../shared/ipc/app-config'
 
 /**
  * @description

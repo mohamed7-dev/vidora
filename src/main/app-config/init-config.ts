@@ -1,9 +1,10 @@
 import { initConfigCache, readConfig, updateConfig } from './config-api'
-import { AppConfig, DeepPartial } from '../../shared/types'
+import { DeepPartial } from '../../shared/types'
 import { initInternalConfigCache } from './internal-config-api'
-import { BrowserWindow, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
 import { DEFAULT_CONFIG, InternalConfig } from './default-config'
-import { APP_CONFIG_CHANNELS } from '../../shared/ipc/app-config'
+import { APP_CONFIG_CHANNELS, AppConfig } from '../../shared/ipc/app-config'
+import { broadcastToAllWindows } from '../lib'
 
 /**
  * @description
@@ -27,9 +28,7 @@ function registerConfigIpc(): void {
   ipcMain.handle(APP_CONFIG_CHANNELS.UPDATE, (_e, patch: DeepPartial<AppConfig>) => {
     const updated = updateConfig(patch)
     // broadcast updated config to all windows
-    BrowserWindow.getAllWindows().forEach((w) =>
-      w.webContents.send(APP_CONFIG_CHANNELS.UPDATED, updated)
-    )
+    broadcastToAllWindows(APP_CONFIG_CHANNELS.UPDATED, updated)
     return updated
   })
 }

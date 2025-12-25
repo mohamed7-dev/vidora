@@ -1,16 +1,16 @@
-import { BrowserWindow } from 'electron'
-import { APP_UPDATE_CHANNELS, AppUpdateMainToRendererPayload } from '../../shared/ipc/app-update'
+import { APP_UPDATE_CHANNELS } from '../../shared/ipc/app-update'
 import { ProgressInfo, UpdateDownloadedEvent, UpdateInfo } from 'electron-updater'
+import { broadcastToAllWindows } from '../lib'
 
-const mainWindow = BrowserWindow.getAllWindows()[0]
+const channel = APP_UPDATE_CHANNELS.MAIN_TO_RENDERER
 
 export function sendUpdateAvailable(info: UpdateInfo): void {
-  mainWindow?.webContents.send(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
+  broadcastToAllWindows(channel, {
     action: 'download-available',
     message: 'A new version is ready to be downloaded, do you want to download it?',
     messageKey: 'appUpdate.download.beginMessage', // TODO: change this
     updateInfo: info
-  } satisfies AppUpdateMainToRendererPayload)
+  })
 }
 
 export function sendApprovalSuccess(
@@ -19,12 +19,21 @@ export function sendApprovalSuccess(
   messageKey: string,
   payload?: { link: string }
 ): void {
-  mainWindow?.webContents.send(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
-    action,
-    message,
-    messageKey,
-    payload
-  } satisfies AppUpdateMainToRendererPayload)
+  broadcastToAllWindows(
+    APP_UPDATE_CHANNELS.MAIN_TO_RENDERER,
+    action === 'download-approval-success'
+      ? {
+          action,
+          message,
+          messageKey,
+          payload: payload!
+        }
+      : {
+          action,
+          message,
+          messageKey
+        }
+  )
 }
 
 export function sendApprovalFail(
@@ -33,46 +42,45 @@ export function sendApprovalFail(
   messageKey: string,
   cause: string
 ): void {
-  mainWindow?.webContents.send(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
+  broadcastToAllWindows(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
     action,
     message,
     messageKey,
     cause
-  } satisfies AppUpdateMainToRendererPayload)
+  })
 }
 
 export function sendDownloadProgress(progressInfo: ProgressInfo): void {
-  mainWindow?.webContents.send(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
+  broadcastToAllWindows(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
     action: 'download-progress',
     progressInfo,
-    progress: progressInfo.percent,
     message: 'Downloading new update is in progress',
     messageKey: 'appUpdate.progress' // TODO: change this
-  } satisfies AppUpdateMainToRendererPayload)
+  })
 }
 
 export function sendDownloadedSuccessfully(info: UpdateDownloadedEvent): void {
-  mainWindow?.webContents.send(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
+  broadcastToAllWindows(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
     action: 'downloaded-successfully',
     message: 'A new update was downloaded successfully, do you want to install it?',
     messageKey: 'appUpdate.download.downloadedMessage', // TODO: change this
     updateDownloadedInfo: info
-  } satisfies AppUpdateMainToRendererPayload)
+  })
 }
 
 export function sendInstalledSuccessfully(): void {
-  mainWindow?.webContents.send(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
+  broadcastToAllWindows(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
     action: 'installed-successfully',
     message: 'A new update was installed successfully',
     messageKey: 'appUpdate.download.downloadedMessage' // TODO: change this
-  } satisfies AppUpdateMainToRendererPayload)
+  })
 }
 
 export function sendError(e: Error, message?: string, messageKey?: string): void {
-  mainWindow?.webContents.send(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
+  broadcastToAllWindows(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, {
     action: 'error',
     message: message ?? 'Unknown error',
     cause: e.message,
     messageKey: messageKey ?? 'appUpdate.download.downloadedMessage' // TODO: change this
-  } satisfies AppUpdateMainToRendererPayload)
+  })
 }

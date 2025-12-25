@@ -1,17 +1,25 @@
-import { DEFAULT_INTERNAL_CONFIG } from '../app-config/default-config'
-import type { Job } from '../../shared/jobs'
-import { ensureYtDlpPath, YTDlpWrap } from './check-ytdlp'
+/* CREDIT
+- Most of the logic implemented here is inspired by the Andrew-me ytdlp-downloader app
+*/
+
+import type { Job } from '../../shared/ipc/download-jobs'
+import { YTDlpWrap } from './check-ytdlp'
 import YTDlpWrapImport, { YTDlpEventEmitter } from 'yt-dlp-wrap-plus'
-import os from 'node:os'
 import { readConfig } from '../app-config/config-api'
 import { readInternalConfig } from '../app-config/internal-config-api'
-// import { begin, fail, progress as statusProgress, success } from '../status-bus'
+import { platform } from '@electron-toolkit/utils'
+import { ensureFfmpegPath } from '../ffmpeg/check-ffmpeg'
+import { begin, progress, complete, error } from '../ffmpeg/check-ffmpeg-status-bus'
 
 export type EngineHooks = {
   onProgress?: (jobId: string, progress: number) => void
   onDone?: (jobId: string, ok: boolean, error?: string) => void
 }
 
+/**
+ * @description
+ * This class manages the downloading life cycle.
+ */
 export class DownloadEngine {
   private procs = new Map<string, YTDlpEventEmitter>()
   private controllers = new Map<string, AbortController>()
@@ -31,134 +39,119 @@ export class DownloadEngine {
 
     const args = this._buildArgs(job)
     const cwd =
-      (job.payload?.ytdlpArgs?.downloadDir as string | null) ||
-      DEFAULT_INTERNAL_CONFIG.downloadFolderPath
+      (job.payload?.ytdlpArgs?.downloadDir as string | null) || readConfig().downloads.downloadDir
 
-    void this._getWrap().then((wrap) => {
-      const controller = new AbortController()
-      this.controllers.set(job.id, controller)
+    void this._getWrap()
+      .then(({ ytdlp }) => {
+        const controller = new AbortController()
+        this.controllers.set(job.id, controller)
 
-      const proc = wrap.exec(args, {
-        shell: true,
-        detached: false,
-        signal: controller.signal,
-        cwd: cwd || undefined
-      })
-      this.procs.set(job.id, proc)
+        const proc = ytdlp.exec(args, {
+          shell: true,
+          detached: false,
+          signal: controller.signal,
+          cwd: cwd || undefined
+        })
+        this.procs.set(job.id, proc)
 
-      let errBuf = ''
-      let outBuf = ''
-      let completed = false
+        let errBuf = ''
+        let outBuf = ''
+        let completed = false
 
-      const spawned = proc.ytDlpProcess
+        const spawned = proc.ytDlpProcess
 
-      // Structured progress from wrapper
-      proc.on('progress', (progress: unknown) => {
-        // progress may be number or object with percent/_percent
-        const v = progress as Record<string, unknown> | number
-        const raw =
-          typeof v === 'number' ? v : ((v?.percent as unknown) ?? (v?._percent as unknown))
-        const num = typeof raw === 'number' ? raw : parseFloat(String(raw ?? '0').replace('%', ''))
-        const clamped = Math.max(0, Math.min(100, isFinite(num) ? num : 0))
-        this.hooks.onProgress?.(job.id, clamped)
-        // statusProgress('ytdlp', clamped, 'status.ytdlp.downloadMedia.progress', {
-        //   scope: 'download',
-        //   jobId: job.id
-        // })
-      })
+        // Structured progress from wrapper
+        proc.on('progress', (progress: unknown) => {
+          // progress may be number or object with percent/_percent
+          const v = progress as Record<string, unknown> | number
+          const raw =
+            typeof v === 'number' ? v : ((v?.percent as unknown) ?? (v?._percent as unknown))
+          const num =
+            typeof raw === 'number' ? raw : parseFloat(String(raw ?? '0').replace('%', ''))
+          const clamped = Math.max(0, Math.min(100, isFinite(num) ? num : 0))
+          this.hooks.onProgress?.(job.id, clamped)
+        })
 
-      // First event after spawn (optional UI change)
-      proc.once('ytDlpEvent', () => {
-        // no-op here; renderer already shows state
-      })
+        // First event after spawn (optional UI change)
+        proc.once('ytDlpEvent', () => {
+          // no-op here; renderer already shows state
+        })
 
-      // Collect stdio for error reporting
-      spawned?.stdout?.setEncoding?.('utf8')
-      spawned?.stdout?.on?.('data', (chunk: string) => {
-        outBuf += chunk
-      })
-      spawned?.stderr?.setEncoding?.('utf8')
-      spawned?.stderr?.on?.('data', (chunk: string) => {
-        errBuf += chunk
-      })
+        // Collect stdio for error reporting
+        spawned?.stdout?.setEncoding?.('utf8')
+        spawned?.stdout?.on?.('data', (chunk: string) => {
+          outBuf += chunk
+        })
+        spawned?.stderr?.setEncoding?.('utf8')
+        spawned?.stderr?.on?.('data', (chunk: string) => {
+          errBuf += chunk
+        })
 
-      // Mark job as started in status bus
-      //   begin('ytdlp', 'status.ytdlp.downloadMedia.started', { scope: 'download', jobId: job.id })
+        // Close/completion: prefer child process event to get signal as well
+        spawned?.once?.('close', (code: number | null, signal: NodeJS.Signals | null) => {
+          if (completed) return
+          completed = true
+          this.procs.delete(job.id)
+          this.controllers.delete(job.id)
+          const ok = code === 0
+          if (ok) {
+            this.hooks.onDone?.(job.id, true, undefined)
+          } else {
+            const cleaned = errBuf
+              .split('\n')
+              .filter((l) => !l.trim().startsWith('WARNING:'))
+              .join('\n')
+              .trim()
+            // fallback to raw stderr or stdout snippets if cleaned is empty
+            const fallback = (errBuf || outBuf).trim()
+            const base = cleaned || fallback
+            const reason = code !== null ? `code ${code}` : signal ? `signal ${signal}` : 'unknown'
+            const msg = base ? `${base}\n[exit ${reason}]` : `yt-dlp exited with ${reason}`
+            this.hooks.onDone?.(job.id, false, msg)
+          }
+        })
+        // Fallback: wrapper-level close (in case spawned is unavailable)
+        proc.once('close', (code: number | null) => {
+          if (completed) return
+          completed = true
+          this.procs.delete(job.id)
+          this.controllers.delete(job.id)
+          const ok = code === 0
+          if (ok) {
+            this.hooks.onDone?.(job.id, true, undefined)
+          } else {
+            const cleaned = errBuf
+              .split('\n')
+              .filter((l) => !l.trim().startsWith('WARNING:'))
+              .join('\n')
+              .trim()
+            const fallback = (errBuf || outBuf).trim()
+            const base = cleaned || fallback
+            const reason = code !== null ? `code ${code}` : 'unknown'
+            const msg = base ? `${base}\n[exit ${reason}]` : `yt-dlp exited with ${reason}`
+            this.hooks.onDone?.(job.id, false, msg)
+          }
+        })
 
-      // Close/completion: prefer child process event to get signal as well
-      spawned?.once?.('close', (code: number | null, signal: NodeJS.Signals | null) => {
-        if (completed) return
-        completed = true
-        this.procs.delete(job.id)
-        this.controllers.delete(job.id)
-        const ok = code === 0
-        if (ok) {
-          this.hooks.onDone?.(job.id, true, undefined)
-          //   success('ytdlp', 'status.ytdlp.downloadMedia.success', {
-          //     scope: 'download',
-          //     jobId: job.id
-          //   })
-        } else {
-          const cleaned = errBuf
+        proc.once('error', (err: unknown) => {
+          this.procs.delete(job.id)
+          this.controllers.delete(job.id)
+          const msg =
+            typeof err === 'object' && err && 'message' in err
+              ? String((err as { message?: unknown }).message)
+              : String(err)
+          const cleaned = msg
             .split('\n')
             .filter((l) => !l.trim().startsWith('WARNING:'))
             .join('\n')
             .trim()
-          // fallback to raw stderr or stdout snippets if cleaned is empty
-          const fallback = (errBuf || outBuf).trim()
-          const base = cleaned || fallback
-          const reason = code !== null ? `code ${code}` : signal ? `signal ${signal}` : 'unknown'
-          const msg = base ? `${base}\n[exit ${reason}]` : `yt-dlp exited with ${reason}`
-          this.hooks.onDone?.(job.id, false, msg)
-          //   fail('ytdlp', new Error(msg), 'status.ytdlp.downloadMedia.failed', {
-          //     scope: 'download',
-          //     jobId: job.id
-          //   })
-        }
+          const finalMsg = cleaned || msg
+          this.hooks.onDone?.(job.id, false, finalMsg)
+        })
       })
-      // Fallback: wrapper-level close (in case spawned is unavailable)
-      proc.once('close', (code: number | null) => {
-        if (completed) return
-        completed = true
-        this.procs.delete(job.id)
-        this.controllers.delete(job.id)
-        const ok = code === 0
-        if (ok) {
-          this.hooks.onDone?.(job.id, true, undefined)
-        } else {
-          const cleaned = errBuf
-            .split('\n')
-            .filter((l) => !l.trim().startsWith('WARNING:'))
-            .join('\n')
-            .trim()
-          const fallback = (errBuf || outBuf).trim()
-          const base = cleaned || fallback
-          const reason = code !== null ? `code ${code}` : 'unknown'
-          const msg = base ? `${base}\n[exit ${reason}]` : `yt-dlp exited with ${reason}`
-          this.hooks.onDone?.(job.id, false, msg)
-        }
+      .catch(() => {
+        this.hooks.onDone?.(job.id, false, 'Failed to start download') // TODO: localize
       })
-
-      proc.once('error', (err: unknown) => {
-        this.procs.delete(job.id)
-        this.controllers.delete(job.id)
-        const msg =
-          typeof err === 'object' && err && 'message' in err
-            ? String((err as { message?: unknown }).message)
-            : String(err)
-        const cleaned = msg
-          .split('\n')
-          .filter((l) => !l.trim().startsWith('WARNING:'))
-          .join('\n')
-          .trim()
-        const finalMsg = cleaned || msg
-        this.hooks.onDone?.(job.id, false, finalMsg)
-        // fail('ytdlp', new Error(finalMsg), 'status.ytdlp.downloadMedia.failed', {
-        //   scope: 'download',
-        //   jobId: job.id
-        // })
-      })
-    })
   }
 
   stop(jobId: string): void {
@@ -175,11 +168,51 @@ export class DownloadEngine {
     this.controllers.delete(jobId)
   }
 
-  private async _getWrap(): Promise<YTDlpWrapImport> {
-    if (this.ytdlp) return this.ytdlp
-    const bp = await ensureYtDlpPath()
+  private async _getWrap(): Promise<{ ytdlp: YTDlpWrapImport; ffmpegPath: string | null }> {
+    if (this.ytdlp) return { ytdlp: this.ytdlp, ffmpegPath: null }
+    const bp = readInternalConfig().ytDlpPath // when the app reaches this point, the internal config should be loaded, and the ytdlp path should be set
     this.ytdlp = (bp ? new YTDlpWrap(bp) : new YTDlpWrap()) as YTDlpWrapImport
-    return this.ytdlp
+
+    // when the app reaches this point, the ffmpeg is not guaranteed to be there that's why we are triggering the check
+    const ffmpegPath = await ensureFfmpegPath({
+      onBegin: () => {
+        begin({
+          message: 'Checking ffmpeg availability, please wait...',
+          messageKey: 'status.ffmpeg.checking'
+        })
+      },
+      onProgress: (payload) => {
+        progress({
+          progress: payload.progress,
+          message: 'Downloading ffmpeg, please wait...',
+          messageKey: 'status.ffmpeg.downloading'
+        })
+      },
+      onComplete: () => {
+        complete({
+          message: 'ffmpeg is ready, download will be starting soon',
+          messageKey: 'status.ffmpeg.ready'
+        })
+      },
+      onError: (payload) => {
+        error({
+          cause:
+            payload.source === 'download-failed'
+              ? 'Failed to download ffmpeg, download will be cancelled'
+              : 'Ffmpeg is not found on freebsd, the app may not work properly',
+          message:
+            payload.source === 'download-failed'
+              ? 'Failed to download ffmpeg, download will be cancelled'
+              : 'Ffmpeg is not found on freebsd, the app may not work properly',
+          messageKey:
+            payload.source === 'download-failed'
+              ? 'status.ffmpeg.download_failed'
+              : 'status.ffmpeg.not_found_freebsd' // TODO: change
+        })
+      }
+    })
+
+    return { ytdlp: this.ytdlp, ffmpegPath }
   }
 
   private _buildArgs(job: Job): string[] {
@@ -218,12 +251,12 @@ export class DownloadEngine {
       ext = aext === 'webm' ? 'opus' : aext
     }
 
-    const invalidChars = os.platform() === 'win32' ? /[<>:"/\\|?*[\]`#]/g : /["/`#]/g
+    const invalidChars = platform.isWindows ? /[<>:"/\\|?*[\]`#]/g : /["/`#]/g
     let finalFilename = title.replace(invalidChars, '').trim().slice(0, 100)
     if (finalFilename.startsWith('.')) finalFilename = finalFilename.substring(1)
     if (rangeCmd) {
       let rangeTxt = rangeCmd.replace('*', '')
-      if (os.platform() === 'win32') rangeTxt = rangeTxt.replace(/:/g, '_')
+      if (platform.isWindows) rangeTxt = rangeTxt.replace(/:/g, '_')
       finalFilename += ` [${rangeTxt}]`
     }
 

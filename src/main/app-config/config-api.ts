@@ -1,7 +1,8 @@
 import { accessSync, constants, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { DEFAULT_CONFIG, DEFAULT_INTERNAL_CONFIG } from './default-config'
-import { AppConfig, DeepPartial } from '../../shared/types'
+import { DeepPartial } from '../../shared/types'
 import { performSideEffects } from './side-effects'
+import { AppConfig } from '../../shared/ipc/app-config'
 
 let cachedConfig: AppConfig | null = null
 

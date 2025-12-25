@@ -1,28 +1,20 @@
 import { join } from 'node:path'
 import { DATA } from '../../shared/data'
-import { AppConfig } from '../../shared/types'
 import { app } from 'electron'
 import * as os from 'node:os'
+import { AppConfig } from '../../shared/ipc/app-config'
 
 export interface InternalConfig {
-  ytDlpPath: string
+  ytDlpPath: string | null
+  ffmpegPath: string | null
   configFolderPath: string
   configFilePath: string
   internalConfigFilePath: string
   downloadFolderPath: string
-  ffmpegPath: string
   jobsStorePath: string
 }
 const configDir = join(app.getPath('userData'), 'config')
-/**
- * @description
- * Default Internal configuration meant to be accessible in main process only.
- */
-export const DEFAULT_INTERNAL_CONFIG: InternalConfig = {
-  configFolderPath: configDir,
-  configFilePath: join(configDir, 'config.json'),
-  internalConfigFilePath: join(configDir, 'internal-config.json'),
-  downloadFolderPath: app.getPath('downloads'),
+export const DEFAULT_INTERNAL_PATHS = {
   ytDlpPath: join(
     app.getPath('userData'),
     'bin',
@@ -32,7 +24,19 @@ export const DEFAULT_INTERNAL_CONFIG: InternalConfig = {
     app.getPath('userData'),
     'bin',
     os.platform() === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
-  ),
+  )
+}
+/**
+ * @description
+ * Default Internal configuration meant to be accessible in main process only.
+ */
+export const DEFAULT_INTERNAL_CONFIG: InternalConfig = {
+  configFolderPath: configDir,
+  configFilePath: join(configDir, 'config.json'),
+  internalConfigFilePath: join(configDir, 'internal-config.json'),
+  downloadFolderPath: app.getPath('downloads'),
+  ytDlpPath: null,
+  ffmpegPath: null,
   jobsStorePath: join(app.getPath('userData'), 'jobs')
 }
 

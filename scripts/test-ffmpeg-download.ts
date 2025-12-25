@@ -2,10 +2,10 @@
 
 /**
  * Test script to demonstrate ffmpeg downloading functionality
- * Run with: node test-ffmpeg-download.js
+ * Run with: tsx test-ffmpeg-download.ts
  */
 
-import { FfmpegDownloader } from '../src/main/ffmpeg'
+import { FfmpegDownloader } from '../src/main/ffmpeg/ffmpeg-downloader'
 import fs from 'fs'
 
 async function testDownload(): Promise<void> {

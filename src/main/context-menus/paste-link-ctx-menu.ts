@@ -3,6 +3,7 @@ import { BrowserWindow, Menu } from 'electron'
 import { clipboard } from 'electron'
 import { t } from '../../shared/i18n'
 import { PASTE_LINK_CHANNELS } from '../../shared/ipc/paste-link'
+import { broadcastToAllWindows } from '../lib'
 
 function handlePasteLinkContextMenuIpc(): void {
   // context menu for paste link
@@ -15,10 +16,7 @@ function handlePasteLinkContextMenuIpc(): void {
         click: () => {
           const text = clipboard.readText()
           if (!text) return
-          const target = win || BrowserWindow.getAllWindows()[0]
-          if (target) {
-            target.webContents.send(PASTE_LINK_CHANNELS.PASTED, text)
-          }
+          broadcastToAllWindows(PASTE_LINK_CHANNELS.PASTED, text)
         }
       }
     ])

@@ -1,9 +1,9 @@
 import { BrowserWindow, Menu, Tray, nativeImage, app, clipboard } from 'electron'
 import { join } from 'node:path'
 import { platform } from '@electron-toolkit/utils'
-import { AppConfig } from '../../shared/types'
 import { t } from '../../shared/i18n'
 import { PASTE_LINK_CHANNELS } from '../../shared/ipc/paste-link'
+import { AppConfig } from '../../shared/ipc/app-config'
 
 function getIconPath(): string {
   const base = app.isPackaged

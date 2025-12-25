@@ -1,5 +1,4 @@
 import { autoUpdater, ProgressInfo, UpdateDownloadedEvent, UpdateInfo } from 'electron-updater'
-import { DownloadAppUpdateApprovalRes, InstallAppUpdateApprovalRes } from '../../shared/app-update'
 import { platform } from '@electron-toolkit/utils'
 import { EXTERNAL_URLS } from '../constants'
 import { shell } from 'electron'
@@ -11,15 +10,13 @@ import {
   sendError,
   sendUpdateAvailable
 } from './update-status-bus'
+import { ApprovalRes } from '../../shared/ipc/app-update'
 
 export function onUpdateAvailable(info: UpdateInfo): void {
   sendUpdateAvailable(info)
 }
 
-export function onDownloadApproved(
-  _e: Electron.IpcMainInvokeEvent,
-  response: DownloadAppUpdateApprovalRes
-): void {
+export function onDownloadApproved(_e: Electron.IpcMainInvokeEvent, response: ApprovalRes): void {
   if (response && response === 1) {
     if (platform.isMacOS) {
       // on mac os, let the user download the update manually
@@ -68,10 +65,7 @@ export function onUpdateError(e: Error): void {
   sendError(e)
 }
 
-export function onInstallApproved(
-  _e: Electron.IpcMainInvokeEvent,
-  response: InstallAppUpdateApprovalRes
-): void {
+export function onInstallApproved(_e: Electron.IpcMainInvokeEvent, response: ApprovalRes): void {
   if (response && response === 1) {
     autoUpdater.quitAndInstall()
     sendApprovalSuccess(

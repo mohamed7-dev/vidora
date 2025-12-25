@@ -2,9 +2,9 @@ import { ipcMain, dialog, BrowserWindow } from 'electron'
 import { mkdirSync, accessSync, statSync, writeFileSync, unlinkSync, constants } from 'node:fs'
 import { join } from 'node:path'
 import { updateConfig } from '../app-config/config-api'
-import { AppConfig } from '../../shared/types'
 import { USER_PREF_CHANNELS } from '../../shared/ipc/user-pref'
 import { complete, error } from './change-paths-status-bus'
+import { AppConfig } from '../../shared/ipc/app-config'
 
 async function handleDownloadDirChange(
   event: Electron.IpcMainEvent,

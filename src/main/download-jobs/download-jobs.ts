@@ -1,17 +1,17 @@
 import { ipcMain, BrowserWindow, Notification } from 'electron'
-import { EVENTS } from '../../shared/events'
-import type {
-  DownloadJobPayload,
-  Job,
-  JobStatus,
-  JobsUpdateEvent,
-  ListJobsParams
-} from '../../shared/jobs'
 import { randomUUID } from 'node:crypto'
 import { DEFAULT_INTERNAL_CONFIG } from '../app-config/default-config'
 import { downloadEngine } from '../ytdlp/download-engine'
 import { readConfig } from '../app-config/config-api'
 import { DATA } from '../../shared/data'
+import {
+  DOWNLOAD_JOBS_CHANNELS,
+  DownloadJobPayload,
+  Job,
+  JobStatus,
+  JobsUpdateEvent,
+  ListJobsParams
+} from '../../shared/ipc/download-jobs'
 
 /*
   we need to use require here because electron-store is not a typescript module
@@ -71,8 +71,8 @@ function decideInitialStatus(jobs: Job[]): JobStatus {
 
 function broadcastUpdate(win: BrowserWindow | null, evt: JobsUpdateEvent): void {
   const targets = BrowserWindow.getAllWindows()
-  for (const w of targets) w.webContents.send(EVENTS.DOWNLOAD_JOBS.UPDATED, evt)
-  if (win) win.webContents.send(EVENTS.DOWNLOAD_JOBS.UPDATED, evt)
+  for (const w of targets) w.webContents.send(DOWNLOAD_JOBS_CHANNELS.UPDATE_STATUS, evt)
+  if (win) win.webContents.send(DOWNLOAD_JOBS_CHANNELS.UPDATE_STATUS, evt)
 }
 
 function notifyDownloadCompleted(job: Job): void {
@@ -108,7 +108,7 @@ function enqueueNextIfPossible(): void {
  * it registers handlers for the add, list, update_status, remove, pause, resume events.
  */
 function registerDownloadJobsIPC(): void {
-  ipcMain.handle(EVENTS.DOWNLOAD_JOBS.ADD, (_e, payload: DownloadJobPayload) => {
+  ipcMain.handle(DOWNLOAD_JOBS_CHANNELS.ADD, (_e, payload: DownloadJobPayload) => {
     const jobs = getJobs()
     const status = decideInitialStatus(jobs)
     const job: Job = {
@@ -129,14 +129,14 @@ function registerDownloadJobsIPC(): void {
     return job
   })
 
-  ipcMain.handle(EVENTS.DOWNLOAD_JOBS.LIST, (_e, params?: ListJobsParams) => {
+  ipcMain.handle(DOWNLOAD_JOBS_CHANNELS.LIST, (_e, params?: ListJobsParams) => {
     const jobs = getJobs()
     if (!params || !params.status) return jobs
     const statuses = Array.isArray(params.status) ? params.status : [params.status]
     return jobs.filter((j) => statuses.includes(j.status))
   })
 
-  ipcMain.handle(EVENTS.DOWNLOAD_JOBS.UPDATE_STATUS, (_e, id: string, status: JobStatus) => {
+  ipcMain.handle(DOWNLOAD_JOBS_CHANNELS.UPDATE_STATUS, (_e, id: string, status: JobStatus) => {
     const jobs = getJobs()
     const j = jobs.find((x) => x.id === id)
     if (!j) return null
@@ -163,7 +163,7 @@ function registerDownloadJobsIPC(): void {
     return j
   })
 
-  ipcMain.handle(EVENTS.DOWNLOAD_JOBS.REMOVE, (_e, id: string) => {
+  ipcMain.handle(DOWNLOAD_JOBS_CHANNELS.REMOVE, (_e, id: string) => {
     const jobs = getJobs()
     const idx = jobs.findIndex((x) => x.id === id)
     if (idx === -1) return false
@@ -176,7 +176,7 @@ function registerDownloadJobsIPC(): void {
     return true
   })
 
-  ipcMain.handle(EVENTS.DOWNLOAD_JOBS.PAUSE, (_e, id: string) => {
+  ipcMain.handle(DOWNLOAD_JOBS_CHANNELS.PAUSE, (_e, id: string) => {
     const jobs = getJobs()
     const j = jobs.find((x) => x.id === id)
     if (!j) return null
@@ -191,7 +191,7 @@ function registerDownloadJobsIPC(): void {
     return j
   })
 
-  ipcMain.handle(EVENTS.DOWNLOAD_JOBS.RESUME, (_e, id: string) => {
+  ipcMain.handle(DOWNLOAD_JOBS_CHANNELS.RESUME, (_e, id: string) => {
     const jobs = getJobs()
     const j = jobs.find((x) => x.id === id)
     if (!j) return null

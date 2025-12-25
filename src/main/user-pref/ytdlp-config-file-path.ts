@@ -1,5 +1,4 @@
 import { BrowserWindow, dialog, ipcMain } from 'electron'
-import { EVENTS } from '../../shared/events'
 import { copyFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { readInternalConfig } from '../app-config/internal-config-api'
@@ -46,7 +45,6 @@ function initChangeYtdlpConfigPathIpc(): void {
     }
 
     updateConfig({ downloader: { configPath: dest } })
-    win.webContents.send(EVENTS.PREFERENCES.YTDLP_FILE_PATH.CHANGED, dest)
     complete(win, USER_PREF_CHANNELS.YTDLP_FILE_PATH.CHANGE_RESPONSE, {
       message: 'YtDlp config file changed successfully',
       messageKey: 'status.configYtDlpFile.ready',
