@@ -2,34 +2,37 @@ export const CHECK_FFMPEG_CHANNELS = {
   STATUS: 'ffmpeg:check:status'
 }
 
-export interface CheckFfmpegBeginPayload {
-  status: 'begin'
-  message: string
-  messageKey: string
-}
+export type ErrorSources = 'env' | 'ffmpeg-notfound'
 
-export interface CheckFfmpegProgressPayload {
-  status: 'progress'
-  message: string
-  messageKey: string
-  progress: number
-}
-
-export interface CheckFfmpegCompletePayload {
-  status: 'complete'
-  message: string
-  messageKey: string
-}
-
-export interface CheckFfmpegErrorPayload {
-  status: 'error'
-  message: string
-  messageKey: string
-  cause: string
-}
+export type InfoScopes = 'freebsd-bin-notfound'
 
 export type CheckFfmpegChannelPayload =
-  | CheckFfmpegBeginPayload
-  | CheckFfmpegProgressPayload
-  | CheckFfmpegCompletePayload
-  | CheckFfmpegErrorPayload
+  | {
+      status: 'begin'
+      message: string
+      payload: object
+    }
+  | {
+      status: 'progress'
+      message: string
+      payload: {
+        progress: number
+      }
+    }
+  | {
+      status: 'info'
+      message: string
+      payload: {
+        scope: InfoScopes
+      }
+    }
+  | {
+      status: 'complete'
+      message: string
+      payload: { finalFfmpegPath: string }
+    }
+  | {
+      status: 'error'
+      message: string
+      payload: { source: ErrorSources; cause: string }
+    }

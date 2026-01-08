@@ -1,5 +1,7 @@
+import { t } from './i18n/i18n'
+
 export const DATA = {
-  appName: 'Yalla-download',
+  appName: 'Yalla-Download',
   /* eslint-disable-next-line no-useless-escape */
   proxyServerPattern: '^(http://|https://|socks5://)?[a-zA-Z0-9.]+:[\d]+$',
   videoQualities: [
@@ -29,9 +31,9 @@ export const DATA = {
     { value: 'mp4v', label: 'MP4V' }
   ],
   themes: [
-    { value: 'system', label: 'pref.general.theme.options.system' },
-    { value: 'dark', mode: 'dark', label: 'pref.general.theme.options.dark' },
-    { value: 'light', mode: 'light', label: 'pref.general.theme.options.light' },
+    { value: 'system', label: t`System` },
+    { value: 'dark', mode: 'dark', label: t`Dark` },
+    { value: 'light', mode: 'light', label: t`Light` },
     { value: 'caffeine', mode: 'dark', label: 'caffeine' },
     { value: 'spotify', mode: 'dark', label: 'spotify' }
   ],
@@ -49,5 +51,12 @@ export const DATA = {
     { value: 'vivaldi', label: 'Vivaldi' },
     { value: 'chromium', label: 'Chromium' },
     { value: 'none', label: 'None' }
+  ],
+  pages: [
+    { id: 'home', route: '', windowTitle: 'Yalla-Download' },
+    { id: 'downloading', route: 'downloading', windowTitle: t`Downloading` },
+    { id: 'queued', route: 'queued', windowTitle: t`Queued` },
+    { id: 'history', route: 'history', windowTitle: t`History` },
+    { id: 'completed', route: 'completed', windowTitle: t`Completed` }
   ]
 }

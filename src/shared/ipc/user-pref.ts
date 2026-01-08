@@ -15,10 +15,27 @@ export const USER_PREF_CHANNELS = {
   }
 }
 
-export interface ChangePathsStatusBusEvent {
-  message: string
-  messageKey: string
-  status: 'success' | 'error' | 'pending'
-  cause?: string
-  source: 'download-path' | 'ytdlp-path'
-}
+export type ChangePathsStatusBusEvent =
+  | {
+      status: 'success'
+      message: string
+      payload: {
+        source: 'download-path' | 'ytdlp-path'
+        path: string
+      }
+    }
+  | {
+      status: 'error'
+      message: string
+      payload: {
+        source: 'download-path' | 'ytdlp-path'
+        cause: string
+      }
+    }
+  | {
+      status: 'pending'
+      message: string
+      payload: {
+        source: 'download-path' | 'ytdlp-path'
+      }
+    }

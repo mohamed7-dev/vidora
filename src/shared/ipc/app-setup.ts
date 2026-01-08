@@ -1,17 +1,23 @@
 export const APP_SETUP_CHANNELS = {
-  STATUS: 'app:setup-status'
+  STATUS: 'app:setup-status',
+  GET_STATUS: 'app:setup-status:get'
 }
 
 export type AppSetupChannelPayload =
   | {
       status: 'success'
       message: string
-      messageKey: string
-      cause?: string
+      payload: object
     }
   | {
       status: 'error'
       message: string
-      messageKey: string
-      cause: string
+      payload: {
+        cause: string
+      }
+    }
+  | {
+      status: 'pending'
+      message: string
+      payload: object
     }

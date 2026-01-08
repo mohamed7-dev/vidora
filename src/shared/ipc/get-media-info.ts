@@ -7,24 +7,28 @@ export type MediaInfoChannelPayload =
   | {
       status: 'begin'
       message: string
-      messageKey: string
+      payload: object
     }
   | {
       status: 'progress'
       message: string
-      messageKey: string
-      progress: number
+      payload: {
+        progress: number
+      }
     }
   | {
       status: 'complete'
       message: string
-      messageKey: string
+      payload: {
+        mediaInfo: YtdlpInfo
+      }
     }
   | {
       status: 'error'
       message: string
-      messageKey: string
-      cause: string
+      payload: {
+        cause: string
+      }
     }
 
 // Full payload returned from yt-dlp - structure varies per site and options

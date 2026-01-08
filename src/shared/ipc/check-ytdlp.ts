@@ -2,44 +2,36 @@ export const CHECK_YTDLP_CHANNELS = {
   STATUS: 'ytdlp:check:status'
 }
 
+export type InfoScopes =
+  | 'macos-homebrew'
+  | 'freebsd-bin-notfound'
+  | 'updating-ytdlp'
+  | 'updated-ytdlp'
+export type ErrorSources = 'download-failure' | 'env' | 'update-failure'
+
 export type CheckYtdlpChannelPayload =
   | {
       status: 'begin'
       message: string
-      messageKey: string
-      scope?: 'mac-os-homebrew' | 'freebsd'
-      progress?: number
-      cause?: string
+      payload: object
     }
   | {
       status: 'progress'
       message: string
-      messageKey: string
-      progress: number
-      cause?: string
-      scope?: 'mac-os-homebrew' | 'freebsd'
+      payload: { progress: number }
     }
   | {
       status: 'complete'
+      payload: { finalYtdlpPath: string }
       message: string
-      messageKey: string
-      cause?: string
-      scope?: 'mac-os-homebrew' | 'freebsd'
-      progress?: number
     }
   | {
       status: 'error'
       message: string
-      messageKey: string
-      cause: string
-      scope?: 'mac-os-homebrew' | 'freebsd'
-      progress?: number
+      payload: { source: ErrorSources; cause: string }
     }
   | {
       status: 'info'
-      scope: 'mac-os-homebrew' | 'freebsd' | 'updating-ytdlp'
       message: string
-      messageKey: string
-      progress?: number
-      cause?: string
+      payload: { scope: InfoScopes }
     }

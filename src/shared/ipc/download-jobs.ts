@@ -1,3 +1,5 @@
+import { t } from '../i18n/i18n'
+
 export const DOWNLOAD_JOBS_CHANNELS = {
   ADD: 'download-jobs:add', // renderer -> main
   LIST: 'download-jobs:list', // renderer -> main
@@ -5,17 +7,23 @@ export const DOWNLOAD_JOBS_CHANNELS = {
   REMOVE: 'download-jobs:remove', // renderer -> main
   PAUSE: 'download-jobs:pause', // renderer -> main
   RESUME: 'download-jobs:resume', // renderer -> main
+  OPEN: 'download-jobs:open', // renderer -> main
+  COPY_URL: 'download-jobs:copy-url', // renderer -> main
   STATUS_BUS: 'download-jobs:status-bus' // main -> renderer
 }
 
-export type JobStatus =
-  | 'pending'
-  | 'queued'
-  | 'downloading'
-  | 'paused'
-  | 'completed'
-  | 'failed'
-  | 'canceled'
+export const statuses = {
+  pending: t`Pending`,
+  queued: t`Queued`,
+  downloading: t`Downloading`,
+  paused: t`Paused`,
+  completed: t`Completed`,
+  failed: t`Failed`,
+  canceled: t`Canceled`,
+  deleted: t`Deleted`
+} as const
+
+export type JobStatus = keyof typeof statuses
 
 type DownloadJobType = 'Video' | 'Audio'
 
@@ -30,6 +38,7 @@ export type DownloadJobPayload = {
   url: string
   title: string
   thumbnail: string
+  fileName?: string
   ytdlpArgs: DownloadArgs & {
     downloadDir: string | null
     subtitles: boolean
@@ -48,6 +57,7 @@ export type DownloadJobPayload = {
 export type Job = {
   id: string
   status: JobStatus
+  statusText: string
   progress?: number
   error?: string
   createdAt: number
@@ -58,9 +68,26 @@ export type Job = {
 
 export type ListJobsParams = {
   status?: JobStatus | JobStatus[]
+  page?: number
+  pageSize?: number
+}
+
+export type ListJobsResult = {
+  items: Job[]
+  nextPage: number | null
 }
 
 export type JobsUpdateEvent = {
   type: 'added' | 'updated' | 'removed'
   job: Job
+}
+
+export type OpenJobResult = {
+  ok: boolean
+  error?: string
+}
+
+export type CopyUrlResult = {
+  ok: boolean
+  error?: string
 }
