@@ -1,9 +1,15 @@
 import { ipcRenderer } from 'electron'
-import { LoadedLocaleDictPayload, LocaleDict, setLoadedLanguage, setLocale } from '../shared/i18n'
+import {
+  LoadedLocaleDictPayload,
+  LocaleDict,
+  setLoadedLanguage,
+  setLocale
+} from '../shared/i18n/i18n'
 import { USER_PREF_CHANNELS } from '../shared/ipc/user-pref'
+import { LocaleCode } from '../shared/i18n/config'
 
 async function initI18nLoader(): Promise<void> {
-  let currentLocale = ''
+  let currentLocale: LocaleCode = 'en'
   let loadedLanguage: LocaleDict = {}
 
   try {

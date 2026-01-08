@@ -2,7 +2,7 @@ import { clipboard, contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { initTheme } from './theme'
 import { type PreloadApi } from './types'
-import { LoadedLocaleDictPayload, t } from '../shared/i18n'
+import { LoadedLocaleDictPayload, t as coreT } from '../shared/i18n/i18n'
 import { initI18n } from './i18n'
 import { APP_CONTROLS_CHANNELS } from '../shared/ipc/app-controls'
 import { WINDOWS_CONTROLS_CHANNELS } from '../shared/ipc/window-controls'
@@ -12,14 +12,33 @@ import { NAVIGATION_CHANNELS, SPANavigateChannelPayload } from '../shared/ipc/na
 import { APP_CONFIG_CHANNELS, AppConfig } from '../shared/ipc/app-config'
 import { APP_UPDATE_CHANNELS, ApprovalRes } from '../shared/ipc/app-update'
 import { DOWNLOAD_JOBS_CHANNELS, JobsUpdateEvent } from '../shared/ipc/download-jobs'
-import { USER_PREF_CHANNELS } from '../shared/ipc/user-pref'
+import { DOWNLOAD_HISTORY_CHANNELS, type HistoryListQuery } from '../shared/ipc/download-history'
+import { ChangePathsStatusBusEvent, USER_PREF_CHANNELS } from '../shared/ipc/user-pref'
+import { APP_SETUP_CHANNELS, AppSetupChannelPayload } from '../shared/ipc/app-setup'
+import { CHECK_YTDLP_CHANNELS, CheckYtdlpChannelPayload } from '../shared/ipc/check-ytdlp'
 
 void initTheme()
 void initI18n()
 
 const api = {
+  setup: {
+    getStatus: async () => ipcRenderer.invoke(APP_SETUP_CHANNELS.GET_STATUS),
+    onStatusUpdate: (cb) => {
+      const handler = (_e: unknown, payload: AppSetupChannelPayload): void => cb(payload)
+      ipcRenderer.on(APP_SETUP_CHANNELS.STATUS, handler)
+      return () => ipcRenderer.removeListener(APP_SETUP_CHANNELS.STATUS, handler)
+    }
+  },
+  history: {
+    list: async (query?: HistoryListQuery) =>
+      ipcRenderer.invoke(DOWNLOAD_HISTORY_CHANNELS.LIST, query ?? {}),
+    delete: async (id: string) => ipcRenderer.invoke(DOWNLOAD_HISTORY_CHANNELS.DELETE, { id }),
+    clear: async () => ipcRenderer.invoke(DOWNLOAD_HISTORY_CHANNELS.CLEAR),
+    stats: async () => ipcRenderer.invoke(DOWNLOAD_HISTORY_CHANNELS.STATS)
+  },
   app: {
-    relaunch: () => ipcRenderer.send(APP_CONTROLS_CHANNELS.RELAUNCH)
+    relaunch: () => ipcRenderer.send(APP_CONTROLS_CHANNELS.RELAUNCH),
+    quit: () => ipcRenderer.send(APP_CONTROLS_CHANNELS.QUIT)
   },
   window: {
     minimize: () => ipcRenderer.send(WINDOWS_CONTROLS_CHANNELS.MINIMIZE),
@@ -49,6 +68,7 @@ const api = {
   },
   navigation: {
     navigate: (page) => {
+      ipcRenderer.invoke(NAVIGATION_CHANNELS.TO, page)
       // Broadcast to the renderer world for SPA routing
       try {
         const ev = new CustomEvent<SPANavigateChannelPayload>(NAVIGATION_CHANNELS.TO, {
@@ -75,7 +95,7 @@ const api = {
     downloadPath: {
       changeLocal: () => ipcRenderer.send(USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_LOCAL),
       changedLocal: (callback) => {
-        const handler = (_e: unknown, location: string): void => callback(location)
+        const handler = (_e: unknown, payload: ChangePathsStatusBusEvent): void => callback(payload)
         ipcRenderer.on(USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_LOCAL_RESPONSE, handler)
         return () =>
           ipcRenderer.removeListener(
@@ -85,7 +105,7 @@ const api = {
       },
       changeGlobal: () => ipcRenderer.send(USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_GLOBAL),
       changedGlobal: (callback) => {
-        const handler = (_e: unknown, location: string): void => callback(location)
+        const handler = (_e: unknown, payload: ChangePathsStatusBusEvent): void => callback(payload)
         ipcRenderer.on(USER_PREF_CHANNELS.DOWNLOAD_PATH.CHANGE_GLOBAL_RESPONSE, handler)
         return () =>
           ipcRenderer.removeListener(
@@ -97,7 +117,7 @@ const api = {
     ytdlpConfigPath: {
       change: () => ipcRenderer.send(USER_PREF_CHANNELS.YTDLP_FILE_PATH.CHANGE),
       changed: (callback) => {
-        const handler = (_e: unknown, location: string): void => callback(location)
+        const handler = (_e: unknown, payload: ChangePathsStatusBusEvent): void => callback(payload)
         ipcRenderer.on(USER_PREF_CHANNELS.YTDLP_FILE_PATH.CHANGE_RESPONSE, handler)
         return () =>
           ipcRenderer.removeListener(USER_PREF_CHANNELS.YTDLP_FILE_PATH.CHANGE_RESPONSE, handler)
@@ -112,7 +132,7 @@ const api = {
       ipcRenderer.on(USER_PREF_CHANNELS.LOCALE.LOADED, handler)
       return () => ipcRenderer.removeListener(USER_PREF_CHANNELS.LOCALE.LOADED, handler)
     },
-    t: (phrase) => t(phrase)
+    t: (strings: TemplateStringsArray) => coreT(strings)
   },
   downloadJobs: {
     add: async (payload) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.ADD, payload),
@@ -122,6 +142,8 @@ const api = {
     remove: async (id: string) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.REMOVE, id),
     pause: async (id: string) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.PAUSE, id),
     resume: async (id: string) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.RESUME, id),
+    open: async (id) => await ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.OPEN, id),
+    copyUrl: async (id) => await ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.COPY_URL, id),
     onUpdated: (cb) => {
       const handler = (_: unknown, evt: JobsUpdateEvent): void => cb(evt)
       ipcRenderer.on(DOWNLOAD_JOBS_CHANNELS.STATUS_BUS, handler)
@@ -134,6 +156,13 @@ const api = {
     respondToInstallApproval: (res: ApprovalRes) =>
       ipcRenderer.invoke(APP_UPDATE_CHANNELS.RENDERER_TO_MAIN, res)
     // add main to renderer listeners
+  },
+  ytdlp: {
+    onCheckingStatus: (cb) => {
+      const handler = (_: unknown, evt: CheckYtdlpChannelPayload): void => cb(evt)
+      ipcRenderer.on(CHECK_YTDLP_CHANNELS.STATUS, handler)
+      return () => ipcRenderer.removeListener(CHECK_YTDLP_CHANNELS.STATUS, handler)
+    }
   }
 } satisfies PreloadApi
 
