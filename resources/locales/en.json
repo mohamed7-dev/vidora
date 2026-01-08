@@ -1,327 +1,150 @@
 {
-  "routes": {
-    "home": {
-      "title": "Home"
-    },
-    "downloading": {
-      "title": "Downloading"
-    },
-    "queued": {
-      "title": "Queued"
-    },
-    "completed": {
-      "title": "Completed"
-    }
+  "Download completed": "Download completed",
+  "Download finished successfully": "Download finished successfully",
+  "Preparing required tools and settings before you can start downloading…": "Preparing required tools and settings before you can start downloading…",
+  "All checks passed": {
+    " You are ready to start downloading": " You are ready to start downloading"
   },
-  "tray": {
-    "openApp": {
-      "title": "Open App"
-    },
-    "pasteVideoLink": {
-      "title": "Paste Video Link"
-    },
-    "quit": {
-      "title": "Quit"
-    }
+  "Failed to complete application setup": "Failed to complete application setup",
+  "The file path sepcified in YALLA_DOWNLOAD_YTDLP_PATH doesn't exist": "The file path sepcified in YALLA_DOWNLOAD_YTDLP_PATH doesn't exist",
+  "Failed to download yt-dlp": "Failed to download yt-dlp",
+  "Checking if yt-dlp is installed and ready to use…": "Checking if yt-dlp is installed and ready to use…",
+  "yt-dlp check is in progress": {
+    " This may include downloading or verifying the binary…": " This may include downloading or verifying the binary…"
   },
-  "appSidebar": {
-    "general": {
-      "title": "General",
-      "items": {
-        "home": "Home",
-        "history": "History"
-      }
-    },
-    "downloads": {
-      "title": "Downloads",
-      "items": {
-        "downloading": "Downloading",
-        "completed": "Completed",
-        "queued": "Queued"
-      }
-    }
+  "yt-dlp is ready to be used": "yt-dlp is ready to be used",
+  "Failed to check or prepare yt-dlp": "Failed to check or prepare yt-dlp",
+  "Failed to start the download process": "Failed to start the download process",
+  "Preparing to fetch media information…": "Preparing to fetch media information…",
+  "Fetching media information…": "Fetching media information…",
+  "Media information is ready": "Media information is ready",
+  "Failed to fetch media information": "Failed to fetch media information",
+  "Failed to parse yt-dlp JSON output:": "Failed to parse yt-dlp JSON output:",
+  "yt-dlp exited with a non-zero code": "yt-dlp exited with a non-zero code",
+  "Invalid media url": "Invalid media url",
+  "Media URL is invalid": "Media URL is invalid",
+  "yt-dlp is not installed": {
+    " You can install it from Homebrew": " You can install it from Homebrew"
   },
-  "appHeader": {
-    "actionsMenu": {
-      "preferences": "Preferences",
-      "about": "About"
-    }
+  "yt-dlp was not found on this system": {
+    " Please install it before continuing": " Please install it before continuing"
   },
+  "yt-dlp was updated successfully": "yt-dlp was updated successfully",
+  "yt-dlp is currently being updated…": "yt-dlp is currently being updated…",
+  "Downloading ytdlp": "Downloading ytdlp",
+  "The yt-dlp path from the environment is invalid or does not exist": "The yt-dlp path from the environment is invalid or does not exist",
+  "Failed to update yt-dlp": "Failed to update yt-dlp",
+  "Add New Download": "Add New Download",
+  "Toggle Preferences Menu": "Toggle Preferences Menu",
+  "Preferences": "Preferences",
+  "About": "About",
+  "Toggle Sidebar sheet": "Toggle Sidebar sheet",
+  "Navigation Sidebar": "Navigation Sidebar",
+  "You can navigate application pages": "You can navigate application pages",
+  "Minimize Application Window": "Minimize Application Window",
+  "Maximize Application Window": "Maximize Application Window",
+  "Close Application Window": "Close Application Window",
+  "Application Setup": "Application Setup",
+  "We need to make sure certain libraries and configurations are setup before starting\n            downloading": "We need to make sure certain libraries and configurations are setup before starting\n            downloading",
+  "You need to download yt-dlp from homebrew first": "You need to download yt-dlp from homebrew first",
+  "Open Homebrew": "Open Homebrew",
+  "Close": "Close",
+  "General": "General",
+  "Home": "Home",
+  "History": "History",
+  "Downloads": "Downloads",
+  "Downloading": "Downloading",
+  "Queued": "Queued",
+  "Completed": "Completed",
+  "Completed Downloads": "Completed Downloads",
+  "Active Downloads": "Active Downloads",
+  "Download Media": "Download Media",
+  "Add video, audio, or playlist url to start downloading": "Add video, audio, or playlist url to start downloading",
+  "Add Download": "Add Download",
+  "Pause": "Pause",
+  "Resume": "Resume",
+  "Delete": "Delete",
+  "Open in folder": "Open in folder",
+  "Video": "Video",
+  "Audio": "Audio",
+  "Quality": "Quality",
+  "Video Format": "Video Format",
+  "Select video format": "Select video format",
+  "Audio Format": "Audio Format",
+  "Select audio format": "Select audio format",
+  "Advanced Options": "Advanced Options",
+  "Subtitles": "Subtitles",
+  "If available, download subtitles": "If available, download subtitles",
+  "Download Path": "Download Path",
+  "Change": "Change",
+  "time range start": "time range start",
+  "To": "To",
+  "time range end": "time range end",
+  "Start Download": "Start Download",
+  "Enter or paste media url and customize download options then click\n            download": "Enter or paste media url and customize download options then click\n            download",
+  "Media URL": "Media URL",
+  "Enter media url, or right click to paste": "Enter media url, or right click to paste",
+  "Is Playlist?": "Is Playlist?",
+  "Validate": "Validate",
+  "Loading": "Loading",
   "generic": {
     "actions": {
-      "reset": "Reset",
-      "requireStartAlert": "Changes here require app restart.",
-      "change": "Change",
-      "approve": "Approve",
-      "cancel": "Cancel",
-      "dismiss": "Dismiss"
+      "approve": "approve",
+      "cancel": "cancel",
+      "dismiss": "dismiss"
     }
   },
-  "pref": {
-    "title": "Preferences",
-    "tabs": {
-      "general": "General",
-      "downloader": "Downloader",
-      "downloads": "Downloads"
-    },
-    "general": {
-      "section": {
-        "userInterface": "User Interface",
-        "application": "Application"
-      },
-      "useNativeToolbar": {
-        "title": "Use Native Toolbar"
-      },
-      "closeAppToSystemTray": {
-        "title": "Close App To System Tray"
-      },
-      "restartApp": {
-        "title": "Restart App",
-        "button": "Restart App"
-      },
-      "theme": {
-        "title": "Theme",
-        "options": {
-          "system": "System",
-          "dark": "Dark",
-          "light": "Light"
-        },
-        "placeholder": "Select"
-      },
-      "language": {
-        "title": "Language",
-        "options": {
-          "en": "English",
-          "ar": "Arabic"
-        },
-        "placeholder": "Select language"
-      },
-      "checkForUpdate": {
-        "buttonTitle": "Check for Updates",
-        "title": "Check for Updates"
-      },
-      "autoUpdate": {
-        "title": "Auto Update"
-      }
-    },
-    "downloads": {
-      "sections": {
-        "qualityControl": "Quality Control",
-        "naming": "Naming",
-        "downloads": "Downloads"
-      },
-      "downloadPath": {
-        "title": "Download Path",
-        "change": "Change"
-      },
-      "maxDownloads": {
-        "title": "Max Number of Downloads"
-      },
-      "videoQuality": {
-        "title": "Preferred Video Quality",
-        "options": {
-          "1080p": "1080p",
-          "720p": "720p",
-          "480p": "480p",
-          "360p": "360p"
-        },
-        "placeholder": "Select quality"
-      },
-      "videoCodec": {
-        "title": "Preferred Video Codec",
-        "options": {
-          "h264": "H.264",
-          "h265": "H.265",
-          "vp9": "VP9",
-          "av1": "AV1"
-        },
-        "placeholder": "Select codec"
-      },
-      "audioQuality": {
-        "title": "Preferred Audio Quality",
-        "options": {
-          "128kbps": "128kbps",
-          "192kbps": "192kbps",
-          "256kbps": "256kbps",
-          "320kbps": "320kbps"
-        },
-        "placeholder": "Select audio quality"
-      },
-      "fileNameFormatPlaylists": {
-        "title": "File Name Format For Playlists"
-      },
-      "folderNameFormatPlaylists": {
-        "title": "Folder Name Format For Playlists"
-      }
-    },
-    "downloader": {
-      "section": {
-        "downloader": "Downloader"
-      },
-      "cookiesFromBrowser": {
-        "title": "Cookies From Browser",
-        "options": {
-          "none": "None"
-        },
-        "placeholder": "Select"
-      },
-      "proxyServer": {
-        "title": "Proxy Server",
-        "placeholder": "Enter proxy server"
-      },
-      "ytdlpConfigPath": {
-        "title": "Ytdlp Config Path",
-        "tooltip": "Ytdlp config file used to configure yt-dlp when downloading media"
-      }
+  "None": "None",
+  "Downloader": "Downloader",
+  "Cookies From Browser": "Cookies From Browser",
+  "Select Browser": "Select Browser",
+  "Proxy Server": "Proxy Server",
+  "Proxy Server Url": "Proxy Server Url",
+  "Ytdlp Config Path": "Ytdlp Config Path",
+  "ytdlp config file path": "ytdlp config file path",
+  "Ytdlp config file used to configure yt-dlp when downloading media": "Ytdlp config file used to configure yt-dlp when downloading media",
+  "Max Number of Downloads": "Max Number of Downloads",
+  "decrement number of downloads": "decrement number of downloads",
+  "increment number of downloads": "increment number of downloads",
+  "Quality Control": "Quality Control",
+  "Preferred Video Quality": "Preferred Video Quality",
+  "Select video quality": "Select video quality",
+  "Preferred Video Codec": "Preferred Video Codec",
+  "Select video codec": "Select video codec",
+  "Preferred Audio Quality": "Preferred Audio Quality",
+  "Select audio quality": "Select audio quality",
+  "Naming": "Naming",
+  "File Name Format For Playlists": "File Name Format For Playlists",
+  "Reset": "Reset",
+  "Folder Name Format For Playlists": "Folder Name Format For Playlists",
+  "Application": "Application",
+  "Restart App": "Restart App",
+  "Check for Updates": "Check for Updates",
+  "Check For Updates": "Check For Updates",
+  "Auto Update": "Auto Update",
+  "Requires Restart": "Requires Restart",
+  "Changing this option requires app restart": "Changing this option requires app restart",
+  "Use Native Toolbar": "Use Native Toolbar",
+  "Close App To System Tray": "Close App To System Tray",
+  "Close app to system tray": "Close app to system tray",
+  "User Interface": "User Interface",
+  "Theme": "Theme",
+  "Select Theme": "Select Theme",
+  "Language": "Language",
+  "Select Language": "Select Language",
+  "Configure application settings": "Configure application settings",
+  "Queued Downloads": "Queued Downloads",
+  "You are offline": "You are offline",
+  "Some actions like fetching media info or downloading may fail": "Some actions like fetching media info or downloading may fail",
+  "Back online": "Back online",
+  "Network connection restored": "Network connection restored",
+  "foo": {
+    "bar": {
+      "baz": "baz"
     }
   },
-  "newDownload": {
-    "mediaUrlScreen": {
-      "title": "Add Download",
-      "label": "Media URL",
-      "placeholder": "Enter media url",
-      "validateButton": "Validate"
-    },
-    "mediaLoadingScreen": {
-      "title": "Grabbing Media Info",
-      "loadingText": "Loading..."
-    },
-    "mediaInfoScreen": {
-      "title": "Configure Download",
-      "videoTabTrigger": "Video",
-      "audioTabTrigger": "Audio",
-      "sections": {
-        "quality": "Quality",
-        "advanced": "Advanced Options",
-        "audioOptions": "Audio Options"
-      },
-      "videoFormat": {
-        "title": "Video Format",
-        "placeholder": "Select a video format"
-      },
-      "audioFormatForVideo": {
-        "title": "Audio Format",
-        "placeholder": "Select an audio format"
-      },
-      "subtitles": {
-        "title": "Subtitles",
-        "label": "If available, download subtitles"
-      },
-      "downloadPath": {
-        "title": "Download Path",
-        "changeButton": "Change"
-      },
-      "downloadTimeRange": {
-        "title": "Download Time Range",
-        "sep": "to"
-      },
-      "startDownloadBtn": "Start Download"
-    }
-  },
-  "scrim": {
-    "title": "Preparing dependencies…"
-  },
-  "status": {
-    "generic": {
-      "working": "Working…"
-    },
-    "ytdlp": {
-      "checking": "Checking yt-dlp…",
-      "ready": "yt-dlp is ready.",
-      "env_missing": "The configured yt-dlp path does not exist.",
-      "not_found_freebsd": "No yt-dlp found in PATH on FreeBSD. Please install it.",
-      "download_failed": "Failed to download yt-dlp.",
-      "fetching_info": "Fetching media info…",
-      "info_ready": "Media info is ready.",
-      "info_failed": "Failed to fetch media info.",
-      "downloadMedia": {
-        "started": "Started downloading media.",
-        "progress": "Downloading media is currently in progress.",
-        "failed": "Failed to download media.",
-        "success": "Successfully downloaded media."
-      }
-    },
-    "ffmpeg": {
-      "checking": "Checking FFmpeg…",
-      "ready": "FFmpeg is ready.",
-      "env_missing": "The configured FFmpeg path does not exist.",
-      "not_found_freebsd": "FFmpeg is not found on FreeBSD."
-    },
-    "config": {
-      "downloadDir": {
-        "writable": "Download directory is writable.",
-        "notWritable": "Download directory is not writable."
-      },
-      "tray": {
-        "enabled": "Tray is enabled.",
-        "disabled": "Tray is disabled."
-      }
-    },
-    "configYtdlpFile": {
-      "picking": "Start picking ytdlp config file.",
-      "canceled": "Picking ytdlp config file was canceled.",
-      "copy_failed": "Copying ytdlp config file was failed.",
-      "ready": "Ytdlp Config file was copied successfully."
-    },
-    "configDownloadDir": {
-      "picking": "Start picking download path.",
-      "canceled": "Picking download path was canceled.",
-      "invalid": "Invalid directory.",
-      "not_writable": "Download directory is not writable.",
-      "ready": "Download directory was picked successfully."
-    },
-    "appUpdate": {
-      "fail": "Failed to check for updates.",
-      "progress": "Downloading new update is in progress.",
-      "download": {
-        "beginMessage": "A new version is ready to be downloaded, do you want to download it?",
-        "downloadedMessage": "A new update was downloaded successfully.",
-        "approved": {
-          "mac": "Download can be started now, go and download the latest release from github.",
-          "others": "Download is started."
-        },
-        "cancelled": "Latest version of the app is available, but the user refused to perform the update."
-      },
-      "install": {
-        "beginMessage": "A new version is ready to be installed, do you want to install it?",
-        "approved": "A new update was installed successfully.",
-        "cancelled": "Latest version of the app is available, but the user refused to perform the installation."
-      }
-    }
-  },
-  "home": {
-    "pageTitle": "Home",
-    "cardTitle": "Download Media",
-    "cardMessage": "Add video, audio, or playlist URL to start downloading",
-    "cardButtonTitle": "Add Download"
-  },
-  "downloading": {
-    "pageTitle": "Downloading",
-    "sectionTitle": "Active Downloads",
-    "error": {
-      "title": "Error"
-    },
-    "emptyMessage": "No active downloads"
-  },
-  "queued": {
-    "pageTitle": "Queued",
-    "sectionTitle": "Queued Downloads",
-    "emptyMessage": "No queued downloads"
-  },
-  "completed": {
-    "pageTitle": "Completed",
-    "sectionTitle": "Completed Downloads",
-    "emptyMessage": "No completed downloads"
-  },
-  "jobItem": {
-    "controls": {
-      "pause": "Pause",
-      "resume": "Resume",
-      "delete": "Delete"
-    },
-    "status": {
-      "processing": "Processing...",
-      "queued": "Queued"
-    }
-  }
+  "Pending": "Pending",
+  "Paused": "Paused",
+  "Failed": "Failed",
+  "Canceled": "Canceled"
 }

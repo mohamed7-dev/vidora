@@ -1,323 +1,150 @@
 {
-  "routes": {
-    "home": {
-      "title": "الرئيسية"
-    },
-    "downloading": {
-      "title": "التحميلات"
-    },
-    "queued": {
-      "title": "الانتظار"
-    },
-    "completed": {
-      "title": "الكامل"
-    }
+  "Download completed": "Download completed",
+  "Download finished successfully": "Download finished successfully.",
+  "Preparing required tools and settings before you can start downloading…": "Preparing required tools and settings before you can start downloading…",
+  "All checks passed": {
+    " You are ready to start downloading": "All checks passed. You are ready to start downloading."
   },
-  "tray": {
-    "openApp": {
-      "title": "فتح التطبيق"
-    },
-    "pasteVideoLink": {
-      "title": "لصق رابط الفيديو"
-    },
-    "quit": {
-      "title": "خروج"
-    }
+  "Failed to complete application setup": "Failed to complete application setup.",
+  "The file path sepcified in YALLA_DOWNLOAD_YTDLP_PATH doesn't exist": "The file path sepcified in YALLA_DOWNLOAD_YTDLP_PATH doesn't exist",
+  "Failed to download yt-dlp": "Failed to download yt-dlp",
+  "Checking if yt-dlp is installed and ready to use…": "Checking if yt-dlp is installed and ready to use…",
+  "yt-dlp check is in progress": {
+    " This may include downloading or verifying the binary…": "yt-dlp check is in progress. This may include downloading or verifying the binary…"
   },
-  "appSidebar": {
-    "general": {
-      "title": "العام",
-      "items": {
-        "home": "الرئيسية",
-        "history": "السجل"
-      }
-    },
-    "downloads": {
-      "title": "التحميلات",
-      "items": {
-        "downloading": "التحميلات",
-        "completed": "الكامل",
-        "queued": "الانتظار"
-      }
-    }
+  "yt-dlp is ready to be used": "yt-dlp is ready to be used",
+  "Failed to check or prepare yt-dlp": "Failed to check or prepare yt-dlp.",
+  "Failed to start the download process": "Failed to start the download process",
+  "Preparing to fetch media information…": "Preparing to fetch media information…",
+  "Fetching media information…": "Fetching media information…",
+  "Media information is ready": "Media information is ready.",
+  "Failed to fetch media information": "Failed to fetch media information.",
+  "Failed to parse yt-dlp JSON output:": "Failed to parse yt-dlp JSON output:",
+  "yt-dlp exited with a non-zero code": "yt-dlp exited with a non-zero code",
+  "Invalid media url": "Invalid media url",
+  "Media URL is invalid": "Media URL is invalid",
+  "yt-dlp is not installed": {
+    " You can install it from Homebrew": "yt-dlp is not installed. You can install it from Homebrew."
   },
-  "appHeader": {
-    "actionsMenu": {
-      "preferences": "الإعدادات",
-      "about": "عن التطبيق"
-    }
+  "yt-dlp was not found on this system": {
+    " Please install it before continuing": "yt-dlp was not found on this system. Please install it before continuing."
   },
+  "yt-dlp was updated successfully": "yt-dlp was updated successfully.",
+  "yt-dlp is currently being updated…": "yt-dlp is currently being updated…",
+  "Downloading ytdlp": "Downloading ytdlp...",
+  "The yt-dlp path from the environment is invalid or does not exist": "The yt-dlp path from the environment is invalid or does not exist.",
+  "Failed to update yt-dlp": "Failed to update yt-dlp.",
+  "Add New Download": "Add New Download",
+  "Toggle Preferences Menu": "Toggle Preferences Menu",
+  "Preferences": "Preferences",
+  "About": "About",
+  "Toggle Sidebar sheet": "Toggle Sidebar sheet",
+  "Navigation Sidebar": "Navigation Sidebar",
+  "You can navigate application pages": "You can navigate application pages",
+  "Minimize Application Window": "Minimize Application Window",
+  "Maximize Application Window": "Maximize Application Window",
+  "Close Application Window": "Close Application Window",
+  "Application Setup": "Application Setup",
+  "We need to make sure certain libraries and configurations are setup before starting\n            downloading": "We need to make sure certain libraries and configurations are setup before starting\n            downloading",
+  "You need to download yt-dlp from homebrew first": "You need to download yt-dlp from homebrew first",
+  "Open Homebrew": "Open Homebrew",
+  "Close": "Close",
+  "General": "General",
+  "Home": "Home",
+  "History": "History",
+  "Downloads": "Downloads",
+  "Downloading": "Downloading",
+  "Queued": "Queued",
+  "Completed": "Completed",
+  "Completed Downloads": "Completed Downloads",
+  "Active Downloads": "Active Downloads",
+  "Download Media": "Download Media",
+  "Add video, audio, or playlist url to start downloading": "Add video, audio, or playlist url to start downloading",
+  "Add Download": "Add Download",
+  "Pause": "Pause",
+  "Resume": "Resume",
+  "Delete": "Delete",
+  "Open in folder": "Open in folder",
+  "Video": "Video",
+  "Audio": "Audio",
+  "Quality": "Quality",
+  "Video Format": "Video Format",
+  "Select video format": "Select video format",
+  "Audio Format": "Audio Format",
+  "Select audio format": "Select audio format",
+  "Advanced Options": "Advanced Options",
+  "Subtitles": "Subtitles",
+  "If available, download subtitles": "If available, download subtitles",
+  "Download Path": "Download Path",
+  "Change": "Change",
+  "time range start": "time range start",
+  "To": "To",
+  "time range end": "time range end",
+  "Start Download": "Start Download",
+  "Enter or paste media url and customize download options then click\n            download": "Enter or paste media url and customize download options then click\n            download",
+  "Media URL": "Media URL",
+  "Enter media url, or right click to paste": "Enter media url, or right click to paste",
+  "Is Playlist?": "Is Playlist?",
+  "Validate": "Validate",
+  "Loading": "Loading...",
   "generic": {
     "actions": {
-      "reset": "إعادة التعيين",
-      "requireStartAlert": "تغيير هذه الاعدادت يتطلب اعادة تشغيل التطبيق.",
-      "change": "تغيير",
-      "approve": "الموافقة",
-      "cancel": "الإلغاء",
-      "dismiss": "إغلاق"
+      "approve": "generic.actions.approve",
+      "cancel": "generic.actions.cancel",
+      "dismiss": "generic.actions.dismiss"
     }
   },
-  "pref": {
-    "title": "الإعدادات",
-    "tabs": {
-      "general": "عام",
-      "downloader": "التحميل",
-      "downloads": "التنزيلات"
-    },
-    "general": {
-      "section": {
-        "userInterface": "واجهة المستخدم",
-        "application": "التطبيق"
-      },
-      "useNativeToolbar": {
-        "title": "استخدام شريط الأدوات الأصلي"
-      },
-      "closeAppToSystemTray": {
-        "title": "إغلاق التطبيق إلى شريط النظام"
-      },
-      "restartApp": {
-        "title": "إعادة تشغيل التطبيق",
-        "button": "إعادة تشغيل التطبيق"
-      },
-      "theme": {
-        "title": "الوضع",
-        "options": {
-          "system": "النظام",
-          "dark": "داكن",
-          "light": "فاتح"
-        },
-        "placeholder": "اختر"
-      },
-      "language": {
-        "title": "اللغة",
-        "placeholder": "اختر اللغة"
-      },
-      "checkForUpdate": {
-        "buttonTitle": "التحقق من وجود تحديثات",
-        "title": "التحقق من وجود تحديثات"
-      },
-      "autoUpdate": {
-        "title": "التحديث التلقائي"
-      }
-    },
-    "downloads": {
-      "sections": {
-        "qualityControl": "التحكم في الجودة",
-        "naming": "الإسم",
-        "downloads": "التنزيلات"
-      },
-      "downloadPath": {
-        "title": "مسار التنزيل",
-        "change": "تغيير"
-      },
-      "maxDownloads": {
-        "title": "الحد الأقصى لعدد التنزيلات"
-      },
-      "videoQuality": {
-        "title": "جودة الفيديو المفضلة",
-        "options": {
-          "1080p": "1080p",
-          "720p": "720p",
-          "480p": "480p",
-          "360p": "360p"
-        },
-        "placeholder": "اختر الجودة"
-      },
-      "videoCodec": {
-        "title": "ترميز الفيديو المفضل",
-        "options": {
-          "h264": "H.264",
-          "h265": "H.265",
-          "vp9": "VP9",
-          "av1": "AV1"
-        },
-        "placeholder": "اختر الترميز"
-      },
-      "audioQuality": {
-        "title": "جودة الصوت المفضلة",
-        "options": {
-          "128kbps": "128kbps",
-          "192kbps": "192kbps",
-          "256kbps": "256kbps",
-          "320kbps": "320kbps"
-        },
-        "placeholder": "اختر جودة الصوت"
-      },
-      "fileNameFormatPlaylists": {
-        "title": "تنسيق اسم الملف لقوائم التشغيل"
-      },
-      "folderNameFormatPlaylists": {
-        "title": "تنسيق اسم المجلد لقوائم التشغيل"
-      }
-    },
-    "downloader": {
-      "section": {
-        "downloader": "تحميل"
-      },
-      "cookiesFromBrowser": {
-        "title": "(Cookies) من المتصفح",
-        "options": {
-          "none": "لا شيء"
-        },
-        "placeholder": "اختر"
-      },
-      "proxyServer": {
-        "title": "(Proxy) خادم الوكالات",
-        "placeholder": "أدخل خادم الوكالات"
-      },
-      "ytdlpConfigPath": {
-        "title": "(ytdlp) مسار التكوين",
-        "tooltip": "(ytdlp) مسار التكوين واللذي يمكن استخدامه اثناء التحميل"
-      }
+  "None": "None",
+  "Downloader": "Downloader",
+  "Cookies From Browser": "Cookies From Browser",
+  "Select Browser": "Select Browser",
+  "Proxy Server": "Proxy Server",
+  "Proxy Server Url": "Proxy Server Url",
+  "Ytdlp Config Path": "Ytdlp Config Path",
+  "ytdlp config file path": "ytdlp config file path",
+  "Ytdlp config file used to configure yt-dlp when downloading media": "Ytdlp config file used to configure yt-dlp when downloading media",
+  "Max Number of Downloads": "Max Number of Downloads",
+  "decrement number of downloads": "decrement number of downloads",
+  "increment number of downloads": "increment number of downloads",
+  "Quality Control": "Quality Control",
+  "Preferred Video Quality": "Preferred Video Quality",
+  "Select video quality": "Select video quality",
+  "Preferred Video Codec": "Preferred Video Codec",
+  "Select video codec": "Select video codec",
+  "Preferred Audio Quality": "Preferred Audio Quality",
+  "Select audio quality": "Select audio quality",
+  "Naming": "Naming",
+  "File Name Format For Playlists": "File Name Format For Playlists",
+  "Reset": "Reset",
+  "Folder Name Format For Playlists": "Folder Name Format For Playlists",
+  "Application": "Application",
+  "Restart App": "Restart App",
+  "Check for Updates": "Check for Updates",
+  "Check For Updates": "Check For Updates",
+  "Auto Update": "Auto Update",
+  "Requires Restart": "Requires Restart",
+  "Changing this option requires app restart": "Changing this option requires app restart",
+  "Use Native Toolbar": "Use Native Toolbar",
+  "Close App To System Tray": "Close App To System Tray",
+  "Close app to system tray": "Close app to system tray",
+  "User Interface": "User Interface",
+  "Theme": "Theme",
+  "Select Theme": "Select Theme",
+  "Language": "Language",
+  "Select Language": "Select Language",
+  "Configure application settings": "Configure application settings",
+  "Queued Downloads": "Queued Downloads",
+  "You are offline": "You are offline",
+  "Some actions like fetching media info or downloading may fail": "Some actions like fetching media info or downloading may fail.",
+  "Back online": "Back online",
+  "Network connection restored": "Network connection restored.",
+  "foo": {
+    "bar": {
+      "baz": "foo.bar.baz"
     }
   },
-  "newDownload": {
-    "mediaUrlScreen": {
-      "title": "إضافة تحميل",
-      "label": "رابط الوسائط",
-      "placeholder": "أدخل رابط الوسائط",
-      "validateButton": "تحقق"
-    },
-    "mediaLoadingScreen": {
-      "title": "جاري جلب معلومات الفيديو",
-      "loadingText": "جاري التحميل..."
-    },
-    "mediaInfoScreen": {
-      "title": "إعداد التحميل",
-      "videoTabTrigger": "فيديو",
-      "audioTabTrigger": "صوت",
-      "sections": {
-        "quality": "جودة",
-        "advanced": "خيارات متقدمة",
-        "audioOptions": "خيارات الصوت"
-      },
-      "videoFormat": {
-        "title": "تنسيق الفيديو",
-        "placeholder": "اختر تنسيق الفيديو"
-      },
-      "audioFormatForVideo": {
-        "title": "تنسيق الصوت",
-        "placeholder": "اختر تنسيق الصوت"
-      },
-      "subtitles": {
-        "title": "الترجمات",
-        "label": "إذا كانت متاحة، قم بتحميل الترجمات"
-      },
-      "downloadPath": {
-        "title": "مسار التحميل",
-        "changeButton": "تغيير"
-      },
-      "downloadTimeRange": {
-        "title": "مدة التحميل",
-        "sep": "إلى"
-      },
-      "startDownloadBtn": "بدء التحميل"
-    }
-  },
-  "scrim": {
-    "title": "جاري التحضير للإعتمادات…"
-  },
-  "status": {
-    "generic": {
-      "working": "جارٍ العمل…"
-    },
-    "ytdlp": {
-      "checking": "جارٍ فحص yt-dlp…",
-      "ready": "(yt-dlp) جاهز",
-      "env_missing": "(yt-dlp) المسار المُكوَّن غير موجود.",
-      "not_found_freebsd": "(FreeBSD) غير موجود على (yt-dlp)",
-      "download_failed": "فشل تنزيل (yt-dlp).",
-      "fetching_info": "جاري جلب معلومات الفيديو…",
-      "info_ready": "تم جلب معلومات الفيديو.",
-      "info_failed": "فشل جلب معلومات الفيديو.",
-      "downloadMedia": {
-        "started": "بدأ تنزيل الوسائط.",
-        "progress": "جاري تنزيل الوسائط.",
-        "failed": "فشل تنزيل الوسائط.",
-        "success": "تم تنزيل الوسائط بنجاح."
-      }
-    },
-    "ffmpeg": {
-      "checking": "(FFMPEG) جارٍ فحص",
-      "ready": "(FFMPEG) جاهز",
-      "env_missing": "(FFMPEG) المسار المُكوَّن غير موجود.",
-      "not_found_freebsd": "(FreeBSD) غير موجود على (FFMPEG)"
-    },
-    "config": {
-      "downloadDir": {
-        "writable": "مسار التنزيل جاهز للاستخدام.",
-        "notWritable": "مسار التنزيل غير جاهز للاستخدام."
-      },
-      "tray": {
-        "enabled": "تم تفعيل التطبيق في شريط النظام.",
-        "disabled": "تم إلغاء تفعيل التطبيق في شريط النظام."
-      }
-    },
-    "configYtdlpFile": {
-      "picking": "(ytdlp) جاري اختيار ملف",
-      "canceled": "(ytdlp) تم الغاء اختيار ملف",
-      "copy_failed": "(ytdlp) فشل نسخ ملف",
-      "ready": "(ytdlp) تم نسخ ملف بنجاح"
-    },
-    "configDownloadDir": {
-      "picking": ".جاري اختيار مسار التنزيل.",
-      "canceled": ".تم الغاء اختيار مسار التنزيل.",
-      "invalid": ".مسار غير صحيح.",
-      "not_writable": ".مسار التنزيل غير قابل للكتابة.",
-      "ready": ".تم اختيار مسار التنزيل بنجاح."
-    },
-    "appUpdate": {
-      "fail": "حدث خطأ أثناء التحقق من التحديثات.",
-      "progress": "جاري التحميل.",
-      "download": {
-        "beginMessage": "تم العثور على تحديث جديد، هل تريد تحميله؟",
-        "downloadedMessage": "تم تحميل التحديث بنجاح.",
-        "approved": {
-          "mac": "(github) يمكنك الآن بدء التحميل، اذهب وقم بتحميل أحدث النسخة من.",
-          "others": "تم بدء التحميل."
-        },
-        "cancelled": "أحدث نسخة من التطبيق متاحة، لكن المستخدم رفض تحميل التحديث."
-      },
-      "install": {
-        "beginMessage": "تم العثور على تحديث جديد، هل تريد تثبيته؟",
-        "approved": "تم تثبيت التحديث بنجاح.",
-        "cancelled": "أحدث نسخة من التطبيق متاحة، لكن المستخدم رفض تثبيت التحديث."
-      }
-    }
-  },
-  "home": {
-    "pageTitle": "الرئيسية",
-    "cardTitle": "تحميل الوسائط",
-    "cardMessage": "أضف رابط الفيديو أو الصوت أو قائمة التشغيل لبدء التنزيل",
-    "cardButtonTitle": "إضافة تحميل"
-  },
-  "downloading": {
-    "pageTitle": "التحميلات",
-    "sectionTitle": "التحميلات النشطة",
-    "error": {
-      "title": "حدث خطأ"
-    },
-    "emptyMessage": "لا توجد تحميلات نشطة"
-  },
-  "queued": {
-    "pageTitle": "الانتظار",
-    "sectionTitle": "التحميلات في الانتظار",
-    "emptyMessage": "لا توجد تحميلات في الانتظار"
-  },
-  "completed": {
-    "pageTitle": "المكتملة",
-    "sectionTitle": "التحميلات المكتملة",
-    "emptyMessage": "لا توجد تحميلات مكتملة"
-  },
-  "jobItem": {
-    "controls": {
-      "pause": "إيقاف",
-      "resume": "استئناف",
-      "delete": "حذف"
-    },
-    "status": {
-      "processing": "قيد المعالجة..",
-      "queued": "في الانتظار"
-    }
-  }
+  "Pending": "Pending",
+  "Paused": "Paused",
+  "Failed": "Failed",
+  "Canceled": "Canceled"
 }

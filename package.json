@@ -37,6 +37,7 @@
     "icons:gen": "node scripts/gen-icons.mjs",
     "test:ffmpeg-download": "tsx scripts/test-ffmpeg-download.ts",
     "test:ytdlp-download": "tsx scripts/test-ytdlp-download.ts",
+    "i18n:extract": "tsx src/shared/i18n/extract-locales.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test": "vitest",
