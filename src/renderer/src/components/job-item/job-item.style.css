@@ -1,0 +1,135 @@
+@import url('../../assets/shadow-common.css');
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.job__item {
+  width: 100%;
+  display: flex;
+  gap: var(--spacing-x-small) var(--spacing-medium);
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Thumbnail */
+
+.item__thumb {
+  width: 10rem;
+  aspect-ratio: 16/9;
+  border-radius: inherit;
+  overflow: hidden;
+  background: color-mix(in oklch, var(--secondary) 70%, var(--foreground));
+  display: block;
+}
+
+/* Hide thumb only when there's no slotted content AND no default img src */
+.item__thumb[hide-thumb] {
+  display: none;
+}
+
+/* Default thumbnail image fill */
+.thumb__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item__thumb-label {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .job__item {
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: initial;
+  }
+  .item__meta-label {
+    display: none;
+  }
+  .item__thumb-label {
+    display: block;
+  }
+  .item__thumb-container {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+.item__meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2x-small);
+  min-width: 0;
+}
+
+/* title  */
+.item__meta-label {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-medium);
+  margin: 0;
+}
+
+.item__meta-sub {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-small);
+  margin: 0;
+}
+
+/* controls  */
+.item__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2x-small);
+}
+
+:host([hide-controls]) .item__controls {
+  display: none;
+}
+
+.item__controls ui-button::part(base) {
+  padding-inline: var(--spacing-x-small);
+}
+
+:host([hide-delete-btn]) .item__controls-delete-btn {
+  display: none;
+}
+
+:host([hide-pause-btn]) .item__controls-pause-btn {
+  display: none;
+}
+
+:host([hide-resume-btn]) .item__controls-resume-btn {
+  display: none;
+}
+
+:host([hide-open-btn]) .item__controls-open-btn {
+  display: none;
+}
+
+:host([hide-copyurl-btn]) .item__controls-copyurl-btn {
+  display: none;
+}
+
+/* progress */
+.meta__progress {
+  height: 0.4rem;
+  width: 100%;
+  background: color-mix(in oklch, var(--secondary) 80%, var(--foreground));
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+:host([hide-progress]) .meta__progress {
+  display: none;
+}
+
+.meta__progress > .meta__progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--primary);
+}

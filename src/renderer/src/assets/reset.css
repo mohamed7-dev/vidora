@@ -49,8 +49,6 @@ select:focus-visible,
 [role='checkbox']:focus-visible,
 [tabindex]:focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 2px var(--background),
-    0 0 0 4px var(--ring);
-  border-radius: calc(var(--radius) - 4px);
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-md);
 }

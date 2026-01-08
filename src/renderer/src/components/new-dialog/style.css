@@ -1,57 +1,38 @@
-@import url('../../assets/reset.css');
-
-:host([hide-trigger]) .dialog__trigger {
-  display: none;
-}
+@import url('../../assets/shadow-common.css');
 
 /* dialog  */
-:host ui-dialog::part(panel) {
-  width: 38rem;
-  min-height: 12rem;
-  max-height: 90vh;
-  height: auto;
+
+ui-dialog-content {
+  --ui-dialog-content-width: 38rem;
+  --ui-dialog-content-height: auto;
 }
 
-/* header  */
-.header__wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
+@media (max-width: 640px) {
+  ui-dialog-content {
+    --ui-dialog-content-width: 90vw;
+  }
+}
+
+/* body  */
+ui-alert::part(base) {
+  margin-bottom: var(--spacing-medium);
+}
+
+.dialog__content-article {
+  display: none;
   align-items: center;
 }
 
-/* content */
-.dialog__content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.header__wrapper,
-.dialog__content-article {
-  display: none;
-}
-
-/* control content visibility  */
 ui-dialog[data-active-screen='media-url'] .media-url-screen-content,
-ui-dialog[data-active-screen='media-url'] .media-url-screen-header {
-  display: flex;
-}
-
 ui-dialog[data-active-screen='media-info'] .media-info-screen-content,
-ui-dialog[data-active-screen='media-info'] .media-info-screen-header {
-  display: flex;
-}
-
-ui-dialog[data-active-screen='media-loading'] .media-loading-screen-content,
-ui-dialog[data-active-screen='media-loading'] .media-loading-screen-header {
+ui-dialog[data-active-screen='media-loading'] .media-loading-screen-content {
   display: flex;
 }
 
 /* media url screen  */
 .media-url-screen-content {
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-small);
   align-items: start;
 }
 
@@ -62,14 +43,15 @@ ui-dialog[data-active-screen='media-loading'] .media-loading-screen-header {
 /* media loading screen  */
 .media-loading-screen-content {
   flex: 1;
+  height: 100%;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: var(--spacing-medium);
 }
 
 /* loader */
 .loader__text {
   font-size: 0.875rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }

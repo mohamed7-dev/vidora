@@ -1,106 +1,122 @@
 <template>
-  <ui-tabs value="video" data-el="tabs">
-    <ui-button
-      class="tab__trigger"
-      variant="ghost"
-      value="video"
-      slot="tab"
-      block
-      data-el="video-tab-trigger"
-    >
-      <ui-icon slot="prefix" name="youtube"></ui-icon>
-      <span slot="label" data-i18n="newDownload.mediaInfoScreen.videoTabTrigger"></span>
-    </ui-button>
-    <ui-button
-      class="tab__trigger"
-      variant="ghost"
-      value="audio"
-      slot="tab"
-      block
-      data-el="audio-tab-trigger"
-    >
-      <ui-icon slot="prefix" name="audio-lines"></ui-icon>
-      <span slot="label" data-i18n="newDownload.mediaInfoScreen.audioTabTrigger"></span>
-    </ui-button>
-    <!-- </div> -->
-    <!-- start video settings tab panel  -->
-    <div class="tab__content-sections-container" slot="panel" value="video">
-      <area-section label="newDownload.mediaInfoScreen.sections.quality">
-        <div slot="articles">
-          <area-article label="newDownload.mediaInfoScreen.videoFormat.title" first>
-            <ui-select
-              slot="content"
-              data-el="video-format-select"
-              data-i18n-placeholder="newDownload.mediaInfoScreen.videoFormat.placeholder"
-              data-i18n-aria-label="newDownload.mediaInfoScreen.videoFormat.placeholder"
-            ></ui-select>
-          </area-article>
-          <area-article label="newDownload.mediaInfoScreen.audioFormatForVideo.title" last>
-            <ui-select
-              slot="content"
-              data-el="audio-for-video-format-select"
-              data-i18n-placeholder="newDownload.mediaInfoScreen.audioFormatForVideo.placeholder"
-              data-i18n-aria-label="newDownload.mediaInfoScreen.audioFormatForVideo.placeholder"
-            ></ui-select>
-          </area-article>
-        </div>
-      </area-section>
-    </div>
-    <!-- end video settings tab panel  -->
-    <div class="tab__content-sections-container" slot="panel" value="audio">
-      <area-section label="newDownload.mediaInfoScreen.sections.quality">
-        <div slot="articles">
-          <area-article label="newDownload.mediaInfoScreen.audioFormat.title" first>
-            <ui-select
-              slot="content"
-              data-el="audio-format-select"
-              data-i18n-placeholder="newDownload.mediaInfoScreen.audioFormat.placeholder"
-              data-i18n-aria-label="newDownload.mediaInfoScreen.audioFormat.placeholder"
-            ></ui-select>
-          </area-article>
-        </div>
-      </area-section>
-    </div>
-  </ui-tabs>
+  <ui-tab value="video" data-el="tabs">
+    <ui-tab-list>
+      <ui-tab-trigger value="video" as-child>
+        <ui-button class="tab__trigger" data-el="video-tab-trigger" variant="ghost" block>
+          <ui-icon name="youtube"></ui-icon>
+          <span data-i18n="Video"></span>
+        </ui-button>
+      </ui-tab-trigger>
+      <ui-tab-trigger value="audio" as-child>
+        <ui-button class="tab__trigger" data-el="audio-tab-trigger" variant="ghost" block>
+          <ui-icon name="audio-lines"></ui-icon>
+          <span data-i18n="Audio"></span>
+        </ui-button>
+      </ui-tab-trigger>
+    </ui-tab-list>
+    <ui-tab-content value="video">
+      <!-- video settings tab panel  -->
+      <div class="content__sections-container">
+        <area-section data-i18n-label="Quality">
+          <div slot="articles">
+            <area-article data-i18n-label="Video Format" first>
+              <ui-select slot="content" data-el="video-format-select">
+                <ui-select-trigger as-child>
+                  <ui-button variant="outline">
+                    <ui-select-value data-i18n-placeholder="Select video format"></ui-select-value>
+                  </ui-button>
+                </ui-select-trigger>
+                <ui-select-portal align="end">
+                  <ui-select-content data-el="video-format-select-content"> </ui-select-content>
+                </ui-select-portal>
+              </ui-select>
+            </area-article>
+            <area-article data-i18n-label="Audio Format" last>
+              <ui-select slot="content" data-el="audio-for-video-format-select">
+                <ui-select-trigger as-child>
+                  <ui-button variant="outline">
+                    <ui-select-value data-i18n-placeholder="Select audio format"></ui-select-value>
+                  </ui-button>
+                </ui-select-trigger>
+                <ui-select-portal align="end">
+                  <ui-select-content data-el="audio-for-video-format-select-content">
+                  </ui-select-content>
+                </ui-select-portal>
+              </ui-select>
+            </area-article>
+          </div>
+        </area-section>
+      </div>
+    </ui-tab-content>
+    <ui-tab-content value="audio">
+      <!-- audio settings tab panel  -->
+      <div class="content__sections-container">
+        <area-section data-i18n-label="Quality">
+          <div slot="articles">
+            <area-article data-i18n-label="Audio Format" first>
+              <ui-select slot="content" data-el="audio-format-select">
+                <ui-select-trigger as-child>
+                  <ui-button variant="outline">
+                    <ui-select-value data-i18n-placeholder="Select audio format"></ui-select-value>
+                  </ui-button>
+                </ui-select-trigger>
+                <ui-select-portal align="end">
+                  <ui-select-content data-el="audio-format-select-content"> </ui-select-content>
+                </ui-select-portal>
+              </ui-select>
+            </area-article>
+          </div>
+        </area-section>
+      </div>
+    </ui-tab-content>
+  </ui-tab>
   <!-- shared advanced options and start button for both tabs -->
-  <div class="tab__content-sections-container">
-    <area-section label="newDownload.mediaInfoScreen.sections.advanced">
+  <div class="content__sections-container shared__settings">
+    <area-section data-i18n-label="Advanced Options">
       <div slot="articles">
-        <area-article label="newDownload.mediaInfoScreen.subtitles.title" first>
-          <div slot="content" class="subtitles_container">
-            <label
-              for="subtitles-checkbox"
-              data-i18n="newDownload.mediaInfoScreen.subtitles.label"
-            ></label>
-            <ui-checkbox data-el="subtitles-checkbox" size="lg"></ui-checkbox>
+        <area-article data-i18n-label="Subtitles" first>
+          <div slot="content" class="subtitles__container">
+            <label for="subtitles-checkbox" data-i18n="If available, download subtitles"></label>
+            <ui-checkbox id="subtitles-checkbox" data-el="subtitles-checkbox" size="lg">
+            </ui-checkbox>
           </div>
         </area-article>
-        <area-article label="newDownload.mediaInfoScreen.downloadPath.title">
-          <div slot="content" class="download-path_container">
-            <span class="download-path_text" data-el="download-path-text"></span>
+        <area-article data-i18n-label="Download Path">
+          <div slot="content" class="download__path-container">
+            <p class="download__path-text" data-el="download-path-text"></p>
             <ui-button
               variant="outline"
-              class="download-path_change-button"
+              size="md"
+              class="download__path-change-btn"
               data-el="download-path-change-btn"
             >
-              <span
-                slot="label"
-                data-i18n="newDownload.mediaInfoScreen.downloadPath.changeButton"
-              ></span>
+              <span data-i18n="Change"></span>
             </ui-button>
           </div>
         </area-article>
-        <area-article label="newDownload.mediaInfoScreen.downloadTimeRange.title" last>
-          <div slot="content" class="time-range_container">
-            <ui-input data-el="time-start-input" placeholder="0:00:00" size="sm"></ui-input>
-            <span class="sep" data-i18n="newDownload.mediaInfoScreen.downloadTimeRange.sep"></span>
-            <ui-input data-el="time-end-input" placeholder="00:05:00" size="sm"></ui-input>
+        <area-article label="Download Time Range" last>
+          <div slot="content" class="time__range-container">
+            <label for="time-start-input" data-i18n="time range start" class="sr-only"></label>
+            <ui-input
+              id="time-start-input"
+              data-el="time-start-input"
+              placeholder="0:00:00"
+              size="sm"
+            ></ui-input>
+            <span class="time__range-sep" data-i18n="To"></span>
+            <label for="time-end-input" data-i18n="time range end" class="sr-only"></label>
+            <ui-input
+              id="time-end-input"
+              data-el="time-end-input"
+              placeholder="00:05:00"
+              size="sm"
+            ></ui-input>
           </div>
         </area-article>
       </div>
     </area-section>
-    <ui-button class="tab-content__start-download-btn" data-el="start-download-btn">
-      <span slot="label" data-i18n="newDownload.mediaInfoScreen.startDownloadBtn"></span>
+    <ui-button size="lg" class="start__download-btn" data-el="start-download-btn">
+      <span data-i18n="Start Download"></span>
     </ui-button>
   </div>
 </template>

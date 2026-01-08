@@ -1,27 +1,47 @@
 import './screens/media-info-screen/index'
 import html from './template.html?raw'
 import style from './style.css?inline'
-import { UIButton, UIInput, UIAlert, UICheckbox } from '../ui'
-import { UIDialog } from '../ui/dialog'
-import { DOWNLOAD_STARTED_EVENT_NAME, type MediaInfoScreen } from './screens/media-info-screen'
-import { createStyleSheetFromStyle, createTemplateFromHtml } from '../ui/lib/template-loader'
-import { localizeElementsText } from '@renderer/lib/utils'
+import { MEDIA_INFO_EVENTS, type MediaInfoScreen } from './screens/media-info-screen'
 import { MediaInfoChannelPayload, YtdlpInfo } from '@root/shared/ipc/get-media-info'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
+import { UiDialog } from '../ui/dialog/ui-dialog'
+import { UIAlert } from '../ui/alert/ui-alert'
+import { UiButton } from '../ui/button/ui-button'
+import { UICheckbox } from '../ui/checkbox/ui-checkbox'
+import { UiInput, UIInputValueDetail } from '../ui/input/ui-input'
+import { localizeElementsText } from '@renderer/lib/ui/localize'
+import { OpenChangeEventDetail, UI_DIALOG_EVENTS } from '../ui/dialog/constants'
+import { UIAlertTitle } from '../ui/alert/ui-alert-title'
+import { UiAlertContent } from '../ui/alert/ui-alert-content'
+import { pagesRoutes } from '@renderer/lib/routes'
 
 const NEW_DIALOG_NAME = 'new-dialog'
 const ATTRIBUTES = {
-  HIDE_TRIGGER_BTN: 'hide-trigger'
+  DATA_ACTIVE_SCREEN: 'data-active-screen',
+  MEDIA_URL: 'media-url'
 }
+
+export const NEW_DIALOG_EVENTS = {
+  OPEN: 'new-dialog-open'
+}
+
+const SCREENS = {
+  URL_INPUT: 'media-url',
+  LOADING: 'media-loading',
+  INFO: 'media-info'
+} as const
 
 export class NewDialog extends HTMLElement {
   private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
   private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
   // refs
-  private _dialogEl: UIDialog | null = null
+  private _dialogEl: UiDialog | null = null
   private _mediaInfoScreen: MediaInfoScreen | null = null
   private _alert: UIAlert | null = null
-  private _mediaUrlValidateBtn: UIButton | null = null
-  private _mediaUrlInput: UIInput | null = null
+  private _alertTitle: UIAlertTitle | null = null
+  private _alertContent: UiAlertContent | null = null
+  private _mediaUrlValidateBtn: UiButton | null = null
+  private _mediaUrlInput: UiInput | null = null
   private _loaderText: HTMLParagraphElement | null = null
   private _playlistModeCheckbox: UICheckbox | null = null
   // states
@@ -36,6 +56,16 @@ export class NewDialog extends HTMLElement {
     this.attachShadow({ mode: 'open' })
   }
 
+  static get observedAttributes(): string[] {
+    return [ATTRIBUTES.MEDIA_URL]
+  }
+
+  attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
+    if (name === ATTRIBUTES.MEDIA_URL && oldValue !== newValue) {
+      this._syncMediaUrl(newValue)
+    }
+  }
+
   connectedCallback(): void {
     this._render()
     this._queryRefs()
@@ -45,12 +75,27 @@ export class NewDialog extends HTMLElement {
   }
 
   disconnectedCallback(): void {
+    this._teardown()
+  }
+  private _teardown(): void {
     this._listeners?.abort()
     this._listeners = null
     this._onGettingInfoUnsub?.()
     this._onGettingInfoUnsub = null
     this.pasteLinkUnsub?.()
     this.pasteLinkUnsub = null
+    // clear local members
+    this._mediaUrl = null
+    this._downloadMode = 'single'
+    if (this._mediaUrlInput) {
+      this._mediaUrlInput.value = ''
+    }
+    this._mediaUrlInput = null
+    this._mediaUrlValidateBtn = null
+    this._loaderText = null
+    this._playlistModeCheckbox = null
+    this._alert?.hide()
+    this._alert = null
   }
 
   private _render(): void {
@@ -62,23 +107,32 @@ export class NewDialog extends HTMLElement {
 
   private _queryRefs(): void {
     if (!this.shadowRoot) return
-    this._dialogEl = this.shadowRoot.querySelector('ui-dialog') as UIDialog | null
+    this._dialogEl = this.shadowRoot.querySelector('ui-dialog') as UiDialog | null
     this._mediaInfoScreen = this.shadowRoot.querySelector(
-      'media-info-screen'
+      '[data-el="media-info-screen"]'
     ) as MediaInfoScreen | null
     this._mediaUrlValidateBtn = this.shadowRoot.querySelector(
       '[data-el="validate-button"]'
-    ) as UIButton | null
+    ) as UiButton | null
     this._mediaUrlInput = this.shadowRoot.querySelector(
       '[data-el="media-url-input"]'
-    ) as UIInput | null
+    ) as UiInput | null
     this._alert = this.shadowRoot.querySelector('ui-alert') as UIAlert | null
+    this._alertTitle = this.shadowRoot.querySelector('ui-alert-title') as UIAlertTitle | null
+    this._alertContent = this.shadowRoot.querySelector('ui-alert-content') as UiAlertContent | null
     this._loaderText = this.shadowRoot.querySelector(
       "[data-el='loader-text']"
     ) as HTMLParagraphElement | null
     this._playlistModeCheckbox = this.shadowRoot?.querySelector(
       "[data-el='playlist-mode-checkbox']"
     ) as UICheckbox | null
+  }
+
+  private _syncMediaUrl(newValue: string): void {
+    this._mediaUrl = newValue
+    if (this._mediaUrlInput) {
+      this._mediaUrlInput.value = newValue
+    }
   }
 
   private _init(): void {
@@ -89,22 +143,14 @@ export class NewDialog extends HTMLElement {
     this._listeners?.abort()
     this._listeners = new AbortController()
     const signal = this._listeners.signal
-    // this._mediaUrlInput?.addEventListener(
-    //   'input',
-    //   (e: Event) => {
-    //     const ev = e as CustomEvent<{ value: string }>
-    //     this._validateUrl(ev.detail?.value)
-    //   },
-    //   { signal }
-    // )
-    // this._mediaUrlInput?.addEventListener(
-    //   'change',
-    //   (e: Event) => {
-    //     const ev = e as CustomEvent<{ value: string }>
-    //     this._validateUrl(ev.detail?.value)
-    //   },
-    //   { signal }
-    // )
+    this._mediaUrlInput?.addEventListener(
+      'input',
+      (event) => {
+        this._handleInputChange(event as CustomEvent<UIInputValueDetail>)
+      },
+      { signal }
+    )
+
     document.addEventListener(
       'keydown',
       async (event) => {
@@ -121,17 +167,12 @@ export class NewDialog extends HTMLElement {
       { signal }
     )
 
-    // this._dialogEl?.addEventListener('ui-request-close', (e) => {
-    //   if (e.detail.source === 'close-button') {
-    //     this.close()
-    //   }
-    // })
-
-    this.addEventListener(DOWNLOAD_STARTED_EVENT_NAME, () => {
-      this._dialogEl?.closeDialog()
+    this.addEventListener(MEDIA_INFO_EVENTS.DOWNLOAD_STARTED, () => {
+      if (!this._dialogEl) return
+      this._dialogEl.open = false
+      window.api.navigation.navigate(pagesRoutes.downloading)
     })
 
-    // Paste Link
     this._mediaUrlInput?.addEventListener(
       'contextmenu',
       (e) => {
@@ -155,6 +196,35 @@ export class NewDialog extends HTMLElement {
       },
       { signal }
     )
+
+    // Listen globally so any part of the app can request opening this dialog.
+    document.addEventListener(NEW_DIALOG_EVENTS.OPEN, () => this.openDialog(), { signal })
+
+    this._dialogEl?.addEventListener(
+      UI_DIALOG_EVENTS.OPEN_CHANGE,
+      (e) => {
+        const detail = (e as unknown as CustomEvent<OpenChangeEventDetail>).detail
+        if (!detail.open) {
+          // Tear down subscriptions and local state, then rebuild the tree so
+          // each open starts from a fresh DOM.
+          this._teardown()
+          this._render()
+          this._queryRefs()
+          this._init()
+          localizeElementsText(this.shadowRoot as ShadowRoot)
+          this._setupListeners()
+        }
+      },
+      { signal }
+    )
+  }
+
+  private _handleInputChange(e: CustomEvent<UIInputValueDetail>): void {
+    const value = e.detail.value
+    const isValid = this._validateUrl(value)
+    if (isValid) {
+      this._mediaUrl = value
+    }
   }
 
   private async _handleModeChange(): Promise<void> {
@@ -173,7 +243,7 @@ export class NewDialog extends HTMLElement {
         await this._getInfo(this._mediaUrl as string)
       } else {
         // go to media-info-screen directly
-        this._dialogEl?.setAttribute('data-active-screen', 'media-info')
+        this._dialogEl?.setAttribute(ATTRIBUTES.DATA_ACTIVE_SCREEN, SCREENS.INFO)
       }
     }
   }
@@ -184,29 +254,36 @@ export class NewDialog extends HTMLElement {
       if (!this._mediaUrlInput) return
       this._mediaUrlInput.value = this._mediaUrl
     }
+    if (e.ctrlKey && e.key === 'x') {
+      if (this._mediaUrlInput) {
+        this._mediaUrlInput.value = ''
+      }
+      this._mediaUrl = ''
+      this._validateUrl()
+    }
   }
 
   private _handleStatusIpc(payload: MediaInfoChannelPayload): void {
     this._alert?.hide()
     switch (payload.status) {
       case 'begin':
-        this._dialogEl?.setAttribute('data-active-screen', 'media-loading')
+        this._dialogEl?.setAttribute(ATTRIBUTES.DATA_ACTIVE_SCREEN, SCREENS.LOADING)
         if (this._loaderText) {
           this._loaderText.textContent = payload.message
         }
         break
       case 'progress':
-        this._dialogEl?.setAttribute('data-active-screen', 'media-loading')
+        this._dialogEl?.setAttribute(ATTRIBUTES.DATA_ACTIVE_SCREEN, SCREENS.LOADING)
         if (this._loaderText) {
           this._loaderText.textContent = payload.message
         }
         break
       case 'complete':
-        this._dialogEl?.setAttribute('data-active-screen', 'media-info')
-        if (this._alert) {
+        this._dialogEl?.setAttribute(ATTRIBUTES.DATA_ACTIVE_SCREEN, SCREENS.INFO)
+        if (this._alert && this._alertTitle && this._alertContent) {
           this._alert.variant = 'default'
-          this._alert.alertTitle = 'Success'
-          this._alert.alertDescription = payload.message
+          this._alertTitle.textContent = 'Success'
+          this._alertContent.textContent = payload.message
         }
         this._alert?.show()
         setTimeout(() => {
@@ -214,11 +291,11 @@ export class NewDialog extends HTMLElement {
         }, 2000)
         break
       case 'error':
-        this._dialogEl?.setAttribute('data-active-screen', 'media-url')
-        if (this._alert) {
+        this._dialogEl?.setAttribute(ATTRIBUTES.DATA_ACTIVE_SCREEN, SCREENS.URL_INPUT)
+        if (this._alert && this._alertTitle && this._alertContent) {
           this._alert.variant = 'destructive'
-          this._alert.alertTitle = 'Error'
-          this._alert.alertDescription = payload.message
+          this._alertTitle.textContent = 'Error'
+          this._alertContent.textContent = payload.message
         }
         this._alert?.show()
         break
@@ -228,14 +305,19 @@ export class NewDialog extends HTMLElement {
   private _handleOnLinkPasted(text: string): void {
     if (!this._mediaUrlInput) return
     this._mediaUrlInput.value = text
-    this._mediaUrl = text
+
+    if (this._validateUrl(text)) {
+      this._mediaUrl = text
+    }
   }
 
   private _validateUrl(value?: string): boolean {
     if (!this._mediaUrlValidateBtn || !this._mediaUrlInput) return false
     const isValid = this._isValidUrl(value || this._mediaUrlInput.value)
-    this._mediaUrlInput.invalid = !isValid
-    // this._mediaUrlValidateBtn.disabled = !isValid
+    if (!isValid) {
+      this._mediaUrlInput.setCustomValidity('Invalid media url!')
+    }
+    this._mediaUrlValidateBtn.disabled = !isValid
     return isValid
   }
 
@@ -256,24 +338,30 @@ export class NewDialog extends HTMLElement {
     this._mediaInfoScreen && (this._mediaInfoScreen.url = text)
   }
 
-  get hideTriggerBtn(): boolean {
-    return this.hasAttribute(ATTRIBUTES.HIDE_TRIGGER_BTN)
-  }
+  //----------------------Public API---------------------------
 
-  set hideTriggerBtn(value: boolean) {
-    if (value) {
-      this.setAttribute(ATTRIBUTES.HIDE_TRIGGER_BTN, '')
-    } else {
-      this.removeAttribute(ATTRIBUTES.HIDE_TRIGGER_BTN)
+  openDialog(): void {
+    if (this._dialogEl) {
+      this._dialogEl.open = true
     }
   }
 
-  open(): void {
-    this._dialogEl?.openDialog()
+  closeDialog(): void {
+    if (this._dialogEl) {
+      this._dialogEl.open = false
+    }
   }
 
-  close(): void {
-    this._dialogEl?.closeDialog()
+  set mediaUrl(value: string) {
+    this.setAttribute(ATTRIBUTES.MEDIA_URL, value)
+  }
+
+  validate(): void {
+    this._mediaUrlValidateBtn?.click()
+  }
+
+  focusInput(): void {
+    this._mediaUrlInput?.focus()
   }
 }
 if (!customElements.get(NEW_DIALOG_NAME)) {

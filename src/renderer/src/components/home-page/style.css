@@ -1,21 +1,15 @@
-@import url('../../assets/reset.css');
-@import url('../../assets/shared-content-style.css');
+@import url('../../assets/shadow-common.css');
 
 :host {
-  display: contents;
-}
-
-:host::part(base) {
-  width: 100%;
-  height: 100vh;
-}
-
-.content__wrapper {
+  flex: 1;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+}
+
+page-layout::part(content) {
+  display: flex;
   align-items: center;
-  width: 100%;
-  height: 100%;
+  justify-content: center;
 }
 
 .content__box {

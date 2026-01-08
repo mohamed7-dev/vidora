@@ -2,7 +2,6 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Vidora</title>
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta
       http-equiv="Content-Security-Policy"
@@ -16,20 +15,17 @@
     <link rel="icon" type="image/svg+xml" href="./src/assets/meta/favicon.svg" />
     <link rel="shortcut icon" href="./src/assets/meta/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="./src/assets/meta/apple-touch-icon.png" />
+    <style>
+      :where(:not(:defined)) {
+        visibility: hidden;
+      }
+    </style>
     <link rel="preload" as="style" href="./src/assets/main.css" type="text/css" rel="stylesheet" />
     <link href="./src/assets/main.css" type="text/css" rel="stylesheet" />
-    <link
-      rel="preload"
-      as="style"
-      href="./src/assets/shared-page-style.css"
-      type="text/css"
-      rel="stylesheet"
-    />
-    <link href="./src/assets/shared-page-style.css" type="text/css" rel="stylesheet" />
+    <script type="module" src="./src/renderer.ts"></script>
   </head>
 
   <body>
     <div id="app"></div>
-    <script type="module" src="./src/renderer.ts"></script>
   </body>
 </html>

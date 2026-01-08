@@ -1,12 +1,20 @@
-@import url('../../assets/reset.css');
+@import url('../../assets/shadow-common.css');
 
-.preferences-dialog__content ui-tabs {
+ui-dialog-content {
+  --ui-dialog-content-width: 35rem;
+}
+
+ui-tabs {
   flex: 1;
   height: 100%;
 }
 
 @media (max-width: 640px) {
-  .preferences-dialog__header__button {
-    --ui-button-direction: column;
+  .tab__trigger {
+    --ui-button-flex-direction: column;
+  }
+
+  ui-dialog-content::part(base) {
+    --ui-dialog-content-width: 95vw;
   }
 }

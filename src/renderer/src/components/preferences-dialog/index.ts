@@ -1,46 +1,38 @@
 import './tabs-content/general-tab/index'
 import './tabs-content/downloader-tab/index'
 import './tabs-content/downloads-tab/index'
-import template from './template.html?raw'
-import styleCss from './style.css?inline'
-import { UIDialog } from '../ui'
+import html from './template.html?raw'
+import style from './style.css?inline'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
+import { type UiDialog } from '@ui/dialog/ui-dialog'
+import { OpenChangeEventDetail, UI_DIALOG_EVENTS } from '@ui/dialog/constants'
+import { localizeElementsText } from '@renderer/lib/ui/localize'
+
+const PREF_DIALOG_NAME = 'preferences-dialog'
 
 export class PreferencesDialog extends HTMLElement {
-  // Cache stylesheet and template per class for performance and to prevent FOUC
-  private static readonly sheet: CSSStyleSheet = (() => {
-    const s = new CSSStyleSheet()
-    s.replaceSync(styleCss)
-    return s
-  })()
-  private static readonly tpl: HTMLTemplateElement = (() => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(template, 'text/html')
-    const inner = doc.querySelector('template')
-    const t = document.createElement('template')
-    t.innerHTML = inner ? inner.innerHTML : template
-    return t
-  })()
+  private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
+  private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
+
   // states
   private _mounted = false
   private _listeners: AbortController | null = null
   // refs
-  private _dialogEl: UIDialog | null = null
+  private _dialogEl: UiDialog | null = null
 
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
   }
 
-  private t = window.api?.i18n?.t || (() => '')
-
   connectedCallback(): void {
     this._renderShell()
+    localizeElementsText(this.shadowRoot as ShadowRoot)
   }
 
   private _renderShell(): void {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = ''
-    // attach cached stylesheet first to avoid FOUC
     this.shadowRoot.adoptedStyleSheets = [PreferencesDialog.sheet]
   }
 
@@ -50,17 +42,20 @@ export class PreferencesDialog extends HTMLElement {
     this.shadowRoot.adoptedStyleSheets = [PreferencesDialog.sheet]
     const frag = PreferencesDialog.tpl.content.cloneNode(true) as DocumentFragment
     this.shadowRoot.append(frag)
-    this._dialogEl = this.shadowRoot.querySelector('ui-dialog') as UIDialog | null
+    this._dialogEl = this.shadowRoot.querySelector('ui-dialog') as UiDialog | null
     this._listeners = new AbortController()
-    this._dialogEl?.addEventListener(
-      'ui-after-hide',
-      () => {
-        this._unmount()
-      },
-      { signal: this._listeners.signal }
-    )
-    this.applyI18n()
+    this._dialogEl?.addEventListener(UI_DIALOG_EVENTS.OPEN_CHANGE, (e) => this._onOpenChange(e), {
+      signal: this._listeners.signal
+    })
+    localizeElementsText(this.shadowRoot as ShadowRoot)
     this._mounted = true
+  }
+
+  private _onOpenChange(e: Event): void {
+    const detail = (e as CustomEvent<OpenChangeEventDetail>)?.detail
+    if (!detail.open) {
+      this._unmount()
+    }
   }
 
   private _unmount(): void {
@@ -73,26 +68,27 @@ export class PreferencesDialog extends HTMLElement {
     this._renderShell()
   }
 
-  private applyI18n(): void {
-    const root = this.shadowRoot
-    if (!root) return
-    const nodes = root.querySelectorAll<HTMLElement>('[data-i18n]')
-    nodes.forEach((el) => {
-      const key = el.getAttribute('data-i18n') || ''
-      if (!key) return
-      el.textContent = this.t(key)
-    })
-  }
-
   openDialog(): void {
     this._mount()
-    this._dialogEl?.openDialog()
+    if (this._dialogEl) {
+      this._dialogEl.open = true
+    }
   }
 
   close(): void {
-    if (this._dialogEl) this._dialogEl.close()
+    if (this._dialogEl) {
+      this._dialogEl.open = false
+    }
     this._unmount()
   }
 }
 
-customElements.define('preferences-dialog', PreferencesDialog)
+if (!customElements.get(PREF_DIALOG_NAME)) {
+  customElements.define(PREF_DIALOG_NAME, PreferencesDialog)
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    [PREF_DIALOG_NAME]: PreferencesDialog
+  }
+}

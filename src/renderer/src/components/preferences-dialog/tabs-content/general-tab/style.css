@@ -1,51 +1,14 @@
-@import url('../../../../assets/reset.css');
+@import url('../../../../assets/shadow-common.css');
 
-.max-downloads-controls {
+:host {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-direction: row;
-}
-
-html[dir='rtl'] .max-downloads-controls {
-  flex-direction: row-reverse;
-}
-
-.download-path-container {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.name-format-playlists-container {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  gap: var(--spacing-medium);
 }
 
 /* language selection  */
 .with-tooltip {
   display: flex;
   align-items: center;
-  gap: 2rem;
-}
-
-.restart-indicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 9999px;
-  background: var(--primary,);
-  color: var(--primary-foreground,);
-  font-size: 0.75rem;
-  line-height: 1;
-  margin-inline-start: 0.5rem;
-  user-select: none;
-  cursor: help;
-}
-
-ui-tooltip::part(base) {
-  width: 10rem;
+  gap: var(--spacing-large);
 }

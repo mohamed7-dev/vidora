@@ -1,36 +1,22 @@
-@import url('../../../../assets/reset.css');
+@import url('../../../../assets/shadow-common.css');
 
-.ytdlp-config-path_container {
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-medium);
+}
+
+.ytdlp-config-path-container {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 @media (max-width: 640px) {
-  .ytdlp-config-path_container {
+  .ytdlp-config-path-container {
     flex: 1;
     justify-content: space-between;
   }
-}
-
-ui-tooltip::part(base) {
-  width: 10rem;
-}
-
-.ytdlp-config-path-indicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 9999px;
-  background: var(--primary,);
-  color: var(--primary-foreground,);
-  font-size: 0.75rem;
-  line-height: 1;
-  margin-inline-start: 0.5rem;
-  user-select: none;
-  cursor: help;
 }
 
 area-section::part(base) {

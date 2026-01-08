@@ -1,67 +1,71 @@
-@import url('../../../../assets/reset.css');
+@import url('../../../../assets/shadow-common.css');
 
 :host {
   width: 100%;
   height: auto;
-  /* Do not let this screen stretch to fill the parent vertically */
+  /* This screen will not stretch to fill the parent vertically */
   flex: 0 0 auto;
 }
 
-/* Ensure the tabs container itself also shrinks to its content height */
-:host ui-tabs {
-  height: auto;
-  flex: 0 0 auto;
-}
-
-:host ui-tabs::part(panels) {
-  /* Let panels size to their content instead of stretching to fill */
-  height: auto;
-  flex: 0 0 auto;
-}
-
+/* Tabs Triggers  */
 .tab__trigger {
-  --ui-button-direction: column;
+  --ui-button-flex-direction: column;
 }
 
 @media (min-width: 640px) {
   .tab__trigger {
-    --ui-button-direction: row;
+    --ui-button-flex-direction: row;
   }
 }
 
-.time-range_container,
-.subtitles_container,
-.download-path_container {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
+/* Tabs Content  */
 
-@media (max-width: 640px) {
-  .download-path_container,
-  .subtitles_container {
-    flex: 1;
-    justify-content: space-between;
-  }
-}
-
-.time-range_container ui-input::part(base) {
-  width: 5rem;
-}
-
-.tab__content-sections-container {
+.content__sections-container {
   align-items: center;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-/* subtitles  */
-.subtitles_container label {
-  word-break: break-all;
-  white-space: nowrap;
+@media (min-width: 640px) {
+  .shared__settings {
+    padding: 0 1rem;
+  }
 }
 
 area-section::part(base) {
   gap: 1rem;
+}
+
+/* Settings  */
+
+.time__range-container,
+.subtitles__container,
+.download__path-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.download-path_container,
+.subtitles_container {
+  flex: 1;
+  justify-content: space-between;
+}
+
+@media (min-width: 640px) {
+  .download-path_container,
+  .subtitles_container {
+    flex: 0 0 auto;
+    justify-content: start;
+  }
+}
+
+.time__range-container ui-input::part(base) {
+  width: 5rem;
+}
+
+.subtitles_container label {
+  word-break: break-all;
+  white-space: nowrap;
 }

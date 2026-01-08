@@ -32,17 +32,17 @@ export async function navigate(path: string, replace = false): Promise<void> {
   const root = appRoot()
   const route = routes[path] || routes['/']
   if (!root) return
-  // Optional unmount previous
+  // unmount previous
   const prevPath = currentPath
-  if (prevPath && routes[prevPath]?.unmount) routes[prevPath].unmount!(root)
+  if (prevPath && prevPath !== path && routes[prevPath]?.unmount) routes[prevPath].unmount!(root)
   // Update URL hash (keeps document URL at /pages/index.html)
   setHashForPath(path, replace)
   currentPath = path
   root.innerHTML = `
+    <new-dialog></new-dialog>
     <app-header></app-header>
-    <app-scrim></app-scrim>
     <app-sidebar></app-sidebar>
-    <main id="app"></main>
+    <main></main>
   `
   await route.mount(root)
   try {

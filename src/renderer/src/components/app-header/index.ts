@@ -1,14 +1,19 @@
 import '../preferences-dialog/index'
-import '../new-dialog/index'
+import '../about-dialog/about-dialog.component'
 import '../app-sidebar/content/index'
 
 // import '../notification-popover/index' // will be back once we fix the bug
 import html from './template.html?raw'
 import style from './style.css?inline'
 import { DATA } from '@root/shared/data'
-import { UIButton, UIDialog, UISheet } from '../ui'
-import { createStyleSheetFromStyle, createTemplateFromHtml } from '../ui/lib/template-loader'
+import { NEW_DIALOG_EVENTS, NewDialog } from '../new-dialog/index'
 import { NAV_ITEM_CLICKED_EVENT } from '../app-sidebar/content'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
+import { type UiButton } from '@ui/button/ui-button'
+import { type UiSheet } from '@ui/sheet/ui-sheet'
+import { PreferencesDialog } from '../preferences-dialog/index'
+import { localizeElementsText } from '@renderer/lib/ui/localize'
+import { AboutDialog } from '../about-dialog/about-dialog.component'
 
 const APP_HEADER_NAME = 'app-header'
 
@@ -17,18 +22,20 @@ export class AppHeader extends HTMLElement {
   private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
 
   // refs
-  private btnMin: UIButton | null = null
-  private btnMax: UIButton | null = null
-  private btnClose: UIButton | null = null
+  private btnMin: UiButton | null = null
+  private btnMax: UiButton | null = null
+  private btnClose: UiButton | null = null
   private appTitle: HTMLElement | null = null
-  private prefsDialog: UIDialog | null = null
-  private dropdownMenuPrefButton: UIButton | null = null
-  private navSheet: UISheet | null = null
+  private prefsDialog: PreferencesDialog | null = null
+  private aboutDialog: AboutDialog | null = null
+  private menuPrefDialogItemBtn: UiButton | null = null
+  private menuAboutDialogItemBtn: UiButton | null = null
+  private navSheet: UiSheet | null = null
+  private newDialogTrigger: NewDialog | null = null
 
   // states
   private _navListeners: AbortController | null = null
 
-  private t = window.api?.i18n?.t || (() => undefined)
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
@@ -39,7 +46,7 @@ export class AppHeader extends HTMLElement {
     this._queryRefs()
     this._init()
     this._applyListeners()
-    this._applyI18n()
+    localizeElementsText(this.shadowRoot as ShadowRoot)
   }
 
   disconnectedCallback(): void {
@@ -56,15 +63,22 @@ export class AppHeader extends HTMLElement {
 
   private _queryRefs(): void {
     if (!this.shadowRoot) return
-    this.btnMin = this.shadowRoot.querySelector('#chrome-controls-minimize') as UIButton
-    this.btnMax = this.shadowRoot.querySelector('#chrome-controls-maximize') as UIButton
-    this.btnClose = this.shadowRoot.querySelector('#chrome-controls-close') as UIButton
-    this.appTitle = this.shadowRoot.querySelector('#app-header-title') as HTMLElement
-    this.prefsDialog = this.shadowRoot.querySelector('preferences-dialog') as UIDialog
-    this.dropdownMenuPrefButton = this.shadowRoot.querySelector(
-      "[data-el='dropdown-menu-preferences-btn']"
-    ) as UIButton
-    this.navSheet = this.shadowRoot.querySelector('ui-sheet') as UISheet
+    this.btnMin = this.shadowRoot.querySelector('[data-el="minimize-btn"]') as UiButton
+    this.btnMax = this.shadowRoot.querySelector('[data-el="maximize-btn"]') as UiButton
+    this.btnClose = this.shadowRoot.querySelector('[data-el="close-btn"]') as UiButton
+    this.appTitle = this.shadowRoot.querySelector('[data-el="app-header-title"]') as HTMLElement
+    this.prefsDialog = this.shadowRoot.querySelector('preferences-dialog') as PreferencesDialog
+    this.aboutDialog = this.shadowRoot.querySelector('about-dialog') as AboutDialog
+    this.menuPrefDialogItemBtn = this.shadowRoot.querySelector(
+      "[data-el='menu-item-pref-dialog']"
+    ) as UiButton
+    this.menuAboutDialogItemBtn = this.shadowRoot.querySelector(
+      "[data-el='menu-item-about-dialog']"
+    ) as UiButton
+    this.navSheet = this.shadowRoot.querySelector('ui-sheet') as UiSheet
+    this.newDialogTrigger = this.shadowRoot.querySelector(
+      '[data-el="new-dialog-trigger"]'
+    ) as NewDialog | null
   }
 
   private _applyListeners(): void {
@@ -100,15 +114,36 @@ export class AppHeader extends HTMLElement {
     this.navSheet?.addEventListener(
       NAV_ITEM_CLICKED_EVENT,
       () => {
-        this.navSheet?.closeSheet()
+        if (this.navSheet) {
+          this.navSheet.open = false
+        }
       },
       { signal }
     )
-    // trigger pref dialog on click
-    this.dropdownMenuPrefButton?.addEventListener(
+    this.menuPrefDialogItemBtn?.addEventListener(
       'click',
       () => {
         this.prefsDialog?.openDialog()
+      },
+      { signal }
+    )
+
+    this.menuAboutDialogItemBtn?.addEventListener(
+      'click',
+      () => {
+        this.aboutDialog?.openDialog()
+      },
+      { signal }
+    )
+    this.newDialogTrigger?.addEventListener(
+      'click',
+      () => {
+        this.dispatchEvent(
+          new CustomEvent(NEW_DIALOG_EVENTS.OPEN, {
+            bubbles: true,
+            composed: true
+          })
+        )
       },
       { signal }
     )
@@ -116,14 +151,6 @@ export class AppHeader extends HTMLElement {
 
   private _init(): void {
     if (this.appTitle) this.appTitle.textContent = DATA.appName
-  }
-
-  private _applyI18n(): void {
-    const root = this.shadowRoot as ShadowRoot
-    const menuPreferences = root.querySelectorAll('[data-i18n]')
-    menuPreferences.forEach((el) => {
-      el.textContent = this.t(el.getAttribute('data-i18n') as string) ?? ''
-    })
   }
 }
 

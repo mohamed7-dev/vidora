@@ -1,79 +1,94 @@
-<template id="app-header-template">
+<template>
   <header>
-    <div class="app-header__left">
-      <new-dialog></new-dialog>
-      <h1 id="app-header-title"></h1>
-      <ui-dropdown align="center">
-        <ui-button
-          class="app-header__dropdown-button"
-          id="app-header-dropdown-button"
-          slot="trigger"
-          variant="ghost"
-          size="icon"
-          style="--ui-button-icon-size: 22px"
-        >
-          <ui-icon slot="prefix" name="ellipsis-vertical"></ui-icon>
-        </ui-button>
-        <ui-button
-          slot="menu-item"
-          class="app-header__dropdown-menu-item"
-          data-el="dropdown-menu-preferences-btn"
-          variant="ghost"
-          block
-        >
-          <span slot="label" data-i18n="appHeader.actionsMenu.preferences"></span>
-        </ui-button>
-        <ui-button slot="menu-item" class="app-header__dropdown-menu-item" variant="ghost" block>
-          <span slot="label" data-i18n="appHeader.actionsMenu.about"></span>
-        </ui-button>
+    <div class="app__header-left">
+      <ui-button
+        class="new__dialog-trigger"
+        data-el="new-dialog-trigger"
+        variant="ghost"
+        size="icon"
+      >
+        <ui-icon name="plus" class="header-button-icon"></ui-icon>
+        <span data-i18n="Add New Download" class="sr-only"></span>
+      </ui-button>
+      <h1 data-el="app-header-title"></h1>
+      <ui-dropdown>
+        <ui-dropdown-trigger as-child>
+          <ui-button class="dropdown__trigger" variant="ghost" size="icon">
+            <ui-icon name="ellipsis-vertical" class="header-button-icon"></ui-icon>
+            <span data-i18n="Toggle Preferences Menu" class="sr-only"></span>
+          </ui-button>
+        </ui-dropdown-trigger>
+        <ui-dropdown-portal align="center" offset="10">
+          <ui-dropdown-content>
+            <ui-dropdown-item data-el="menu-item-pref-dialog" class="options__menu-item">
+              <span data-i18n="Preferences"></span>
+            </ui-dropdown-item>
+            <ui-dropdown-item data-el="menu-item-about-dialog" class="options__menu-item">
+              <span data-i18n="About"></span>
+            </ui-dropdown-item>
+          </ui-dropdown-content>
+        </ui-dropdown-portal>
       </ui-dropdown>
 
       <!-- TODO: will be back once we fix the bug in notification-popover -->
       <!-- <notification-popover></notification-popover> -->
       <preferences-dialog></preferences-dialog>
-      <ui-sheet side="right" style="--ui-sheet-width: 100vw" show-x-button>
-        <ui-button
-          class="app-header__sheet-button"
-          id="app-header-sheet-button"
-          slot="trigger"
-          variant="ghost"
-          size="icon"
-        >
-          <ui-icon slot="prefix" name="menu"></ui-icon>
-        </ui-button>
-        <div slot="content" style="padding: 1rem">
-          <app-sidebar-content></app-sidebar-content>
-        </div>
+      <about-dialog></about-dialog>
+      <ui-sheet side="right" style="--ui-sheet-width: 100vw">
+        <ui-sheet-trigger as-child>
+          <ui-button class="sheet__trigger" variant="ghost" size="icon">
+            <ui-icon name="menu" class="header-button-icon"></ui-icon>
+            <span data-i18n="Toggle Sidebar sheet" class="sr-only"></span>
+          </ui-button>
+        </ui-sheet-trigger>
+        <ui-sheet-portal>
+          <ui-sheet-overlay></ui-sheet-overlay>
+          <ui-sheet-content>
+            <ui-sheet-header>
+              <ui-sheet-title data-i18n="Navigation Sidebar" class="sr-only"></ui-sheet-title>
+              <ui-sheet-description
+                data-i18n="You can navigate application pages"
+                class="sr-only"
+              ></ui-sheet-description>
+            </ui-sheet-header>
+            <ui-sheet-body>
+              <app-sidebar-content></app-sidebar-content>
+            </ui-sheet-body>
+          </ui-sheet-content>
+        </ui-sheet-portal>
       </ui-sheet>
     </div>
-    <div class="app-header__right">
-      <div class="app-header__chrome-controls" id="chrome-controls">
+    <div class="app__header-right">
+      <div class="chrome__controls" id="chrome-controls">
         <ui-button
           variant="secondary"
           size="icon"
-          class="app-header__chrome-controls-button"
-          id="chrome-controls-minimize"
-          style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px"
+          class="chrome__controls-button"
+          data-el="minimize-btn"
+          style="--ui-button-icon-box: 27px"
         >
-          <ui-icon slot="prefix" name="minus"></ui-icon>
+          <ui-icon name="minus"></ui-icon>
+          <span data-i18n="Minimize Application Window" class="sr-only"></span>
         </ui-button>
         <ui-button
           variant="secondary"
           size="icon"
-          class="app-header__chrome-controls-button"
-          id="chrome-controls-maximize"
-          style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px"
+          class="chrome__controls-button"
+          data-el="maximize-btn"
+          style="--ui-button-icon-box: 27px"
         >
-          <ui-icon slot="prefix" name="square"></ui-icon>
+          <ui-icon name="square"></ui-icon>
+          <span data-i18n="Maximize Application Window" class="sr-only"></span>
         </ui-button>
         <ui-button
           variant="secondary"
           size="icon"
-          class="app-header__chrome-controls-button"
-          id="chrome-controls-close"
-          style="--ui-button-icon-box: 27px; --ui-button-icon-size: 12px"
+          class="chrome__controls-button"
+          data-el="close-btn"
+          style="--ui-button-icon-box: 27px"
         >
-          <ui-icon slot="prefix" name="x"></ui-icon>
+          <ui-icon name="x"></ui-icon>
+          <span data-i18n="Close Application Window" class="sr-only"></span>
         </ui-button>
       </div>
     </div>

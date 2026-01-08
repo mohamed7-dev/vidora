@@ -1,7 +1,7 @@
 // Source: Lucide Icons
 // Icons designed to inherit currentColor and scale to the container.
 
-export const ICONS: Record<string, string> = {
+export const ICONS = {
   x: `
     <svg part="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M18 6 6 18" />
@@ -70,10 +70,11 @@ export const ICONS: Record<string, string> = {
       <path d="M4 12h16" />
       <path d="M4 19h16" />
     </svg>
+    
   `,
   minus: `
-    <svg part="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M5 12h14" />
+    <svg part="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minus-icon lucide-minus">
+      <path d="M5 12h14"/>
     </svg>
   `,
   plus: `
@@ -122,4 +123,8 @@ export const ICONS: Record<string, string> = {
       <path d="M12 9v4"/><path d="M12 17h.01"/>
     </svg>
   `
-}
+} as const
+
+export type Icons = keyof typeof ICONS
+
+export const ICONS_KEYS = Object.keys(ICONS) as Icons[]

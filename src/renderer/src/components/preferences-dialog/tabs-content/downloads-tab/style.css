@@ -1,26 +1,32 @@
-@import url('../../../../assets/reset.css');
+@import url('../../../../assets/shadow-common.css');
 
-.download-path_container,
-.name-format-playlists_container,
-.max-downloads_container {
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-medium);
+}
+
+.download__path-container,
+.name__format-container,
+.max__downloads-container {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 @media (max-width: 640px) {
-  .download-path_container {
+  .download__path-container {
     flex: 1;
     justify-content: space-between;
   }
 }
 
-.name-format-playlists_container ui-input {
+.name__format-container ui-input {
   min-width: 9rem;
 }
 
 @media (max-width: 640px) {
-  .name-format-playlists_container {
+  .name__format-container {
     flex: 1;
   }
 }

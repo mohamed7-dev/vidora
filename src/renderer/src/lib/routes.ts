@@ -1,36 +1,48 @@
-const _t = window.api?.i18n?.t || (() => '')
+import { DATA } from '@root/shared/data'
+
+const getMain = (root: HTMLElement): HTMLElement => {
+  const main = root.querySelector('main') as HTMLElement
+  main.innerHTML = ''
+  return main
+}
+
+export const pagesRoutes: Record<string, string> = Object.fromEntries(
+  DATA.pages.map((page) => [page.id, page.route])
+)
 
 type RouteDef = {
   mount: (root: HTMLElement) => Promise<void> | void
   unmount?: (root: HTMLElement) => void
 }
 export const routes: Record<string, RouteDef> = {
-  '/': {
+  [`/${pagesRoutes.home}`]: {
     async mount(root) {
-      document.title = _t('routes.home.title') || 'Home'
       const { renderHome } = await import('../views/home')
-      renderHome(root.querySelector('main') as HTMLElement)
+      renderHome(getMain(root))
     }
   },
-  '/downloading': {
+  [`/${pagesRoutes.downloading}`]: {
     async mount(root) {
-      document.title = _t('routes.downloading.title') || 'Downloading'
       const { renderDownloading } = await import('../views/downloading')
-      renderDownloading(root.querySelector('main') as HTMLElement)
+      renderDownloading(getMain(root))
     }
   },
-  '/queued': {
+  [`/${pagesRoutes.queued}`]: {
     async mount(root) {
-      document.title = _t('routes.queued.title') || 'Queued'
       const { renderQueued } = await import('../views/queued')
-      renderQueued(root.querySelector('main') as HTMLElement)
+      renderQueued(getMain(root))
     }
   },
-  '/completed': {
+  [`/${pagesRoutes.completed}`]: {
     async mount(root) {
-      document.title = _t('routes.completed.title') || 'Completed'
       const { renderCompleted } = await import('../views/completed')
-      renderCompleted(root.querySelector('main') as HTMLElement)
+      renderCompleted(getMain(root))
+    }
+  },
+  [`/${pagesRoutes.history}`]: {
+    async mount(root) {
+      const { renderHistory } = await import('../views/history')
+      renderHistory(getMain(root))
     }
   }
 }

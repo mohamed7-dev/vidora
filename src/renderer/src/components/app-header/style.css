@@ -1,6 +1,6 @@
-@import url('../../assets/reset.css');
+@import url('../../assets/shadow-common.css');
 
-:host header {
+header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -16,65 +16,51 @@
   box-sizing: border-box;
 }
 
-.app-header__right {
-  width: var(--toolbar-right-width);
+/* Anything clickable must be no-drag */
+notification-popover,
+.new__dialog-trigger,
+.sheet__trigger,
+.dropdown__trigger,
+.chrome__controls,
+.chrome__controls * {
+  -webkit-app-region: no-drag;
+}
+
+/* header -> right side  */
+
+.app__header-right {
   display: flex;
   justify-content: flex-end;
 }
 
-:host-context([use-native-toolbar='true']) .app-header__right {
+:host-context([use-native-toolbar='true']) .app__header-right {
   display: none;
 }
 
-.app-header__chrome-controls {
+.chrome__controls {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-x-small);
 }
 
-/* Anything clickable must be no-drag */
-new-dialog,
-notification-popover,
-.app-header__sheet-button,
-.app-header__dropdown-button,
-.app-header__chrome-controls,
-.app-header__chrome-controls * {
-  -webkit-app-region: no-drag;
+.chrome__controls-button ui-icon {
+  --ui-icon-size: 0.75rem;
 }
 
-.app-header__left {
+/* header -> left side  */
+.app__header-left {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-x-small);
   width: calc(var(--sidebar-width) - var(--toolbar-padding));
   overflow: hidden;
 }
 
-.app-header__left h1 {
+.app__header-left h1 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: var(--font-size-large);
   flex: 1;
   text-align: center;
-}
-
-.app-header__sheet-button {
-  display: block;
-}
-
-@media (min-width: 767px) {
-  .app-header__sheet-button {
-    display: none;
-  }
-}
-
-/* dropdown menu  */
-.app-header__dropdown-menu-item::part(base) {
-  display: flex;
-  justify-content: flex-start;
-  padding: 0 auto;
-}
-.app-header__dropdown-menu-item:hover {
-  background-color: transparent;
 }
 
 @media (min-width: 767px) {

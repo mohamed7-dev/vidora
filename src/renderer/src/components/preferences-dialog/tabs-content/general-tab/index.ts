@@ -1,41 +1,42 @@
 import '../../../area-article/index'
 import '../../../area-section/index'
-import template from './template.html?raw'
-import styleCss from './style.css?inline'
-import { UIButton, UISelect, UICheckbox } from '@renderer/components/ui'
+import html from './template.html?raw'
+import style from './style.css?inline'
 import { DATA } from '@root/shared/data'
-import { AppConfig } from '@root/shared/types'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
+import { type UiSelectContent } from '@ui/select/ui-select-content'
+import { type UiSelect } from '@ui/select/ui-select'
+import { type UiButton } from '@ui/button/ui-button'
+import { UICheckValueDetail, type UICheckbox } from '@ui/checkbox/ui-checkbox'
+import { AppConfig } from '@root/shared/ipc/app-config'
+import { UI_SELECT_EVENTS, type ValueChangeEventDetail } from '@ui/select/constants'
+import { localizeElementsText } from '@renderer/lib/ui/localize'
 
-export class GeneralTab extends HTMLElement {
-  // Cache stylesheet and template per class for performance and to prevent FOUC
-  private static readonly sheet: CSSStyleSheet = (() => {
-    const s = new CSSStyleSheet()
-    s.replaceSync(styleCss)
-    return s
-  })()
-  private static readonly tpl: HTMLTemplateElement = (() => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(template, 'text/html')
-    const inner = doc.querySelector('template')
-    const t = document.createElement('template')
-    t.innerHTML = inner ? inner.innerHTML : template
-    return t
-  })()
+const GENERAL_TAB_TAG_NAME = 'general-tab-content'
+
+export class GeneralTabContent extends HTMLElement {
+  private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
+  private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
   // states
-  private config: AppConfig | null = null
   private initialConfig: AppConfig | null = null
+  private _eventsAborter: AbortController | null = null
+  private _changeThemeUnsub: (() => void) | null = null
+
+  // private initialConfig: AppConfig | null = null
   private t = window.api?.i18n?.t || (() => '')
   private needsReload = false
   private needsRelaunch = false
 
   // refs
-  private themeSelect: UISelect | null = null
-  private languageSelect: UISelect | null = null
+  private themeSelectContent: UiSelectContent | null = null
+  private themeSelect: UiSelect | null = null
+  private languageSelect: UiSelect | null = null
+  private languageSelectContent: UiSelectContent | null = null
   private closeAppToSystemTraySwitch: UICheckbox | null = null
   private useNativeToolbarSwitch: UICheckbox | null = null
-  private restartBtn: UIButton | null = null
-  private checkForUpdatesBtn: UIButton | null = null
   private autoUpdateSwitch: UICheckbox | null = null
+  private restartBtn: UiButton | null = null
+  private checkForUpdatesBtn: UiButton | null = null
 
   constructor() {
     super()
@@ -45,228 +46,276 @@ export class GeneralTab extends HTMLElement {
   async connectedCallback(): Promise<void> {
     this._render()
     this._cacheRefs()
-    this.config = (await window.api?.config.getConfig()) || null
-    this.initialConfig = this.config ? JSON.parse(JSON.stringify(this.config)) : null
-    this.syncTheme()
-    this.changeTheme()
-    this.syncLanguage()
-    this.changeLanguage()
-    this.applyI18n()
-    this.wireRestartButton()
-    this.wireCheckForUpdatesButton()
-    this.syncCloseAppToSystemTray()
-    this.changeCloseAppToSystemTray()
-    this.syncUseNativeToolbar()
-    this.changeUseNativeToolbar()
-    this.syncAutoUpdate()
-    this.changeAutoUpdate()
+    if (!this._eventsAborter) {
+      this._eventsAborter = new AbortController()
+    }
+    const config = (await window.api.config.getConfig()) || null
+    this.initialConfig = config ? JSON.parse(JSON.stringify(config)) : null
+    this._syncTheme()
+    this._changeTheme()
+    this._syncLanguage()
+    this._changeLanguage()
+    this._wireRestartButton()
+    this._wireCheckForUpdatesButton()
+    this._syncCloseAppToSystemTray()
+    this._changeCloseAppToSystemTray()
+    this._syncUseNativeToolbar()
+    this._changeUseNativeToolbar()
+    this._syncAutoUpdate()
+    this._changeAutoUpdate()
+    localizeElementsText(this.shadowRoot as ShadowRoot)
+  }
+
+  disconnectedCallback(): void {
+    this._eventsAborter?.abort()
+    this._eventsAborter = null
+    this._changeThemeUnsub?.()
+    this._changeThemeUnsub = null
   }
 
   private _render(): void {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = ''
-    // attach cached stylesheet first to avoid FOUC
-    this.shadowRoot.adoptedStyleSheets = [GeneralTab.sheet]
-    // append cached template content
-    this.shadowRoot.append(GeneralTab.tpl.content.cloneNode(true))
+    this.shadowRoot.adoptedStyleSheets = [GeneralTabContent.sheet]
+    this.shadowRoot.append(GeneralTabContent.tpl.content.cloneNode(true))
   }
 
   private _cacheRefs(): void {
-    this.themeSelect = this.shadowRoot?.querySelector<UISelect>('#theme-select') || null
-    this.languageSelect = this.shadowRoot?.querySelector<UISelect>('#language-select') || null
-    this.closeAppToSystemTraySwitch =
-      this.shadowRoot?.querySelector<UICheckbox>('#close-app-to-system-tray-switch') || null
-    this.useNativeToolbarSwitch =
-      this.shadowRoot?.querySelector<UICheckbox>('#use-native-toolbar-switch') || null
-    this.restartBtn = this.shadowRoot?.querySelector<UIButton>('#restart-app-button') || null
+    this.themeSelectContent =
+      this.shadowRoot?.querySelector<UiSelectContent>('[data-el="theme-select-content"]') || null
+    this.themeSelect = this.shadowRoot?.querySelector<UiSelect>('[data-el="theme-select"]') || null
+    this.languageSelect =
+      this.shadowRoot?.querySelector<UiSelect>('[data-el="language-select"]') || null
+    this.languageSelectContent =
+      this.shadowRoot?.querySelector<UiSelectContent>('[data-el="language-select-content"]') || null
+    this.restartBtn =
+      this.shadowRoot?.querySelector<UiButton>('[data-el="restart-app-button"]') || null
     this.checkForUpdatesBtn =
-      this.shadowRoot?.querySelector<UIButton>('#check-for-updates-button') || null
+      this.shadowRoot?.querySelector<UiButton>('[data-el="check-for-updates-button"]') || null
+    this.closeAppToSystemTraySwitch =
+      this.shadowRoot?.querySelector<UICheckbox>('[data-el="close-app-to-system-tray-checkbox"]') ||
+      null
+    this.useNativeToolbarSwitch =
+      this.shadowRoot?.querySelector<UICheckbox>('[data-el="use-native-toolbar-checkbox"]') || null
     this.autoUpdateSwitch =
-      this.shadowRoot?.querySelector<UICheckbox>('#auto-update-switch') || null
+      this.shadowRoot?.querySelector<UICheckbox>('[data-el="auto-update-checkbox"]') || null
   }
 
-  private syncTheme(): void {
-    if (!this.themeSelect) return
-    const theme = this.config?.general.theme
+  private _syncTheme(): void {
+    if (!this.themeSelectContent || !this.themeSelect) return
+    const theme = this.initialConfig?.general.theme
     if (!theme) return
-    if (this.themeSelect) {
+    if (this.themeSelectContent) {
       const options = DATA.themes.map((theme) => {
-        return `<ui-option value="${theme.value}">${this.t(theme.label)}</ui-option>`
+        return `<ui-select-option value="${theme.value}">${this.t(theme.label)}</ui-select-option>`
       })
-      this.themeSelect.innerHTML = options.join('')
-      this.themeSelect.setAttribute('value', theme)
+      this.themeSelectContent.innerHTML = options.join('')
+      this.themeSelect.value = theme
     }
   }
 
-  private changeTheme(): void {
+  private _changeTheme(): void {
     if (!this.themeSelect) return
-    this.themeSelect.addEventListener('change', (e) => {
-      const select = e.target as UISelect
-      const value = select.value
-      if (!value) return
-      // Wait for actual config update before animating for accurate visual change
-      const unsubscribe = window.api?.config.onUpdated?.((cfg) => {
-        if (cfg.general.theme !== value) return
-        if (unsubscribe) unsubscribe()
-        const x = window.innerWidth
-        const y = 0
-        const maxRadius = Math.hypot(window.innerWidth, window.innerHeight)
-        const transition = document.startViewTransition(() => {
-          // preload already syncs theme
+    if (!this._eventsAborter) return
+    this.themeSelect.addEventListener(
+      UI_SELECT_EVENTS.VALUE_CHANGE,
+      (e) => {
+        const detail = (e as CustomEvent<ValueChangeEventDetail>).detail
+        if (detail.selectId !== this.themeSelect?.instanceId) return
+        const value = detail.value
+        if (!value) return
+        // Wait for actual config update before animating for accurate visual change
+        this._changeThemeUnsub = window.api.config.onUpdated((cfg) => {
+          if (cfg.general.theme !== value) return
+          if (this._changeThemeUnsub) {
+            this._changeThemeUnsub()
+            this._changeThemeUnsub = null
+          }
+          const x = window.innerWidth / 2
+          const y = window.innerHeight / 2
+          const maxRadius = Math.hypot(window.innerWidth, window.innerHeight)
+          const transition = document.startViewTransition(() => {
+            // preload already syncs theme
+          })
+          transition.ready
+            .then(() => {
+              const animation = document.documentElement.animate(
+                {
+                  clipPath: [
+                    `circle(0px at ${x}px ${y}px)`,
+                    `circle(${maxRadius}px at ${x}px ${y}px)`
+                  ],
+                  opacity: [0.6, 1]
+                },
+                {
+                  duration: 700,
+                  easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                  pseudoElement: '::view-transition-new(root)'
+                }
+              )
+              return animation.finished
+            })
+            .catch((err) => {
+              if ((err as DOMException).name !== 'AbortError') {
+                console.error(err)
+              }
+            })
         })
-        transition.ready.then(() => {
-          document.documentElement.animate(
-            {
-              clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${maxRadius}px at ${x}px ${y}px)`]
-            },
-            {
-              duration: 1100,
-              easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-              pseudoElement: '::view-transition-new(root)'
-            }
-          )
+        window.api.config.updateConfig({ general: { theme: value } }).catch(() => {
+          if (this._changeThemeUnsub) this._changeThemeUnsub()
         })
-      })
-      window.api?.config?.updateConfig({ general: { theme: value } }).catch(() => {
-        if (unsubscribe) unsubscribe()
-      })
-    })
+      },
+      { signal: this._eventsAborter.signal }
+    )
   }
 
-  private syncLanguage(): void {
-    if (!this.languageSelect) return
+  private _syncLanguage(): void {
+    if (!this.languageSelect || !this.languageSelectContent) return
     const options = DATA.languages.map((lang) => {
-      return `<ui-option value="${lang.value}">${lang.label}</ui-option>`
+      return `<ui-select-option value="${lang.value}">${lang.label}</ui-select-option>`
     })
-    this.languageSelect.innerHTML = options.join('')
-    const lang = this.config?.general.language
+    this.languageSelectContent.innerHTML = options.join('')
+    const lang = this.initialConfig?.general.language
     if (lang) {
-      this.languageSelect.setAttribute('value', lang)
+      this.languageSelect.value = lang
     }
   }
 
-  private changeLanguage(): void {
+  private _changeLanguage(): void {
     if (!this.languageSelect) return
-    this.languageSelect.addEventListener('change', (e) => {
-      const sel = e.target as UISelect
-      const value = sel.value
-      if (!value) return
-      // Persist and update internal state
-      window.api?.config
-        ?.updateConfig({ general: { language: value } })
-        .then(() => {
-          if (this.config) this.config.general.language = value
-        })
-        .catch(() => {})
-      // Mark reload required only if changed from initial
-      this.needsReload = value !== this.initialConfig?.general.language
-    })
+    if (!this._eventsAborter) return
+    this.languageSelect.addEventListener(
+      UI_SELECT_EVENTS.VALUE_CHANGE,
+      (e) => {
+        const detail = (e as CustomEvent<ValueChangeEventDetail>).detail
+        if (detail.selectId !== this.languageSelect?.instanceId) return
+        const value = detail.value
+        if (!value) return
+        // Persist and update internal state
+        const originalLanguage = this.initialConfig?.general.language
+        window.api.config
+          .updateConfig({ general: { language: value } })
+          .then(() => {
+            if (this.initialConfig) this.initialConfig.general.language = value
+          })
+          .catch(() => {})
+        // Mark reload required only if changed from initial
+        this.needsReload = value !== originalLanguage
+      },
+      { signal: this._eventsAborter.signal }
+    )
   }
 
-  private applyI18n(): void {
-    const root = this.shadowRoot
-    if (!root) return
-    // labels translations
-    this.shadowRoot.querySelectorAll('[label]').forEach((el) => {
-      el.setAttribute('label', this.t(el.getAttribute('label') ?? ''))
-    })
-
-    // translate static labels
-    root.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
-      const key = el.getAttribute('data-i18n') || ''
-      if (!key) return
-      el.textContent = this.t(key)
-    })
-    // update placeholders from pref.* namespace
-    const darkMode = this.shadowRoot?.querySelector<UISelect>('#dark-mode-select')
-    if (darkMode) darkMode.setAttribute('placeholder', this.t('pref.general.theme.placeholder'))
-    const langSel = this.languageSelect
-    if (langSel) langSel.setAttribute('placeholder', this.t('pref.general.language.placeholder'))
-  }
-
-  private wireRestartButton(): void {
+  private _wireRestartButton(): void {
     if (!this.restartBtn) return
-    this.restartBtn.addEventListener('click', () => {
-      if (this.needsRelaunch) {
-        window.api?.app?.relaunch()
-      } else if (this.needsReload) {
-        window.api?.window?.reload()
-      }
-    })
+    if (!this._eventsAborter) return
+    this.restartBtn.addEventListener(
+      'click',
+      () => {
+        if (this.needsRelaunch) {
+          window.api.app.relaunch()
+        } else if (this.needsReload) {
+          window.api.window.reload()
+        }
+      },
+      { signal: this._eventsAborter.signal }
+    )
   }
 
-  private wireCheckForUpdatesButton(): void {
+  private _wireCheckForUpdatesButton(): void {
     if (!this.checkForUpdatesBtn) return
-    this.checkForUpdatesBtn.addEventListener('click', () => {
-      window.api?.appUpdate?.check()
-    })
+    if (!this._eventsAborter) return
+    this.checkForUpdatesBtn.addEventListener(
+      'click',
+      () => {
+        // TODO: check for updates
+      },
+      { signal: this._eventsAborter.signal }
+    )
   }
 
-  private async syncCloseAppToSystemTray(): Promise<void> {
+  private _syncCloseAppToSystemTray(): void {
     if (!this.closeAppToSystemTraySwitch) return
-    const useTray = this.config?.general.closeToTray
-    this.closeAppToSystemTraySwitch.toggleAttribute('checked', useTray)
+    const useTray = this.initialConfig?.general.closeToTray
+    this.closeAppToSystemTraySwitch.checked = !!useTray
   }
 
-  private changeCloseAppToSystemTray(): void {
+  private _changeCloseAppToSystemTray(): void {
     if (!this.closeAppToSystemTraySwitch) return
-    this.closeAppToSystemTraySwitch.addEventListener('change', (e) => {
-      const checkbox = e.target as UICheckbox
-      const value = checkbox.checked
-      window.api?.config?.updateConfig({ general: { closeToTray: value } }).catch(() => {})
-    })
+    if (!this._eventsAborter) return
+    this.closeAppToSystemTraySwitch.addEventListener(
+      'change',
+      (e) => {
+        const detail = (e as CustomEvent<UICheckValueDetail>).detail
+        const value = detail.checked
+        window.api.config.updateConfig({ general: { closeToTray: value } }).catch(() => {})
+      },
+      { signal: this._eventsAborter.signal }
+    )
   }
 
-  private async syncUseNativeToolbar(): Promise<void> {
+  private _syncUseNativeToolbar(): void {
     if (!this.useNativeToolbarSwitch) return
-    const useNativeToolbar = this.config?.general.useNativeToolbar
-    this.useNativeToolbarSwitch.toggleAttribute('checked', useNativeToolbar)
+    const useNativeToolbar = this.initialConfig?.general.useNativeToolbar
+    this.useNativeToolbarSwitch.checked = !!useNativeToolbar
   }
 
-  private changeUseNativeToolbar(): void {
+  private _changeUseNativeToolbar(): void {
     if (!this.useNativeToolbarSwitch) return
-    this.useNativeToolbarSwitch.addEventListener('change', (e) => {
-      const checkbox = e.target as UICheckbox
-      const value = checkbox.checked
-      window.api?.config
-        ?.updateConfig({ general: { useNativeToolbar: value } })
-        .then(() => {
-          if (this.config) this.config.general.useNativeToolbar = value
-        })
-        .catch(() => {})
-      // Mark relaunch required only if changed from initial
-      this.needsRelaunch = value !== this.initialConfig?.general.useNativeToolbar
-    })
+    if (!this._eventsAborter) return
+    this.useNativeToolbarSwitch.addEventListener(
+      'change',
+      (e) => {
+        const detail = (e as CustomEvent<UICheckValueDetail>).detail
+        const value = detail.checked
+        const originalUseNativeToolbar = this.initialConfig?.general.useNativeToolbar
+        window.api.config
+          .updateConfig({ general: { useNativeToolbar: value } })
+          .then(() => {
+            if (this.initialConfig) this.initialConfig.general.useNativeToolbar = value
+          })
+          .catch(() => {})
+        // Mark relaunch required only if changed from initial
+        this.needsRelaunch = value !== originalUseNativeToolbar
+      },
+      { signal: this._eventsAborter.signal }
+    )
   }
 
-  private async syncAutoUpdate(): Promise<void> {
+  private _syncAutoUpdate(): void {
     if (!this.autoUpdateSwitch) return
-    const autoUpdate = this.config?.general.autoUpdate
-    this.autoUpdateSwitch.toggleAttribute('checked', autoUpdate)
+    const autoUpdate = this.initialConfig?.general.autoUpdate
+    this.autoUpdateSwitch.checked = !!autoUpdate
   }
 
-  private changeAutoUpdate(): void {
+  private _changeAutoUpdate(): void {
     if (!this.autoUpdateSwitch) return
-    this.autoUpdateSwitch.addEventListener('change', (e) => {
-      const checkbox = e.target as UICheckbox
-      const value = checkbox.checked
-      window.api?.config
-        ?.updateConfig({ general: { autoUpdate: value } })
-        .then(() => {
-          if (this.config) this.config.general.autoUpdate = value
-        })
-        .catch(() => {})
-      // Mark relaunch required only if changed from initial
-      this.needsRelaunch = value !== this.initialConfig?.general.autoUpdate
-    })
+    if (!this._eventsAborter) return
+    this.autoUpdateSwitch.addEventListener(
+      'change',
+      (e) => {
+        const detail = (e as CustomEvent<UICheckValueDetail>).detail
+        const value = detail.checked
+        const originalAutoUpdate = this.initialConfig?.general.autoUpdate
+        window.api?.config
+          ?.updateConfig({ general: { autoUpdate: value } })
+          .then(() => {
+            if (this.initialConfig) this.initialConfig.general.autoUpdate = value
+          })
+          .catch(() => {})
+        // Mark relaunch required only if changed from initial
+        this.needsRelaunch = value !== originalAutoUpdate
+      },
+      { signal: this._eventsAborter.signal }
+    )
   }
 }
 
-if (!customElements.get('general-tab-content')) {
-  customElements.define('general-tab-content', GeneralTab)
+if (!customElements.get(GENERAL_TAB_TAG_NAME)) {
+  customElements.define(GENERAL_TAB_TAG_NAME, GeneralTabContent)
 }
 declare global {
   interface HTMLElementTagNameMap {
-    'general-tab-content': GeneralTab
+    [GENERAL_TAB_TAG_NAME]: GeneralTabContent
   }
 }

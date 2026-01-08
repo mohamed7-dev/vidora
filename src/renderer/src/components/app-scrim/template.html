@@ -1,22 +1,65 @@
 <template>
-  <div class="overlay" role="alertdialog" aria-modal="true">
-    <div class="overlay__box">
-      <div class="header">
-        <h2 class="overlay__title" data-i18n="scrim.title"></h2>
-      </div>
-      <div class="tasks" aria-live="polite" aria-atomic="false" data-el="tasks-wrapper"></div>
-    </div>
-  </div>
+  <ui-dialog open alert hide-x-button>
+    <ui-dialog-portal>
+      <ui-dialog-overlay></ui-dialog-overlay>
+      <ui-dialog-content>
+        <ui-dialog-header>
+          <ui-dialog-title data-i18n="Application Setup" class="sr-only"></ui-dialog-title>
+          <ui-dialog-description
+            data-i18n="We need to make sure certain libraries and configurations are setup before starting
+            downloading"
+            class="sr-only"
+          ></ui-dialog-description>
+        </ui-dialog-header>
+        <ui-dialog-body>
+          <div
+            class="tasks__wrapper"
+            aria-live="polite"
+            aria-atomic="false"
+            data-el="tasks-wrapper"
+          ></div>
+        </ui-dialog-body>
+      </ui-dialog-content>
+    </ui-dialog-portal>
+  </ui-dialog>
   <template data-el="task-item-template">
-    <div class="task" data-el="task-wrapper">
-      <div class="task__icon" data-el="task-icon"></div>
-      <div class="task__center">
-        <div class="task__title" data-el="task-title"></div>
-        <div class="task__msg" data-el="task-message"></div>
+    <div class="task__item" data-el="task-item">
+      <div class="task__item-header">
+        <div class="task__item-title" data-el="task-item-title"></div>
+        <div class="task__item-icon" data-el="task-item-icon"></div>
       </div>
-      <div class="task__right">
-        <progress max="100" value="0" hidden data-el="task-progress"></progress>
-        <span class="task__err" hidden data-el="task-error"></span>
+      <div class="task__item-content">
+        <div class="task__item-msg" data-el="task-item-message"></div>
+        <span class="task__item-error" hidden data-el="task-item-error"></span>
+        <div class="task__item-homebrew" data-el="task-item-homebrew" hidden>
+          <p
+            class="task__item-homebrew-message"
+            data-i18n="You need to download yt-dlp from homebrew first"
+          ></p>
+          <div class="task__item-homebrew-actions">
+            <ui-button variant="secondary" as-child>
+              <a
+                class="task__item-homebrew-link"
+                target="_blank"
+                href="https://formulae.brew.sh/formula/yt-dlp"
+                data-i18n="Open Homebrew"
+              ></a>
+            </ui-button>
+            <ui-button variant="outline" data-el="quit-app-btn">
+              <span data-i18n="Close"></span>
+            </ui-button>
+          </div>
+        </div>
+        <div class="task__item-progress">
+          <progress
+            class="task__item-progress-el"
+            max="100"
+            value="0"
+            hidden
+            data-el="task-item-progress"
+          ></progress>
+          <strong class="task__item-progress-text" data-el="task-item-progress-text"></strong>
+        </div>
       </div>
     </div>
   </template>

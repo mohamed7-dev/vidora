@@ -1,23 +1,25 @@
+@import url('../../assets/shadow-common.css');
 :host {
   display: block;
   width: 100%;
 }
 
-.area-section {
+.area__section {
   display: flex;
   flex-direction: column;
   align-items: start;
-  gap: 0.5rem;
+  gap: var(--spacing-x-small);
   width: 100%;
 }
 
-.area-section_label {
-  font-size: 0.9rem;
+.area__section-label {
+  font-size: var(--font-size-medium);
   font-weight: bolder;
   color: inherit;
+  font-weight: var(--font-weight-bold);
 }
 
-.area-section_content {
+.area__section-content {
   width: 100%;
 }
 
@@ -25,7 +27,7 @@
 ::slotted(.articles) {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing-x-small);
   width: 100%;
-  border-radius: calc(var(--radius) - 4px);
+  border-radius: var(--radius-md);
 }

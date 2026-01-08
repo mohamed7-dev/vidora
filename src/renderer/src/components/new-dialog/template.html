@@ -1,62 +1,70 @@
 <template>
-  <ui-dialog show-x-button alert data-active-screen="media-url">
-    <ui-button
-      class="dialog__trigger"
-      slot="trigger"
-      variant="ghost"
-      size="icon"
-      data-el="trigger-btn"
-    >
-      <ui-icon slot="prefix" name="plus"></ui-icon>
-    </ui-button>
-    <header slot="header" class="dialog__header">
-      <div class="header__wrapper media-url-screen-header" data-screen="media-url">
-        <h1 data-i18n="newDownload.mediaUrlScreen.title"></h1>
-      </div>
-      <div class="header__wrapper media-loading-screen-header" data-screen="media-loading">
-        <h1 data-i18n="newDownload.mediaLoadingScreen.title"></h1>
-      </div>
-      <div class="header__wrapper media-info-screen-header" data-screen="media-info">
-        <h1 data-i18n="newDownload.mediaInfoScreen.title"></h1>
-      </div>
-    </header>
-    <section slot="content" class="dialog__content">
-      <ui-alert variant="destructive" data-el="alert" hidden closable></ui-alert>
-      <article class="dialog__content-article media-url-screen-content" data-screen="media-url">
-        <ui-input
-          data-el="media-url-input"
-          placeholder="newDownload.mediaUrlScreen.placeholder"
-          block
-        >
-          <span slot="label" data-i18n="newDownload.mediaUrlScreen.label"></span>
-        </ui-input>
-        <div class="media-url__mode">
-          <ui-checkbox variant="secondary" data-el="playlist-mode-checkbox">
-            <span slot="label" data-i18n="newDownload.mediaUrlScreen.mode.single">
-              Is Playlist?
-            </span>
-          </ui-checkbox>
-        </div>
-        <ui-button size="lg" data-el="validate-button" class="validate__button">
-          <span slot="label" data-i18n="newDownload.mediaUrlScreen.validateButton"></span>
-        </ui-button>
-      </article>
-      <article
-        class="dialog__content-article media-loading-screen-content"
-        data-screen="media-loading"
-      >
-        <ui-icon style="--ui-icon-size: 2rem" name="loader-circle" spin></ui-icon>
-        <p
-          class="loader__text"
-          role="status"
-          aria-live="polite"
-          data-i18n="newDownload.mediaLoadingScreen.loadingText"
-          data-el="loader-text"
-        ></p>
-      </article>
-      <article class="dialog__content-article media-info-screen-content" data-screen="media-info">
-        <media-info-screen></media-info-screen>
-      </article>
-    </section>
+  <ui-dialog alert data-active-screen="media-url">
+    <ui-dialog-portal>
+      <ui-dialog-overlay></ui-dialog-overlay>
+      <ui-dialog-content>
+        <ui-dialog-header>
+          <ui-dialog-title>
+            <span slot="label" data-i18n="Download Media"></span>
+          </ui-dialog-title>
+          <ui-dialog-description
+            data-i18n="Enter or paste media url and customize download options then click
+            download"
+            class="sr-only"
+          ></ui-dialog-description>
+        </ui-dialog-header>
+        <ui-dialog-body>
+          <ui-alert closable>
+            <ui-alert-header>
+              <ui-alert-title></ui-alert-title>
+              <ui-alert-close></ui-alert-close>
+            </ui-alert-header>
+            <ui-alert-content></ui-alert-content>
+          </ui-alert>
+          <article class="dialog__content-article media-url-screen-content" data-screen="media-url">
+            <label for="media-url-input" data-i18n="Media URL" class="sr-only"></label>
+            <ui-input
+              data-el="media-url-input"
+              id="media-url-input"
+              data-i18n-placeholder="Enter media url, or right click to paste"
+              autofocus
+              block
+            >
+            </ui-input>
+            <div class="media-url__mode">
+              <label for="playlist-mode-checkbox" data-i18n="Is Playlist?"></label>
+              <ui-checkbox
+                id="playlist-mode-checkbox"
+                variant="secondary"
+                data-el="playlist-mode-checkbox"
+              >
+              </ui-checkbox>
+            </div>
+            <ui-button size="lg" data-el="validate-button" class="validate__button">
+              <span data-i18n="Validate"></span>
+            </ui-button>
+          </article>
+          <article
+            class="dialog__content-article media-loading-screen-content"
+            data-screen="media-loading"
+          >
+            <ui-icon style="--ui-icon-size: 2rem" name="loader-circle" spin></ui-icon>
+            <p
+              class="loader__text"
+              data-el="loader-text"
+              role="status"
+              aria-live="polite"
+              data-i18n="Loading..."
+            ></p>
+          </article>
+          <article
+            class="dialog__content-article media-info-screen-content"
+            data-screen="media-info"
+          >
+            <media-info-screen data-el="media-info-screen"></media-info-screen>
+          </article>
+        </ui-dialog-body>
+      </ui-dialog-content>
+    </ui-dialog-portal>
   </ui-dialog>
 </template>

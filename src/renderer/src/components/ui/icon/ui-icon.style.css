@@ -1,0 +1,18 @@
+:host {
+  display: inline-block;
+}
+svg {
+  display: block;
+  width: var(--ui-icon-size, var(--font-size-medium));
+  height: var(--ui-icon-size, var(--font-size-medium));
+  fill: none;
+  stroke: var(--ui-icon-stroke-color, currentColor);
+}
+:host([spin]) svg {
+  animation: ui-spin 700ms linear infinite;
+}
+@keyframes ui-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

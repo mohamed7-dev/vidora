@@ -1,24 +1,20 @@
 import html from './template.html?raw'
 import style from './style.css?inline'
-import { SIDEBAR_ITEMS } from './data'
-import {
-  createStyleSheetFromStyle,
-  createTemplateFromHtml
-} from '@renderer/components/ui/lib/template-loader'
+import { getSidebarItems, Section } from './data'
+
 import { getRouteFromLocation, ROUTED_EVENT } from '@renderer/lib/router'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
 
 const APP_SIDEBAR_CONTENT_NAME = 'app-sidebar-content'
 export const NAV_ITEM_CLICKED_EVENT = 'nav-item-clicked'
 
-type NavItemClickDetail = {
+export interface NavItemClickDetail {
   page: string
 }
 
 export class AppSidebarContent extends HTMLElement {
   private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
   private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
-  // states
-  private t = window.api?.i18n?.t || (() => undefined)
   // refs
   private _navContainer: HTMLElement | null = null
   private _navItemTemplate: HTMLTemplateElement | null = null
@@ -69,7 +65,7 @@ export class AppSidebarContent extends HTMLElement {
     const items = this._getNavItems()
     const current = getRouteFromLocation()
     for (const a of items) {
-      const page = (a.dataset.page || '').trim().replace(/\.html$/i, '') || 'index'
+      const page = '/' + (a.dataset.page || '').trim()
       if (page === current) a.setAttribute('active', '')
       else a.removeAttribute('active')
     }
@@ -80,7 +76,6 @@ export class AppSidebarContent extends HTMLElement {
     const anchor = target.closest('a[data-el="nav-item"]') as HTMLAnchorElement | null
     if (!anchor) return
     const page = (anchor.dataset.page || '').trim()
-    if (!page) return
     const ev = new CustomEvent<NavItemClickDetail>(NAV_ITEM_CLICKED_EVENT, {
       bubbles: true,
       cancelable: true,
@@ -112,14 +107,15 @@ export class AppSidebarContent extends HTMLElement {
     const navItemTemplateContent = this._navItemTemplate.content.cloneNode(true)
     const navSectionTemplateContent = this._navSectionTemplate.content.cloneNode(true)
 
-    for (const sectionKey in SIDEBAR_ITEMS) {
-      const section = SIDEBAR_ITEMS[sectionKey]
+    const sidebarItems = getSidebarItems()
+    for (const sectionKey in sidebarItems) {
+      const section = sidebarItems[sectionKey] as Section
       const group = (navSectionTemplateContent.cloneNode(true) as DocumentFragment).querySelector(
         "[data-el='nav-section']"
       ) as HTMLElement
       if (section.title) {
         const titleEl = group.querySelector('[data-el="nav-section-title"]') as HTMLElement
-        titleEl.textContent = this.t(section.title) ?? ''
+        titleEl.textContent = section.title ?? ''
       }
 
       const itemsContainer = group.querySelector('[data-el="nav-section-items"]') as HTMLElement
@@ -131,7 +127,7 @@ export class AppSidebarContent extends HTMLElement {
         a.href = '#'
         a.dataset.page = item.page
         const labelSpan = a.querySelector('[data-el="nav-item-label"]') as HTMLElement
-        labelSpan.textContent = this.t(item.title) ?? ''
+        labelSpan.textContent = item.title ?? ''
         const icon = a.querySelector('[data-el="nav-item-icon"]') as HTMLElement
         icon.setAttribute('name', item.icon)
         itemsContainer.appendChild(a)
@@ -158,9 +154,5 @@ if (!customElements.get(APP_SIDEBAR_CONTENT_NAME))
 declare global {
   interface HTMLElementTagNameMap {
     [APP_SIDEBAR_CONTENT_NAME]: AppSidebarContent
-  }
-
-  interface HTMLElementEventMap {
-    [NAV_ITEM_CLICKED_EVENT]: CustomEvent<NavItemClickDetail>
   }
 }

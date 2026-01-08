@@ -1,0 +1,12 @@
+<template>
+  <div part="base" class="page__layout">
+    <header part="header" class="page__header-wrapper">
+      <h1 part="title">
+        <slot name="header"></slot>
+      </h1>
+    </header>
+    <div part="content" class="page__content-wrapper">
+      <slot name="content"></slot>
+    </div>
+  </div>
+</template>

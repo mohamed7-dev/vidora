@@ -1,0 +1,47 @@
+<template>
+  <ui-dialog alert>
+    <ui-dialog-portal>
+      <ui-dialog-overlay></ui-dialog-overlay>
+      <ui-dialog-content>
+        <ui-dialog-header>
+          <ui-dialog-title class="sr-only">About Application</ui-dialog-title>
+          <ui-dialog-description class="sr-only">info about the application</ui-dialog-description>
+        </ui-dialog-header>
+        <ui-dialog-body>
+          <section>
+            <img data-el="logo" />
+            <h1 data-el="app-name"></h1>
+          </section>
+
+          <area-section>
+            <div slot="articles">
+              <area-article label="Application Info" first>
+                <span slot="content">Application Info</span>
+              </area-article>
+              <area-article label="What's New" last>
+                <span slot="content">What's New</span>
+              </area-article>
+            </div>
+          </area-section>
+          <area-section>
+            <div slot="articles">
+              <area-article label="Report An Issue">
+                <span slot="content">Report An Issue</span>
+              </area-article>
+            </div>
+          </area-section>
+          <area-section>
+            <div slot="articles">
+              <area-article label="Credits" first>
+                <span slot="content">Credits</span>
+              </area-article>
+              <area-article label="Legal" last>
+                <span slot="content">Legal</span>
+              </area-article>
+            </div>
+          </area-section>
+        </ui-dialog-body>
+      </ui-dialog-content>
+    </ui-dialog-portal>
+  </ui-dialog>
+</template>

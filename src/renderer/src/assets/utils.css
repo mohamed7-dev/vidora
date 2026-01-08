@@ -1,9 +1,35 @@
-.flex {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+/* Visually hidden, but still accessible to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap; /* prevent line breaks */
+  border: 0;
 }
 
-.flex--column {
-  flex-direction: column;
+/* Undo sr-only: make the element visible again */
+.not-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  border: 0;
+}
+
+.truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.header-button-icon {
+  --ui-icon-size: 1.5rem;
 }

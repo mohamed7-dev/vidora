@@ -1,48 +1,61 @@
 <template>
-  <ui-dialog show-x-button alert>
-    <div class="preferences-dialog__header" slot="header">
-      <h2 data-i18n="pref.title">Preferences</h2>
-    </div>
-
-    <div slot="content" class="preferences-dialog__content">
-      <ui-tabs value="general">
-        <ui-button
-          class="preferences-dialog__header__button"
-          id="general-tab-trigger"
-          variant="ghost"
-          value="general"
-          slot="tab"
-          block
-        >
-          <ui-icon slot="prefix" name="settings"></ui-icon>
-          <span slot="label" data-i18n="pref.tabs.general">General</span>
-        </ui-button>
-        <ui-button
-          class="preferences-dialog__header__button"
-          id="downloads-tab-trigger"
-          variant="ghost"
-          value="downloads"
-          slot="tab"
-          block
-        >
-          <ui-icon slot="prefix" name="arrow-big-down-dash"></ui-icon>
-          <span slot="label" data-i18n="pref.tabs.downloads">Downloads</span>
-        </ui-button>
-        <ui-button
-          class="preferences-dialog__header__button"
-          id="downloader-tab-trigger"
-          variant="ghost"
-          value="downloader"
-          slot="tab"
-          block
-        >
-          <ui-icon slot="prefix" name="arrow-big-down-dash"></ui-icon>
-          <span slot="label" data-i18n="pref.tabs.downloader">Downloader</span>
-        </ui-button>
-        <general-tab-content slot="panel" value="general"></general-tab-content>
-        <downloads-tab-content slot="panel" value="downloads"></downloads-tab-content>
-        <downloader-tab-content slot="panel" value="downloader"></downloader-tab-content>
-      </ui-tabs>
-    </div>
+  <ui-dialog alert>
+    <ui-dialog-portal>
+      <ui-dialog-overlay></ui-dialog-overlay>
+      <ui-dialog-content>
+        <ui-dialog-header>
+          <ui-dialog-title>
+            <span slot="label" data-i18n="Preferences"></span>
+          </ui-dialog-title>
+          <ui-dialog-description
+            class="sr-only"
+            data-i18n="Configure application settings"
+          ></ui-dialog-description>
+        </ui-dialog-header>
+        <ui-dialog-body>
+          <ui-tab value="general">
+            <ui-tab-list>
+              <ui-tab-trigger value="general" as-child>
+                <ui-button class="tab__trigger" data-el="general-tab-trigger" variant="ghost" block>
+                  <ui-icon name="settings"></ui-icon>
+                  <span data-i18n="General"></span>
+                </ui-button>
+              </ui-tab-trigger>
+              <ui-tab-trigger value="downloads" as-child>
+                <ui-button
+                  class="tab__trigger"
+                  data-el="downloads-tab-trigger"
+                  variant="ghost"
+                  block
+                >
+                  <ui-icon name="arrow-big-down-dash"></ui-icon>
+                  <span data-i18n="Downloads"></span>
+                </ui-button>
+              </ui-tab-trigger>
+              <ui-tab-trigger value="downloader" as-child>
+                <ui-button
+                  class="tab__trigger"
+                  data-el="downloader-tab-trigger"
+                  variant="ghost"
+                  block
+                >
+                  <ui-icon name="arrow-big-down-dash"></ui-icon>
+                  <span data-i18n="Downloader"></span>
+                </ui-button>
+              </ui-tab-trigger>
+            </ui-tab-list>
+            <ui-tab-content value="general">
+              <general-tab-content></general-tab-content>
+            </ui-tab-content>
+            <ui-tab-content value="downloads">
+              <downloads-tab-content></downloads-tab-content>
+            </ui-tab-content>
+            <ui-tab-content value="downloader">
+              <downloader-tab-content></downloader-tab-content>
+            </ui-tab-content>
+          </ui-tab>
+        </ui-dialog-body>
+      </ui-dialog-content>
+    </ui-dialog-portal>
   </ui-dialog>
 </template>

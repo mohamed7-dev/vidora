@@ -1,35 +1,34 @@
 import '../../../area-article/index'
 import '../../../area-section/index'
-import template from './template.html?raw'
-import styleCss from './style.css?inline'
-import { UIInput, UISelect, UIButton } from '@renderer/components/ui'
+import html from './template.html?raw'
+import style from './style.css?inline'
 import { DATA } from '@root/shared/data'
-import { AppConfig } from '@root/shared/types'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
+import { AppConfig } from '@root/shared/ipc/app-config'
+import { type UiSelect } from '@ui/select/ui-select'
+import { type ValueChangeEventDetail } from '@ui/select/constants'
+import { type UiSelectContent } from '@ui/select/ui-select-content'
+import { type UiInput, type UIInputValueDetail } from '@ui/input/ui-input'
+import { type UiButton } from '@ui/button/ui-button'
+import { ChangePathsStatusBusEvent } from '@root/shared/ipc/user-pref'
+import { localizeElementsText } from '@renderer/lib/ui/localize'
 
-export class DownloaderTab extends HTMLElement {
-  // Cache stylesheet and template per class for performance and to prevent FOUC
-  private static readonly sheet: CSSStyleSheet = (() => {
-    const s = new CSSStyleSheet()
-    s.replaceSync(styleCss)
-    return s
-  })()
-  private static readonly tpl: HTMLTemplateElement = (() => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(template, 'text/html')
-    const inner = doc.querySelector('template')
-    const t = document.createElement('template')
-    t.innerHTML = inner ? inner.innerHTML : template
-    return t
-  })()
+const DOWNLOADER_TAB_TAG_NAME = 'downloader-tab-content'
+
+export class DownloaderTabContent extends HTMLElement {
+  private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
+  private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
 
   // states
   private config: AppConfig | null = null
-  private t = window.api?.i18n?.t ?? ((key: string) => key)
-
+  private t = window.api.i18n.t
+  private _ytdlpPathChangedUnsub: null | (() => void) = null
+  private _eventsAborter: null | AbortController = null
   //refs
-  private cookiesFromBrowserSelect: UISelect | null = null
-  private proxyServerInput: UIInput | null = null
-  private changeYtdlpConfigPathButton: UIButton | null = null
+  private cookiesFromBrowserSelect: UiSelect | null = null
+  private cookiesFromBrowserSelectContent: UiSelectContent | null = null
+  private proxyServerInput: UiInput | null = null
+  private changeYtdlpConfigPathButton: UiButton | null = null
   private ytdlpConfigPathDisplay: HTMLElement | null = null
 
   constructor() {
@@ -38,119 +37,127 @@ export class DownloaderTab extends HTMLElement {
   }
 
   async connectedCallback(): Promise<void> {
+    if (!this._eventsAborter) {
+      this._eventsAborter = new AbortController()
+    }
     this._render()
     this._cacheRefs()
-    this.config = await window.api?.config.getConfig()
-    this.applyI18n()
+    const config = await window.api?.config.getConfig()
+    this.config = config ? JSON.parse(JSON.stringify(config)) : null
+    // this.applyI18n()
     this._syncYtdlpConfigPath()
     this._changeYtdlpConfigPath()
-    this.syncCookiesFromBrowserSelect()
-    this.changeProxyServerInput()
-    this.syncProxyServerInput()
-    this.changeCookiesFromBrowserSelect()
-    this.syncCookiesFromBrowserSelect()
+    this._syncCookiesFromBrowserSelect()
+    this._syncProxyServerInput()
+    this._changeProxyServerInput()
+    this._syncCookiesFromBrowserSelect()
+    this._changeCookiesFromBrowserSelect()
+    localizeElementsText(this.shadowRoot as ShadowRoot)
+  }
+
+  disconnectedCallback(): void {
+    this._ytdlpPathChangedUnsub?.()
+    this._ytdlpPathChangedUnsub = null
+    this._eventsAborter?.abort()
+    this._eventsAborter = null
   }
 
   private _render(): void {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = ''
-    // attach cached stylesheet first to avoid FOUC
-    this.shadowRoot.adoptedStyleSheets = [DownloaderTab.sheet]
-    // append cached template content
-    this.shadowRoot.append(DownloaderTab.tpl.content.cloneNode(true))
+    this.shadowRoot.adoptedStyleSheets = [DownloaderTabContent.sheet]
+    this.shadowRoot.append(DownloaderTabContent.tpl.content.cloneNode(true))
   }
 
   private _cacheRefs(): void {
     this.cookiesFromBrowserSelect =
-      this.shadowRoot?.querySelector<UISelect>('#cookies-from-browser-select') ?? null
-    this.proxyServerInput = this.shadowRoot?.querySelector<UIInput>('#proxy-server-input') ?? null
+      this.shadowRoot?.querySelector<UiSelect>('[data-el="cookies-from-browser-select"]') ?? null
+    this.cookiesFromBrowserSelectContent =
+      this.shadowRoot?.querySelector<UiSelectContent>(
+        '[data-el="cookies-from-browser-select-content"]'
+      ) ?? null
+    this.proxyServerInput =
+      this.shadowRoot?.querySelector<UiInput>('[data-el="proxy-server-input"]') ?? null
     this.changeYtdlpConfigPathButton =
-      this.shadowRoot?.querySelector<UIButton>('#change-ytdlp-config-path-button') ?? null
+      this.shadowRoot?.querySelector<UiButton>('[data-el="change-ytdlp-config-path-btn"]') ?? null
     this.ytdlpConfigPathDisplay =
-      this.shadowRoot?.querySelector<HTMLElement>('#ytdlp-config-path-display') ?? null
+      this.shadowRoot?.querySelector<HTMLElement>('[data-el="ytdlp-config-path-display"]') ?? null
   }
 
   private _syncYtdlpConfigPath(location?: string): void {
     if (!this.ytdlpConfigPathDisplay) return
     const path = location ?? this.config?.downloader.configPath ?? ''
     this.ytdlpConfigPathDisplay.textContent = path
-    this.ytdlpConfigPathDisplay.setAttribute('title', path)
   }
 
   private _changeYtdlpConfigPath(): void {
-    if (!this.changeYtdlpConfigPathButton) return
-    this.changeYtdlpConfigPathButton.addEventListener('click', () => {
-      window.api?.downloadsPreferences.changeYtdlpConfigPath()
-    })
-    window.api?.downloadsPreferences.changedYtdlpConfigPath((location: string | string[]) => {
-      this._syncYtdlpConfigPath(Array.isArray(location) ? (location[0] ?? '') : location)
-    })
+    if (!this.changeYtdlpConfigPathButton || !this._eventsAborter) return
+    this.changeYtdlpConfigPathButton.addEventListener(
+      'click',
+      () => {
+        window.api.preferences.ytdlpConfigPath.change()
+      },
+      { signal: this._eventsAborter?.signal }
+    )
+    this._ytdlpPathChangedUnsub = window.api.preferences.ytdlpConfigPath.changed(
+      (payload: ChangePathsStatusBusEvent) => {
+        this._syncYtdlpConfigPath(
+          Array.isArray(payload.path) ? (payload.path[0] ?? '') : payload.path
+        )
+      }
+    )
   }
 
-  private applyI18n(): void {
-    if (!this.shadowRoot) return
-    // titles translations
-    this.shadowRoot.querySelectorAll('[label]').forEach((el) => {
-      el.setAttribute('label', this.t(el.getAttribute('label') ?? ''))
-    })
-
-    // text content translations
-    this.shadowRoot.querySelectorAll('[data-i18n]').forEach((el) => {
-      el.textContent = this.t(el.getAttribute('data-i18n') as string)
-    })
-    // placeholder translations
-    this.shadowRoot.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
-      const key = el.getAttribute('data-i18n-placeholder')
-      if (key) el.setAttribute('placeholder', this.t(key))
-    })
-
-    // aria-label translations
-    this.shadowRoot.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
-      const key = el.getAttribute('data-i18n-aria-label')
-      if (key) el.setAttribute('aria-label', this.t(key))
-    })
+  private _changeProxyServerInput(): void {
+    if (!this.proxyServerInput || !this._eventsAborter) return
+    this.proxyServerInput.addEventListener(
+      'input',
+      (e) => {
+        const detail = (e as CustomEvent<UIInputValueDetail>).detail
+        if (!detail.value) return
+        window.api.config.updateConfig({ downloader: { proxyServerUrl: detail.value } })
+      },
+      { signal: this._eventsAborter.signal }
+    )
   }
 
-  private changeProxyServerInput(): void {
-    if (!this.proxyServerInput) return
-    this.proxyServerInput.addEventListener('input', (e) => {
-      const value = (e.target as UIInput).value
-      if (!value) return
-      window.api.config.updateConfig({ downloader: { proxyServerUrl: value } })
-    })
-  }
-
-  private syncProxyServerInput(): void {
+  private _syncProxyServerInput(): void {
     if (!this.proxyServerInput) return
     // this.proxyServerInput.pattern = DATA.config.proxyServerPattern
     const saved = this.config?.downloader.proxyServerUrl
     if (!saved) return
-    this.proxyServerInput.setAttribute('value', saved)
+    this.proxyServerInput.value = saved
   }
 
-  private changeCookiesFromBrowserSelect(): void {
-    if (!this.cookiesFromBrowserSelect) return
-    this.cookiesFromBrowserSelect.addEventListener('change', (e) => {
-      const value = (e.target as UISelect).value
-      if (!value) return
-      this.cookiesFromBrowserSelect?.setAttribute('value', value)
-      window.api.config.updateConfig({ downloader: { cookiesFromBrowser: value } })
-    })
+  private _changeCookiesFromBrowserSelect(): void {
+    if (!this.cookiesFromBrowserSelect || !this._eventsAborter) return
+    this.cookiesFromBrowserSelect.addEventListener(
+      'change',
+      (e) => {
+        const detail = (e as CustomEvent<ValueChangeEventDetail>).detail
+        if (!detail.value) return
+        if (this.cookiesFromBrowserSelect) {
+          this.cookiesFromBrowserSelect.value = detail.value
+        }
+        window.api.config.updateConfig({ downloader: { cookiesFromBrowser: detail.value } })
+      },
+      { signal: this._eventsAborter.signal }
+    )
   }
-  private syncCookiesFromBrowserSelect(): void {
-    if (!this.cookiesFromBrowserSelect) return
+  private _syncCookiesFromBrowserSelect(): void {
+    if (!this.cookiesFromBrowserSelect || !this.cookiesFromBrowserSelectContent) return
     const options = DATA.cookiesFromBrowser.map((cookie) => {
-      return `<ui-option value="${cookie.value}">${cookie.label.toLowerCase() === 'none' ? this.t('pref.downloader.cookiesFromBrowser.options.none') : cookie.label}</ui-option>`
+      return `<ui-select-option value="${cookie.value}">${cookie.label.toLowerCase() === 'none' ? this.t`None` : cookie.label}</ui-select-option>`
     })
-    this.cookiesFromBrowserSelect.innerHTML = options.join('')
+    this.cookiesFromBrowserSelectContent.innerHTML = options.join('')
     this.cookiesFromBrowserSelect.value = this.config?.downloader.cookiesFromBrowser ?? ''
   }
 }
-if (!customElements.get('downloader-tab-content'))
-  customElements.define('downloader-tab-content', DownloaderTab)
+if (!customElements.get(DOWNLOADER_TAB_TAG_NAME))
+  customElements.define(DOWNLOADER_TAB_TAG_NAME, DownloaderTabContent)
 
 declare global {
   interface HTMLElementTagNameMap {
-    'downloader-tab-content': DownloaderTab
+    [DOWNLOADER_TAB_TAG_NAME]: DownloaderTabContent
   }
 }

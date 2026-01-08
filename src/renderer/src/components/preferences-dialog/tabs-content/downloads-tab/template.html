@@ -1,77 +1,89 @@
-<template id="downloads-tab-template">
-  <area-section label="pref.downloads.sections.downloads">
+<template>
+  <area-section data-i18n-label="Downloads">
     <div slot="articles">
-      <area-article label="pref.downloads.downloadPath.title" first>
-        <div slot="content" class="download-path_container">
-          <span id="download-path-display"></span>
-          <ui-button class="download-path-button" id="change-download-path-button" variant="outline"
-            ><span slot="label" data-i18n="pref.downloads.downloadPath.change"
-              >Change</span
-            ></ui-button
-          >
+      <area-article data-i18n-label="Download Path" first>
+        <div slot="content" class="download__path-container">
+          <span data-el="download-path-display"></span>
+          <ui-button
+            class="download-path-button"
+            data-el="change-download-path-btn"
+            variant="outline"
+            ><span data-i18n="Change"></span
+          ></ui-button>
         </div>
       </area-article>
-      <area-article label="pref.downloads.maxDownloads.title" last>
-        <div slot="content" id="max-downloads-controls" class="max-downloads_container">
+      <area-article data-i18n-label="Max Number of Downloads" last>
+        <div slot="content" data-el="max-downloads-controls" class="max__downloads-container">
           <ui-button size="icon" variant="outline" data-action="decrement">
-            <ui-icon slot="prefix" name="minus"></ui-icon>
+            <ui-icon name="minus"></ui-icon>
+            <span data-i18n="decrement number of downloads" class="sr-only"></span>
           </ui-button>
-          <span id="max-downloads-display">5</span>
+          <p data-el="max-downloads-display"></p>
           <ui-button size="icon" variant="outline" data-action="increment">
-            <ui-icon slot="prefix" name="plus"></ui-icon>
+            <ui-icon name="plus"></ui-icon>
+            <span data-i18n="increment number of downloads" class="sr-only"></span>
           </ui-button>
         </div>
       </area-article>
     </div>
   </area-section>
 
-  <area-section label="pref.downloads.sections.qualityControl">
+  <area-section data-i18n-label="Quality Control">
     <div slot="articles">
-      <area-article label="pref.downloads.videoQuality.title" first>
-        <ui-select
-          slot="content"
-          id="video-quality-select"
-          variant="outline"
-          placeholder="Select quality"
-        >
+      <area-article data-i18n-label="Preferred Video Quality" first>
+        <ui-select slot="content" data-el="video-quality-select">
+          <ui-select-trigger as-child>
+            <ui-button variant="outline">
+              <ui-select-value data-i18n-placeholder="Select video quality"></ui-select-value>
+            </ui-button>
+          </ui-select-trigger>
+          <ui-select-portal align="end">
+            <ui-select-content data-el="video-quality-select-content"> </ui-select-content>
+          </ui-select-portal>
         </ui-select>
       </area-article>
-      <area-article label="pref.downloads.videoCodec.title">
-        <ui-select
-          slot="content"
-          id="video-codec-select"
-          variant="outline"
-          placeholder="Select codec"
-        >
+      <area-article data-i18n-label="Preferred Video Codec">
+        <ui-select slot="content" data-el="video-codec-select">
+          <ui-select-trigger as-child>
+            <ui-button variant="outline">
+              <ui-select-value data-i18n-placeholder="Select video codec"></ui-select-value>
+            </ui-button>
+          </ui-select-trigger>
+          <ui-select-portal align="end">
+            <ui-select-content data-el="video-codec-select-content"> </ui-select-content>
+          </ui-select-portal>
         </ui-select>
       </area-article>
-      <area-article label="pref.downloads.audioQuality.title" last>
-        <ui-select
-          slot="content"
-          id="audio-quality-select"
-          variant="outline"
-          placeholder="Select audio quality"
-        >
+      <area-article data-i18n-label="Preferred Audio Quality" last>
+        <ui-select slot="content" data-el="audio-quality-select">
+          <ui-select-trigger as-child>
+            <ui-button variant="outline">
+              <ui-select-value data-i18n-placeholder="Select audio quality"></ui-select-value>
+            </ui-button>
+          </ui-select-trigger>
+          <ui-select-portal align="end">
+            <ui-select-content data-el="audio-quality-select-content"> </ui-select-content>
+          </ui-select-portal>
         </ui-select>
       </area-article>
     </div>
   </area-section>
 
-  <area-section label="pref.downloads.sections.naming">
+  <area-section data-i18n-label="Naming">
     <div slot="articles">
-      <area-article label="pref.downloads.fileNameFormatPlaylists.title" first>
-        <div slot="content" class="name-format-playlists_container">
-          <ui-input id="file-name-format-playlists-input" dir="ltr" type="text"></ui-input>
+      <area-article data-i18n-label="File Name Format For Playlists" first>
+        <div slot="content" class="name__format-container">
+          <ui-input data-el="file-name-format-playlists-input"></ui-input>
           <ui-button size="sm" variant="ghost" data-action="reset-file-name">
-            <span slot="label" data-i18n="generic.actions.reset">Reset</span>
+            <span data-i18n="Reset"></span>
           </ui-button>
         </div>
       </area-article>
-      <area-article label="pref.downloads.folderNameFormatPlaylists.title" last>
-        <div slot="content" class="name-format-playlists_container">
-          <ui-input id="folder-name-format-playlists-input" dir="ltr" type="text"></ui-input>
+      <area-article data-i18n-label="Folder Name Format For Playlists" last>
+        <div slot="content" class="name__format-container">
+          <ui-input data-el="folder-name-format-playlists-input"></ui-input>
           <ui-button size="sm" variant="ghost" data-action="reset-folder-name">
-            <span slot="label" data-i18n="generic.actions.reset">Reset</span>
+            <span data-i18n="Reset"></span>
           </ui-button>
         </div>
       </area-article>

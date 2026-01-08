@@ -1,0 +1,39 @@
+<template>
+  <div part="base" class="job__item">
+    <div class="item__thumb-container">
+      <div part="thumbnail" class="item__thumb">
+        <img part="image" class="thumb__img" data-el="thumbnail" />
+      </div>
+      <p part="label" class="item__thumb-label" data-el="label"></p>
+    </div>
+    <div part="meta" class="item__meta">
+      <p part="label" class="item__meta-label" data-el="label">
+        <slot name="label"></slot>
+      </p>
+
+      <p part="subtitle" class="item__meta-sub" data-el="subtitle">
+        <slot name="subtitle"></slot>
+      </p>
+      <div part="progress" class="meta__progress" data-el="progress">
+        <div part="progress-bar" class="meta__progress-bar" data-el="bar" style="width: 0%"></div>
+      </div>
+    </div>
+    <div part="controls" class="item__controls">
+      <ui-button class="item__controls-pause-btn" data-el="pause-btn" variant="secondary">
+        <span data-i18n="Pause"></span>
+      </ui-button>
+      <ui-button class="item__controls-resume-btn" data-el="resume-btn" variant="secondary">
+        <span data-i18n="Resume"></span>
+      </ui-button>
+      <ui-button class="item__controls-delete-btn" data-el="delete-btn" variant="destructive">
+        <span data-i18n="Delete"></span>
+      </ui-button>
+      <ui-button class="item__controls-copyurl-btn" data-el="copy-url-btn" variant="secondary">
+        <span data-i18n="Copy URL"></span>
+      </ui-button>
+      <ui-button class="item__controls-open-btn" data-el="open-btn" variant="secondary">
+        <span data-i18n="Open"></span>
+      </ui-button>
+    </div>
+  </div>
+</template>

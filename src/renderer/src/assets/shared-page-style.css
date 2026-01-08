@@ -31,7 +31,8 @@ body {
   flex-direction: column;
 }
 
-html[data-app-blocking='true'] .container {
+/* app scrim  */
+html[data-has-app-scrim='true'] .container {
   pointer-events: none;
   user-select: none;
   filter: grayscale(0.1) opacity(0.9);
@@ -41,15 +42,16 @@ app-scrim {
   display: none;
 }
 
-html[data-app-blocking='true'] app-scrim {
+html[data-has-app-scrim='true'] app-scrim {
   display: block;
 }
 
+/* main container  */
 main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: 100vh;
   margin-inline-start: var(--sidebar-width);
 }
 

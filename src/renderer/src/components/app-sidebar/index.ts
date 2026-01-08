@@ -1,7 +1,7 @@
 import './content/index'
 import html from './template.html?raw'
 import style from './style.css?inline'
-import { createStyleSheetFromStyle, createTemplateFromHtml } from '../ui/lib/template-loader'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
 
 const APP_SIDEBAR_NAME = 'app-sidebar'
 

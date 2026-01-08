@@ -1,66 +1,116 @@
-<template id="general-tab-template">
-  <area-section label="pref.general.section.application">
+<template>
+  <area-section data-i18n-label="Application">
     <div slot="articles">
-      <area-article label="pref.general.restartApp.title" first>
+      <area-article label="Restart App" first>
         <ui-button
           slot="content"
-          class="restart-app_button"
-          id="restart-app-button"
+          class="restart__button"
+          data-el="restart-app-button"
           variant="outline"
         >
-          <span slot="label" data-i18n="pref.general.restartApp.button">Restart App</span>
+          <span data-i18n="Restart App"></span>
         </ui-button>
       </area-article>
-      <area-article label="pref.general.checkForUpdate.title">
+      <area-article data-i18n-label="Check for Updates">
         <ui-button
           slot="content"
-          class="check-for-updates_button"
-          id="check-for-updates-button"
+          class="check__button"
+          data-el="check-for-updates-button"
           variant="outline"
         >
-          <span slot="label" data-i18n="pref.general.checkForUpdate.buttonTitle">
-            Check for updates
-          </span>
+          <span data-i18n="Check For Updates"></span>
         </ui-button>
       </area-article>
-      <area-article label="pref.general.autoUpdate.title">
+      <area-article data-i18n-label="Auto Update">
         <div slot="content" class="with-tooltip">
-          <ui-tooltip side="bottom" align="center" offset="8">
-            <span slot="trigger" class="restart-indicator" aria-label="Requires restart"> ! </span>
-            <div slot="content" data-i18n="generic.actions.requireStartAlert"></div>
+          <ui-tooltip>
+            <ui-tooltip-trigger as-child>
+              <ui-button size="icon" variant="secondary">
+                <span>!</span>
+                <span class="sr-only" data-i18n="Requires Restart"></span>
+              </ui-button>
+            </ui-tooltip-trigger>
+            <ui-tooltip-portal side="bottom" align="center" offset="10">
+              <ui-tooltip-content>
+                <span data-i18n="Changing this option requires app restart"></span>
+              </ui-tooltip-content>
+            </ui-tooltip-portal>
           </ui-tooltip>
-          <ui-checkbox id="auto-update-switch" variant="secondary"></ui-checkbox>
+          <ui-checkbox data-el="auto-update-checkbox" variant="secondary"></ui-checkbox>
         </div>
       </area-article>
-      <area-article label="pref.general.useNativeToolbar.title">
+      <area-article data-i18n-label="Use Native Toolbar">
         <div slot="content" class="with-tooltip native-toolbar-container">
-          <ui-tooltip side="bottom" align="center" offset="8">
-            <span slot="trigger" class="restart-indicator" aria-label="Requires restart"> ! </span>
-            <div slot="content" data-i18n="generic.actions.requireStartAlert"></div>
+          <ui-tooltip>
+            <ui-tooltip-trigger as-child>
+              <ui-button size="icon" variant="secondary">
+                <span>!</span>
+                <span class="sr-only" data-i18n="Requires Restart"></span>
+              </ui-button>
+            </ui-tooltip-trigger>
+            <ui-tooltip-portal side="bottom" align="center" offset="10">
+              <ui-tooltip-content>
+                <span data-i18n="Changing this option requires app restart"></span>
+              </ui-tooltip-content>
+            </ui-tooltip-portal>
           </ui-tooltip>
-          <ui-checkbox id="use-native-toolbar-switch" variant="secondary"></ui-checkbox>
+          <ui-checkbox data-el="use-native-toolbar-checkbox" variant="secondary"></ui-checkbox>
         </div>
       </area-article>
-      <area-article label="pref.general.closeAppToSystemTray.title" last>
+      <area-article data-i18n-label="Close App To System Tray" last>
         <div slot="content">
-          <ui-checkbox id="close-app-to-system-tray-switch" variant="secondary"></ui-checkbox>
+          <label
+            for="close-app-to-system-tray-checkbox"
+            data-i18n="Close app to system tray"
+            class="sr-only"
+          ></label>
+          <ui-checkbox
+            id="close-app-to-system-tray-checkbox"
+            data-el="close-app-to-system-tray-checkbox"
+            variant="secondary"
+          ></ui-checkbox>
         </div>
       </area-article>
     </div>
   </area-section>
-  <area-section label="pref.general.section.userInterface">
+  <area-section data-i18n-label="User Interface">
     <div slot="articles">
-      <area-article label="pref.general.theme.title" first>
-        <ui-select slot="content" variant="outline" placeholder="Select" id="theme-select">
+      <area-article data-i18n-label="Theme" first>
+        <ui-select slot="content" data-el="theme-select">
+          <ui-select-trigger as-child>
+            <ui-button variant="outline">
+              <ui-select-value data-i18n-placeholder="Select Theme"></ui-select-value>
+            </ui-button>
+          </ui-select-trigger>
+          <ui-select-portal>
+            <ui-select-content data-el="theme-select-content"></ui-select-content>
+          </ui-select-portal>
         </ui-select>
       </area-article>
-      <area-article label="pref.general.language.title" last>
+      <area-article data-i18n-label="Language" last>
         <div slot="content" class="with-tooltip language-select-container">
-          <ui-tooltip side="bottom" align="center" offset="8">
-            <span slot="trigger" class="restart-indicator" aria-label="Requires restart"> ! </span>
-            <div slot="content" data-i18n="generic.actions.requireStartAlert"></div>
+          <ui-tooltip>
+            <ui-tooltip-trigger as-child>
+              <ui-button size="icon" variant="secondary">
+                <span>!</span>
+                <span class="sr-only" data-i18n="Requires Restart"></span>
+              </ui-button>
+            </ui-tooltip-trigger>
+            <ui-tooltip-portal side="bottom" align="center" offset="10">
+              <ui-tooltip-content>
+                <span data-i18n="Changing this option requires app restart"></span>
+              </ui-tooltip-content>
+            </ui-tooltip-portal>
           </ui-tooltip>
-          <ui-select id="language-select" variant="outline" placeholder="Select language">
+          <ui-select data-el="language-select">
+            <ui-select-trigger as-child>
+              <ui-button variant="outline">
+                <ui-select-value data-i18n-placeholder="Select Language"></ui-select-value>
+              </ui-button>
+            </ui-select-trigger>
+            <ui-select-portal>
+              <ui-select-content data-el="language-select-content"> </ui-select-content>
+            </ui-select-portal>
           </ui-select>
         </div>
       </area-article>

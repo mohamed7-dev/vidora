@@ -1,18 +1,15 @@
 <template>
-  <section part="base" class="root">
-    <header part="head" class="header__wrapper">
-      <h1 data-i18n="home.pageTitle"></h1>
-    </header>
-    <div part="content" class="content__wrapper">
+  <page-layout>
+    <span slot="header" data-i18n="Home"></span>
+    <div slot="content">
       <article class="content__box">
         <img alt="logo" data-el="logo-image" />
-        <h2 data-i18n="home.cardTitle"></h2>
-        <p data-i18n="home.cardMessage"></p>
+        <h2 data-i18n="Download Media"></h2>
+        <p data-i18n="Add video, audio, or playlist url to start downloading"></p>
         <ui-button size="lg" data-el="add-download-btn">
-          <span slot="label" data-i18n="home.cardButtonTitle"></span>
+          <span data-i18n="Add Download"></span>
         </ui-button>
-        <new-dialog hide-trigger></new-dialog>
       </article>
     </div>
-  </section>
+  </page-layout>
 </template>

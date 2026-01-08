@@ -1,3 +1,5 @@
+@import url('../../assets/shadow-common.css');
+
 :host {
   display: contents;
 }
@@ -12,7 +14,7 @@
   inset-block: 0;
   inset-inline-start: 0;
   box-sizing: border-box;
-  padding: 0.75rem;
+  padding: var(--spacing-small);
   padding-top: calc(var(--toolbar-height) + 1rem);
   display: none;
 }

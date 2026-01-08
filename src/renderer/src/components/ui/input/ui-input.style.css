@@ -1,0 +1,87 @@
+@import url('../../../assets/shadow-common.css');
+
+:host {
+  display: inline-block;
+  font: inherit;
+  box-sizing: border-box;
+}
+:host([block]) {
+  display: block;
+  width: 100%;
+}
+.input {
+  width: 100%;
+  gap: var(--ui-input-gap, var(--spacing-x-small));
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  width: 100%;
+  color: inherit;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--destructive) !important;
+}
+
+.input::placeholder {
+  color: var(--ui-input-placeholder-color, color-mix(in oklch, var(--foreground) 50%, transparent));
+}
+
+.input:focus-visible {
+  border-color: var(--ring);
+  box-shadow: var(--focus-ring);
+}
+
+.input:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.input[aria-invalid='true']:focus-visible {
+  box-shadow: var(--destructive-focus-ring);
+}
+
+/* sizes */
+:host([size='default']) .input {
+  padding: var(--spacing-x-small) var(--spacing-small);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-dense);
+}
+
+:host([size='sm']) .input {
+  padding: var(--spacing-2x-small) var(--spacing-x-small);
+  font-size: var(--font-size-x-small);
+  line-height: var(--line-height-denser);
+}
+
+:host([size='lg']) .input {
+  padding: var(--spacing-x-small) var(--spacing-small);
+  font-size: var(--font-size-medium);
+  line-height: var(--line-height-normal);
+}
+
+/* variants */
+:host([variant='default']) .input {
+  border: 1px solid var(--input-border-color, var(--input));
+  border-radius: var(--input-border-radius, var(--radius));
+  background: transparent;
+}
+
+:host([variant='underline']) .input {
+  border: none;
+  border-bottom: 1px solid var(--input-border-color, var(--input));
+  border-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+:host([variant='underline']) .input:focus-visible {
+  border-bottom-color: var(--ring);
+}
+
+:host([variant='underline']) .input[aria-invalid='true'] {
+  border-bottom-color: var(--destructive);
+}

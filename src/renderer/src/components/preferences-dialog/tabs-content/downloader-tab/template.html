@@ -1,40 +1,47 @@
-<template id="downloader-tab-template">
-  <area-section label="pref.downloader.section.downloader">
+<template>
+  <area-section data-i18n-label="Downloader">
     <div slot="articles">
-      <area-article label="pref.downloader.cookiesFromBrowser.title" first>
-        <ui-select
-          slot="content"
-          id="cookies-from-browser-select"
-          data-i18n-placeholder="pref.downloader.cookiesFromBrowser.placeholder"
-          data-i18n-aria-label="pref.downloader.cookiesFromBrowser.title"
-          variant="outline"
-        >
+      <area-article data-i18n-label="Cookies From Browser" first>
+        <ui-select slot="content" data-el="cookies-from-browser-select">
+          <ui-select-trigger as-child>
+            <ui-button variant="outline">
+              <ui-select-value data-i18n-placeholder="Select Browser"></ui-select-value>
+            </ui-button>
+          </ui-select-trigger>
+          <ui-select-portal align="end">
+            <ui-select-content data-el="cookies-from-browser-select-content"> </ui-select-content>
+          </ui-select-portal>
         </ui-select>
       </area-article>
-      <area-article label="pref.downloader.proxyServer.title">
+      <area-article data-i18n-label="Proxy Server">
+        <label for="proxy-server-input" data-i18n="Proxy Server Url" class="sr-only"></label>
         <ui-input
           slot="content"
-          dir="ltr"
-          type="text"
           placeholder="http://localhost:8080"
           id="proxy-server-input"
+          data-el="proxy-server-input"
         />
       </area-article>
-      <area-article label="pref.downloader.ytdlpConfigPath.title" last>
-        <div class="ytdlp-config-path_container" slot="content">
-          <ui-tooltip side="bottom" align="center" offset="8">
-            <span slot="trigger" class="ytdlp-config-path-indicator" aria-label="ytdlp config file">
-              !
-            </span>
-            <div slot="content" data-i18n="pref.downloader.ytdlpConfigPath.tooltip"></div>
+      <area-article data-i18n-label="Ytdlp Config Path" last>
+        <div class="ytdlp-config-path-container" slot="content">
+          <ui-tooltip>
+            <ui-tooltip-trigger as-child>
+              <ui-button size="icon" variant="secondary">
+                <span>!</span>
+                <span data-i18n="ytdlp config file path" class="sr-only"></span>
+              </ui-button>
+            </ui-tooltip-trigger>
+            <ui-tooltip-portal side="bottom" align="center" offset="10">
+              <ui-tooltip-content>
+                <p
+                  data-i18n="Ytdlp config file used to configure yt-dlp when downloading media"
+                ></p>
+              </ui-tooltip-content>
+            </ui-tooltip-portal>
           </ui-tooltip>
-          <span id="ytdlp-config-path-display"></span>
-          <ui-button
-            class="ytdlp-config-path-button"
-            id="change-ytdlp-config-path-button"
-            variant="outline"
-          >
-            <span slot="label" data-i18n="generic.actions.change"></span>
+          <p data-el="ytdlp-config-path-display"></p>
+          <ui-button data-el="change-ytdlp-config-path-btn" variant="outline">
+            <span data-i18n="Change"></span>
           </ui-button>
         </div>
       </area-article>

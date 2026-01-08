@@ -1,29 +1,33 @@
+@import url('../../assets/shadow-common.css');
+
 :host {
   display: block;
   width: 100%;
+  box-sizing: border-box;
 }
 
-.area-article {
+.area__article {
   background-color: var(--secondary);
   color: var(--secondary-foreground);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0.75rem;
-  gap: 0.5rem;
+  padding: var(--spacing-medium) var(--spacing-small);
+  gap: var(--spacing-x-small);
+  overflow: auto;
 }
 
-:host([data-first]) .area-article {
-  border-top-left-radius: var(--radius);
-  border-top-right-radius: var(--radius);
+:host([first]) .area__article {
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
 }
 
-:host([data-last]) .area-article {
-  border-bottom-left-radius: var(--radius);
-  border-bottom-right-radius: var(--radius);
+:host([last]) .area__article {
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
 }
 
-.area-article__label {
-  font-size: 0.85rem;
-  font-weight: bold;
+.area__article-label {
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold);
 }

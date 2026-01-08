@@ -1,0 +1,26 @@
+@import url('../../assets/shadow-common.css');
+
+.jobs-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small);
+}
+
+.jobs__page-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small);
+}
+
+.jobs__page-footer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground);
+}
+
+area-article::part(base) {
+  justify-content: center;
+  gap: 0;
+}

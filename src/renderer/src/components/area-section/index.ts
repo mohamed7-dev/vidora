@@ -1,29 +1,25 @@
-import template from './template.html?raw'
-import styleCss from './style.css?inline'
+import html from './template.html?raw'
+import style from './style.css?inline'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
+
+const AREA_SECTION_TAG_NAME = 'area-section'
+
+const ATTRIBUTES = {
+  LABEL: 'label'
+}
 
 export class AreaSection extends HTMLElement {
-  // Cache stylesheet and template per class for performance and to prevent FOUC
-  private static readonly sheet: CSSStyleSheet = (() => {
-    const s = new CSSStyleSheet()
-    s.replaceSync(styleCss)
-    return s
-  })()
-  private static readonly tpl: HTMLTemplateElement = (() => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(template, 'text/html')
-    const inner = doc.querySelector('template')
-    const t = document.createElement('template')
-    t.innerHTML = inner ? inner.innerHTML : template
-    return t
-  })()
+  private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
+  private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
+
+  private _label: HTMLHeadElement | null = null
 
   static get observedAttributes(): string[] {
-    return ['label']
+    return [ATTRIBUTES.LABEL]
   }
 
-  attributeChangedCallback(name: string, _oldValue: string | null, _newValue: string | null): void {
-    if (name === 'label') {
-      this.toggleAttribute('data-label', _newValue !== null)
+  attributeChangedCallback(name: string): void {
+    if (name === ATTRIBUTES.LABEL) {
       this._syncLabel()
     }
   }
@@ -35,37 +31,48 @@ export class AreaSection extends HTMLElement {
 
   connectedCallback(): void {
     this._render()
-    this._applyAttributes()
-  }
-
-  private _syncLabel(): void {
-    if (!this.shadowRoot) return
-    const label = this.getAttribute('label')
-    const h2 = this.shadowRoot.querySelector('h2')
-    if (h2) {
-      h2.textContent = label
-    }
-  }
-
-  private _applyAttributes(): void {
-    this._syncLabel()
+    this._queryRefs()
+    this._init()
   }
 
   private _render(): void {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = ''
     this.shadowRoot.adoptedStyleSheets = [AreaSection.sheet]
-    const frag = AreaSection.tpl.content.cloneNode(true) as DocumentFragment
-    this.shadowRoot.appendChild(frag)
+    this.shadowRoot.append(AreaSection.tpl.content.cloneNode(true))
+  }
+
+  private _queryRefs(): void {
+    this._label = this.shadowRoot?.querySelector('[data-el="label"]') as HTMLHeadElement
+  }
+
+  private _syncLabel(): void {
+    if (!this.shadowRoot) return
+    if (this._label) {
+      this._label.textContent = this.label
+    }
+    this.toggleAttribute('data-has-label', !!this.label)
+  }
+
+  private _init(): void {
+    this._syncLabel()
+  }
+
+  get label(): string {
+    return this.getAttribute(ATTRIBUTES.LABEL) ?? ''
+  }
+
+  set label(value: string) {
+    this.setAttribute(ATTRIBUTES.LABEL, value)
   }
 }
 
-if (!customElements.get('area-section')) {
-  customElements.define('area-section', AreaSection)
+if (!customElements.get(AREA_SECTION_TAG_NAME)) {
+  customElements.define(AREA_SECTION_TAG_NAME, AreaSection)
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'area-section': AreaSection
+    [AREA_SECTION_TAG_NAME]: AreaSection
   }
 }

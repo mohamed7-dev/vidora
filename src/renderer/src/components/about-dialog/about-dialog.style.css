@@ -1,0 +1,12 @@
+@import url('../../assets/shadow-common.css');
+
+ui-dialog-content {
+  --ui-dialog-content-width: 25rem;
+  --ui-dialog-content-height: auto;
+}
+
+@media (max-width: 640px) {
+  ui-dialog-content::part(base) {
+    --ui-dialog-content-width: 95vw;
+  }
+}

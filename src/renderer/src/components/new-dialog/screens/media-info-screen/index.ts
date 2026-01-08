@@ -1,21 +1,25 @@
-import '../../../area-section/index'
-import '../../../area-article/index'
 import html from './template.html?raw'
 import style from './style.css?inline'
 import { MediaInfoProcessor, type Preferences, type VideoOption, type AudioOption } from './formats'
-import type { UIInput } from '../../../ui/input/index'
 import { DownloadProcessor } from './download'
-import { UIButton, UICheckbox, UISelect } from '@renderer/components/ui'
-import {
-  createStyleSheetFromStyle,
-  createTemplateFromHtml
-} from '@renderer/components/ui/lib/template-loader'
+
 import { AppConfig } from '@root/shared/ipc/app-config'
 import { YtdlpInfo } from '@root/shared/ipc/get-media-info'
-import { localizeElementsText } from '@renderer/lib/utils'
+import { ChangePathsStatusBusEvent } from '@root/shared/ipc/user-pref'
+import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
+import { UiSelect } from '@renderer/components/ui/select/ui-select'
+import { UiInput } from '@renderer/components/ui/input/ui-input'
+import { UiButton } from '@renderer/components/ui/button/ui-button'
+import { UICheckbox } from '@renderer/components/ui/checkbox/ui-checkbox'
+import { localizeElementsText } from '@renderer/lib/ui/localize'
+import { UiSelectContent } from '@renderer/components/ui/select/ui-select-content'
+import { UI_TAB_EVENTS, type ChangeValueEventDetail } from '@renderer/components/ui/tab/constants'
 
 const MEDIA_INFO_NAME = 'media-info-screen'
-export const DOWNLOAD_STARTED_EVENT_NAME = 'download:started'
+
+export const MEDIA_INFO_EVENTS = {
+  DOWNLOAD_STARTED: 'download:started'
+}
 
 export class MediaInfoScreen extends HTMLElement {
   private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
@@ -28,26 +32,31 @@ export class MediaInfoScreen extends HTMLElement {
   private _videoOptions: VideoOption[] = []
   private _audioOptions: AudioOption[] = []
 
-  private _audioPresent = false
+  // private _audioPresent = false
   private _isPlaylist = false
   private _processor: MediaInfoProcessor | null = null
   private _durationSec: number | null = null
   private _timeEventsAborter: AbortController | null = null
+  private _eventsAborter: AbortController | null = null
   private _selectedDownloadPath: string | null = null
   private _subtitlesChecked = false
   private _url: string | null = null
 
   //refs
   private _tabsEl: HTMLElement | null = null
-  private _videoFormatSelect: UISelect | null = null
-  private _audioFormatSelect: UISelect | null = null
-  private _audioForVideoFormatSelect: UISelect | null = null
-  private _timeStartEl: UIInput | null = null
-  private _timeEndEl: UIInput | null = null
+  private _videoFormatSelect: UiSelect | null = null
+  private _audioFormatSelect: UiSelect | null = null
+  private _audioForVideoFormatSelect: UiSelect | null = null
+  private _videoFormatSelectContent: HTMLElement | null = null
+  private _audioForVideoFormatSelectContent: HTMLElement | null = null
+  private _audioFormatSelectContent: HTMLElement | null = null
+  private _timeStartEl: UiInput | null = null
+  private _timeEndEl: UiInput | null = null
   private _downloadPathTextEl: HTMLElement | null = null
-  private _downloadPathChangeBtn: UIButton | null = null
+  private _downloadPathChangeBtn: UiButton | null = null
   private _subtitlesCheckbox: UICheckbox | null = null
-  private _startDownloadBtn: UIButton | null = null
+  private _startDownloadBtn: UiButton | null = null
+  private _changedDownloadPathUnsub: (() => void) | null = null
 
   constructor() {
     super()
@@ -63,6 +72,15 @@ export class MediaInfoScreen extends HTMLElement {
     this._setupListeners()
   }
 
+  disconnectedCallback(): void {
+    this._eventsAborter?.abort()
+    this._eventsAborter = null
+    this._timeEventsAborter?.abort()
+    this._timeEventsAborter = null
+    this._changedDownloadPathUnsub?.()
+    this._changedDownloadPathUnsub = null
+  }
+
   private _render(): void {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = ''
@@ -75,29 +93,33 @@ export class MediaInfoScreen extends HTMLElement {
     this._tabsEl = this.shadowRoot.querySelector('[data-el="tabs"]') as HTMLElement | null
     this._videoFormatSelect = this.shadowRoot.querySelector(
       '[data-el="video-format-select"]'
-    ) as UISelect | null
-    this._audioFormatSelect = this.shadowRoot.querySelector(
-      '[data-el="audio-format-select"]'
-    ) as UISelect | null
+    ) as UiSelect | null
+    this._videoFormatSelectContent = this.shadowRoot.querySelector(
+      '[data-el="video-format-select-content"]'
+    ) as UiSelectContent | null
+
     this._audioForVideoFormatSelect = this.shadowRoot.querySelector(
       '[data-el="audio-for-video-format-select"]'
-    ) as UISelect | null
+    ) as UiSelect | null
+    this._audioForVideoFormatSelectContent = this.shadowRoot.querySelector(
+      '[data-el="audio-for-video-format-select-content"]'
+    ) as UiSelectContent | null
     this._downloadPathTextEl = this.shadowRoot.querySelector(
       '[data-el="download-path-text"]'
     ) as HTMLElement | null
     this._downloadPathChangeBtn = this.shadowRoot.querySelector(
       '[data-el="download-path-change-btn"]'
-    ) as UIButton | null
+    ) as UiButton | null
     this._subtitlesCheckbox = this.shadowRoot.querySelector(
       '[data-el="subtitles-checkbox"]'
     ) as UICheckbox | null
     this._timeStartEl = this.shadowRoot.querySelector(
       '[data-el="time-start-input"]'
-    ) as UIInput | null
-    this._timeEndEl = this.shadowRoot.querySelector('[data-el="time-end-input"]') as UIInput | null
+    ) as UiInput | null
+    this._timeEndEl = this.shadowRoot.querySelector('[data-el="time-end-input"]') as UiInput | null
     this._startDownloadBtn = this.shadowRoot.querySelector(
       '[data-el="start-download-btn"]'
-    ) as UIButton | null
+    ) as UiButton | null
   }
 
   private async _init(): Promise<void> {
@@ -107,36 +129,65 @@ export class MediaInfoScreen extends HTMLElement {
   }
 
   private _setupListeners(): void {
+    this._eventsAborter?.abort()
+    this._eventsAborter = new AbortController()
+    const signal = this._eventsAborter.signal
+    // ui tab value change
+    this._tabsEl?.addEventListener(
+      UI_TAB_EVENTS.VALUE_CHANGE,
+      (e) => this._handleTabValueChange(e),
+      {
+        signal
+      }
+    )
     // download path
-    this._downloadPathChangeBtn?.addEventListener('click', this._handleChangePathClick)
+    this._downloadPathChangeBtn?.addEventListener('click', this._handleChangePathClick, { signal })
 
     // download path change
-    window.api.preferences.downloadPath.changedLocal((path) => {
+    this._changedDownloadPathUnsub = window.api.preferences.downloadPath.changedLocal((path) => {
       this._handleChangedPath(path)
     })
 
     // subtitles
-    this._subtitlesCheckbox?.addEventListener('change', () => {
-      this._handleSubtitlesCheckboxChange()
-    })
+    this._subtitlesCheckbox?.addEventListener(
+      'change',
+      () => {
+        this._handleSubtitlesCheckboxChange()
+      },
+      { signal }
+    )
 
     // start download: use active tab as discriminator between Video and Audio modes
-    this._startDownloadBtn?.addEventListener('click', async () => {
-      await this._handleStartDownloadClick()
-    })
+    this._startDownloadBtn?.addEventListener(
+      'click',
+      async () => {
+        await this._handleStartDownloadClick()
+      },
+      { signal }
+    )
 
     // time inputs
     this._bindTimeInputEvents()
+  }
+
+  private _handleTabValueChange(e: Event): void {
+    const detail = (e as CustomEvent<ChangeValueEventDetail>).detail
+    if (detail.value === 'audio') {
+      this._renderAudioFormatSelect()
+      localizeElementsText(this.shadowRoot as ShadowRoot)
+    }
   }
 
   private _handleChangePathClick(): void {
     window.api.preferences.downloadPath.changeLocal()
   }
 
-  private _handleChangedPath(path: string): void {
+  private _handleChangedPath(payload: ChangePathsStatusBusEvent): void {
     if (!this._downloadPathTextEl) return
-    this._downloadPathTextEl.textContent = path
-    this._selectedDownloadPath = path
+    if (payload.status === 'success') {
+      this._downloadPathTextEl.textContent = payload.payload.path
+      this._selectedDownloadPath = payload.payload.path
+    }
   }
 
   private _handleSubtitlesCheckboxChange(): void {
@@ -149,7 +200,10 @@ export class MediaInfoScreen extends HTMLElement {
     const kind: 'Video' | 'Audio' = tabValue === 'audio' ? 'Audio' : 'Video'
     await this._startDownload(kind).then(() => {
       this.dispatchEvent(
-        new CustomEvent(DOWNLOAD_STARTED_EVENT_NAME, { bubbles: true, composed: true })
+        new CustomEvent(MEDIA_INFO_EVENTS.DOWNLOAD_STARTED, {
+          bubbles: true,
+          composed: true
+        })
       )
     })
   }
@@ -158,7 +212,7 @@ export class MediaInfoScreen extends HTMLElement {
     this._timeEventsAborter?.abort()
     this._timeEventsAborter = new AbortController()
     const signal = this._timeEventsAborter.signal
-    const handlers: Array<[UIInput | null, string[]]> = [
+    const handlers: Array<[UiInput | null, string[]]> = [
       [this._timeStartEl, ['change', 'ui-change', 'blur']],
       [this._timeEndEl, ['change', 'ui-change', 'blur']]
     ]
@@ -288,7 +342,7 @@ export class MediaInfoScreen extends HTMLElement {
     const res = this._processor.processVideoFormats(value)
     this._videoOptions = res.video
     this._audioOptions = res.audio
-    this._audioPresent = res.audioPresent
+    // this._audioPresent = res.audioPresent
     this._isPlaylist = res.isPlaylist
     this.toggleAttribute('data-is-playlist', this._isPlaylist)
     this._renderFormatSelects()
@@ -302,36 +356,46 @@ export class MediaInfoScreen extends HTMLElement {
     }
   }
 
+  private _renderAudioFormatSelect(): void {
+    if (!this.shadowRoot) return
+    this._audioFormatSelect = this.shadowRoot.querySelector(
+      '[data-el="audio-format-select"]'
+    ) as UiSelect | null
+    this._audioFormatSelectContent = this.shadowRoot.querySelector(
+      '[data-el="audio-format-select-content"]'
+    ) as UiSelectContent | null
+    if (this._audioFormatSelect && this._audioFormatSelectContent) {
+      this._audioFormatSelectContent.innerHTML = ''
+      for (const a of this._audioOptions) {
+        const optEl = document.createElement('ui-select-option')
+        optEl.setAttribute('value', `${a.id}|${a.ext}`)
+        optEl.textContent = a.display
+        this._audioFormatSelectContent.appendChild(optEl)
+      }
+    }
+  }
+
   private _renderFormatSelects(): void {
     if (!this.shadowRoot) return
-    if (this._videoFormatSelect) {
-      this._videoFormatSelect.innerHTML = ''
+    if (this._videoFormatSelect && this._videoFormatSelectContent) {
+      this._videoFormatSelectContent.innerHTML = ''
       let defaultValue: string | null = null
       for (const v of this._videoOptions) {
-        const optEl = document.createElement('ui-option')
+        const optEl = document.createElement('ui-select-option')
         optEl.setAttribute('value', `${v.id}|${v.ext}|${v.height ?? ''}`)
         optEl.textContent = v.display
         if (v.selected && !defaultValue) defaultValue = optEl.getAttribute('value')
-        this._videoFormatSelect.appendChild(optEl)
+        this._videoFormatSelectContent.appendChild(optEl)
       }
       if (defaultValue) this._videoFormatSelect.setAttribute('value', defaultValue)
     }
-    if (this._audioForVideoFormatSelect) {
-      this._audioForVideoFormatSelect.innerHTML = ''
+    if (this._audioForVideoFormatSelect && this._audioForVideoFormatSelectContent) {
+      this._audioForVideoFormatSelectContent.innerHTML = ''
       for (const a of this._audioOptions) {
-        const optEl = document.createElement('ui-option')
+        const optEl = document.createElement('ui-select-option')
         optEl.setAttribute('value', `${a.id}|${a.ext}`)
         optEl.textContent = a.display
-        this._audioForVideoFormatSelect.appendChild(optEl)
-      }
-    }
-    if (this._audioFormatSelect) {
-      this._audioFormatSelect.innerHTML = ''
-      for (const a of this._audioOptions) {
-        const optEl = document.createElement('ui-option')
-        optEl.setAttribute('value', `${a.id}|${a.ext}`)
-        optEl.textContent = a.display
-        this._audioFormatSelect.appendChild(optEl)
+        this._audioForVideoFormatSelectContent.appendChild(optEl)
       }
     }
   }
@@ -362,9 +426,5 @@ if (!customElements.get(MEDIA_INFO_NAME)) {
 declare global {
   interface HTMLElementTagNameMap {
     [MEDIA_INFO_NAME]: MediaInfoScreen
-  }
-
-  interface HTMLElementEventMap {
-    [DOWNLOAD_STARTED_EVENT_NAME]: CustomEvent<void>
   }
 }

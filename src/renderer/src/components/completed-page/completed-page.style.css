@@ -1,0 +1,17 @@
+@import url('../../assets/shadow-common.css');
+
+:host {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+:host([data-empty]) page-layout::part(content) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host([data-empty]) area-section::part(label) {
+  display: none;
+}

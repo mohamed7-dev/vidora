@@ -1,0 +1,61 @@
+@import url('../../assets/shadow-common.css');
+
+:host {
+  flex: 1;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.page__layout {
+  flex: 1;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  gap: var(--spacing-large);
+}
+
+/* header  */
+
+.page__header-wrapper {
+  height: var(--toolbar-height);
+  margin-inline-end: var(--toolbar-end-width);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+:host-context([use-native-toolbar='true']) .page__header-wrapper {
+  margin-inline-end: 0;
+  display: none;
+}
+
+.page__header-wrapper h1 {
+  font-size: 1rem;
+}
+
+/* content  */
+
+.page__content-wrapper {
+  max-width: 50rem;
+  width: 100%;
+  flex: 1;
+  height: 100%;
+  padding: var(--spacing-small);
+  min-height: 0;
+}
+
+@media (max-width: 768px) {
+  .page__header-wrapper {
+    display: none;
+  }
+  .page__content-wrapper {
+    margin-block-start: var(--toolbar-height);
+  }
+}
