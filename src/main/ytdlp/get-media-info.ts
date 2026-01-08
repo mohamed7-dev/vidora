@@ -1,22 +1,29 @@
 import { readConfig } from '../app-config/config-api'
 import { ensureYtDlpPath } from './check-ytdlp'
-import YTDlpWrapImport from 'yt-dlp-wrap-plus'
 import { complete, begin, error } from './get-media-info-status-bus'
 import { ipcMain } from 'electron'
 import { MEDIA_INFO_CHANNELS, YtdlpInfo } from '../../shared/ipc/get-media-info'
+import { readInternalConfig } from '../app-config/internal-config-api'
+import { YtdlpEngine } from './ytdlp-engine'
+import { t } from '../../shared/i18n/i18n'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImport
+type Hooks = {
+  onBegin: () => void
+  onProgress: (payload: { progress: number }) => void
+  onComplete: (payload: { mediaInfo: YtdlpInfo }) => void
+  onError: (payload: { err: unknown }) => void
+}
 
 /**
  * @description
  * Get media info from url.
  */
-export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
+export async function getMediaInfo(url: string, hooks?: Partial<Hooks>): Promise<YtdlpInfo> {
   return new Promise((resolve, reject) => {
     const {
       downloader: { proxyServerUrl, cookiesFromBrowser, configPath }
     } = readConfig()
+    const { jsRuntimePath } = readInternalConfig()
     const useCookies = cookiesFromBrowser && cookiesFromBrowser !== 'none'
     let args: string[] = []
     args = [
@@ -31,45 +38,42 @@ export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
       useCookies ? cookiesFromBrowser : '',
       configPath ? '--config-locations' : '',
       configPath ? configPath : '',
+      jsRuntimePath ? `--no-js-runtimes --js-runtime ${jsRuntimePath}` : '',
       url
     ].filter(Boolean) as string[]
 
-    begin()
+    hooks?.onBegin?.()
 
     ensureYtDlpPath()
       .then((bp) => {
-        const ytdlp = (bp ? new YTDlpWrap(bp) : new YTDlpWrap()) as YTDlpWrapImport
-        const ytdlpProcess = ytdlp.exec(args, { shell: true })
+        const binaryPath = bp || 'yt-dlp'
+        const proc = YtdlpEngine.exec(binaryPath, args, { shell: true })
         let stdout = ''
         let stderr = ''
-        ytdlpProcess.ytDlpProcess?.stdout.on('data', (data) => (stdout += data))
-        ytdlpProcess.ytDlpProcess?.stderr.on('data', (data) => (stderr += data))
-        ytdlpProcess.on('close', () => {
+        proc.ytDlpProcess?.stdout?.on('data', (data) => (stdout += data))
+        proc.ytDlpProcess?.stderr?.on('data', (data) => (stderr += data))
+        proc.on('close', () => {
           if (stdout) {
             try {
               const payload = JSON.parse(stdout)
-              complete()
+              hooks?.onComplete?.({ mediaInfo: payload })
               resolve(payload)
             } catch (e) {
               const err = new Error(
-                'Failed to parse yt-dlp JSON output: ' + (stderr || (e as Error).message)
+                t`Failed to parse yt-dlp JSON output: ` + (stderr || (e as Error).message)
               )
-              error(err)
               reject(err)
             }
           } else {
-            const err = new Error(stderr || `yt-dlp exited with a non-zero code.`)
-            error(err)
+            const err = new Error(stderr || t`yt-dlp exited with a non-zero code`)
             reject(err)
           }
         })
-        ytdlpProcess.on('error', (err) => {
-          error(err)
+        proc.on('error', (err) => {
           reject(err)
         })
       })
       .catch((e) => {
-        error(e)
         reject(e)
       })
   })
@@ -83,9 +87,20 @@ export async function getMediaInfo(url: string): Promise<YtdlpInfo> {
 
 export function setupMediaInfoIPC(): void {
   ipcMain.handle(MEDIA_INFO_CHANNELS.GET_INFO, async (_e, url: string) => {
-    if (!url || typeof url !== 'string')
-      error(new Error('Invalid media url'), 'Invalid media url', 'url') // TODO: change
-    const info = await getMediaInfo(url)
+    if (!url || typeof url !== 'string') {
+      const err = new Error(t`Invalid media url`)
+      error({ message: t`Media URL is invalid `, payload: { cause: err.message } })
+    }
+    const info = await getMediaInfo(url, {
+      onComplete: (payload) => {
+        complete({ payload: { mediaInfo: payload.mediaInfo } })
+      },
+      onBegin: () => {
+        begin()
+      }
+    }).catch((e) => {
+      error({ payload: { cause: e instanceof Error ? e.message : String(e) } })
+    })
     return info
   })
 }

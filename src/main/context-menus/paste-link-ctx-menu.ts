@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 import { BrowserWindow, Menu } from 'electron'
 import { clipboard } from 'electron'
-import { t } from '../../shared/i18n'
+import { t } from '../../shared/i18n/i18n'
 import { PASTE_LINK_CHANNELS } from '../../shared/ipc/paste-link'
 import { broadcastToAllWindows } from '../lib'
 
@@ -12,7 +12,7 @@ function handlePasteLinkContextMenuIpc(): void {
 
     const menu = Menu.buildFromTemplate([
       {
-        label: t('open app') ?? 'Paste Link',
+        label: t`Paste Link`,
         click: () => {
           const text = clipboard.readText()
           if (!text) return

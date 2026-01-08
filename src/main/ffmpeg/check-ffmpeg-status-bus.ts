@@ -1,46 +1,43 @@
-import {
-  CHECK_FFMPEG_CHANNELS,
-  CheckFfmpegBeginPayload,
-  CheckFfmpegCompletePayload,
-  CheckFfmpegErrorPayload,
-  CheckFfmpegProgressPayload
-} from '../../shared/ipc/check-ffmpeg'
+import { t } from '../../shared/i18n/i18n'
+import { CHECK_FFMPEG_CHANNELS, CheckFfmpegChannelPayload } from '../../shared/ipc/check-ffmpeg'
 import { broadcastToAllWindows } from '../lib'
 
 const channel = CHECK_FFMPEG_CHANNELS.STATUS
-export function begin(payload?: Partial<Omit<CheckFfmpegBeginPayload, 'status'>>): void {
+
+type CommonParams = Partial<Pick<CheckFfmpegChannelPayload, 'payload' | 'message'>>
+
+export function begin(info?: CommonParams): void {
   broadcastToAllWindows(channel, {
     status: 'begin',
-    message: payload?.message ?? 'Started checking ffmpeg',
-    messageKey: payload?.messageKey ?? 'status.ytdlp.checking' // TODO: replace it with lingui style of localization
+    message: info?.message ?? t`Checking if FFmpeg is installed and ready to use…`,
+    payload: info?.payload ?? {}
   })
 }
-
-export function progress(
-  payload: Partial<Omit<CheckFfmpegProgressPayload, 'status'>> &
-    Required<Pick<CheckFfmpegProgressPayload, 'progress'>>
-): void {
+export function info(info: CommonParams): void {
+  broadcastToAllWindows(channel, {
+    status: 'info',
+    payload: info.payload,
+    message: info.message
+  })
+}
+export function progress(info: CommonParams): void {
   broadcastToAllWindows(channel, {
     status: 'progress',
-    progress: payload.progress,
-    message: payload.message ?? 'Checking ffmpeg',
-    messageKey: payload.messageKey ?? 'status.ytdlp.checking' // TODO: replace it with lingui style of localization
+    message: info.message ?? t`FFmpeg check is in progress…`,
+    payload: info.payload
   })
 }
-
-export function complete(payload?: Partial<Omit<CheckFfmpegCompletePayload, 'status'>>): void {
+export function complete(info: CommonParams): void {
   broadcastToAllWindows(channel, {
     status: 'complete',
-    message: payload?.message ?? 'ffmpeg is ready',
-    messageKey: payload?.messageKey ?? 'status.ytdlp.checking' // TODO: replace it with lingui style of localization
+    message: info?.message ?? t`FFmpeg is ready to be used.`,
+    payload: info?.payload ?? {}
   })
 }
-
-export function error(payload: Partial<Omit<CheckFfmpegErrorPayload, 'status'>>): void {
+export function error(info: CommonParams): void {
   broadcastToAllWindows(channel, {
     status: 'error',
-    cause: payload.cause ?? 'Failed to check ffmpeg',
-    message: payload.message ?? 'Failed to check ffmpeg',
-    messageKey: payload.messageKey ?? 'status.ytdlp.checking' // TODO: replace it with lingui style of localization
+    message: info.message ?? t`Failed to check or prepare FFmpeg.`,
+    payload: info.payload
   })
 }

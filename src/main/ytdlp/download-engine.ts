@@ -1,19 +1,21 @@
 /* CREDIT
-- Most of the logic implemented here is inspired by the Andrew-me ytdlp-downloader app
+- inspired by the Andrew-me ytdlp-downloader app
 */
 
 import type { Job } from '../../shared/ipc/download-jobs'
-import { YTDlpWrap } from './check-ytdlp'
-import YTDlpWrapImport, { YTDlpEventEmitter } from 'yt-dlp-wrap-plus'
+import { YtdlpEngine, type YtdlpEventEmitter } from './ytdlp-engine'
 import { readConfig } from '../app-config/config-api'
 import { readInternalConfig } from '../app-config/internal-config-api'
 import { platform } from '@electron-toolkit/utils'
-import { ensureFfmpegPath } from '../ffmpeg/check-ffmpeg'
-import { begin, progress, complete, error } from '../ffmpeg/check-ffmpeg-status-bus'
+import { t } from '../../shared/i18n/i18n'
 
 export type EngineHooks = {
   onProgress?: (jobId: string, progress: number) => void
   onDone?: (jobId: string, ok: boolean, error?: string) => void
+  /**
+   * Called once a job's final output file name has been computed.
+   */
+  onFilename?: (jobId: string, fileName: string) => void
 }
 
 /**
@@ -21,10 +23,11 @@ export type EngineHooks = {
  * This class manages the downloading life cycle.
  */
 export class DownloadEngine {
-  private procs = new Map<string, YTDlpEventEmitter>()
+  private procs = new Map<string, YtdlpEventEmitter>()
   private controllers = new Map<string, AbortController>()
   private hooks: EngineHooks = {}
-  private ytdlp: YTDlpWrapImport | null = null
+  private binaryPath: string | null = null
+  private canceledJobs = new Set<string>()
 
   setHooks(h: EngineHooks): void {
     this.hooks = h
@@ -34,24 +37,31 @@ export class DownloadEngine {
     return this.procs.has(jobId)
   }
 
-  start(job: Job): void {
+  start(job: Job, options?: { resume?: boolean }): void {
     if (this.isRunning(job.id)) return
 
-    const args = this._buildArgs(job)
+    const { args, fileName } = this._buildArgs(job, options)
     const cwd =
       (job.payload?.ytdlpArgs?.downloadDir as string | null) || readConfig().downloads.downloadDir
 
-    void this._getWrap()
-      .then(({ ytdlp }) => {
+    void this._getBinaryPath()
+      .then((binaryPath) => {
+        if (fileName) {
+          this.hooks.onFilename?.(job.id, fileName)
+        }
         const controller = new AbortController()
         this.controllers.set(job.id, controller)
 
-        const proc = ytdlp.exec(args, {
-          shell: true,
-          detached: false,
-          signal: controller.signal,
-          cwd: cwd || undefined
-        })
+        const proc = YtdlpEngine.exec(
+          binaryPath,
+          args,
+          {
+            shell: true,
+            detached: false,
+            cwd: cwd || undefined
+          },
+          controller.signal
+        )
         this.procs.set(job.id, proc)
 
         let errBuf = ''
@@ -90,6 +100,12 @@ export class DownloadEngine {
         // Close/completion: prefer child process event to get signal as well
         spawned?.once?.('close', (code: number | null, signal: NodeJS.Signals | null) => {
           if (completed) return
+          if (this.canceledJobs.has(job.id)) {
+            this.canceledJobs.delete(job.id)
+            this.procs.delete(job.id)
+            this.controllers.delete(job.id)
+            return
+          }
           completed = true
           this.procs.delete(job.id)
           this.controllers.delete(job.id)
@@ -113,6 +129,12 @@ export class DownloadEngine {
         // Fallback: wrapper-level close (in case spawned is unavailable)
         proc.once('close', (code: number | null) => {
           if (completed) return
+          if (this.canceledJobs.has(job.id)) {
+            this.canceledJobs.delete(job.id)
+            this.procs.delete(job.id)
+            this.controllers.delete(job.id)
+            return
+          }
           completed = true
           this.procs.delete(job.id)
           this.controllers.delete(job.id)
@@ -134,6 +156,12 @@ export class DownloadEngine {
         })
 
         proc.once('error', (err: unknown) => {
+          if (this.canceledJobs.has(job.id)) {
+            this.canceledJobs.delete(job.id)
+            this.procs.delete(job.id)
+            this.controllers.delete(job.id)
+            return
+          }
           this.procs.delete(job.id)
           this.controllers.delete(job.id)
           const msg =
@@ -150,7 +178,7 @@ export class DownloadEngine {
         })
       })
       .catch(() => {
-        this.hooks.onDone?.(job.id, false, 'Failed to start download') // TODO: localize
+        this.hooks.onDone?.(job.id, false, t`Failed to start the download process`)
       })
   }
 
@@ -159,8 +187,10 @@ export class DownloadEngine {
     const controller = this.controllers.get(jobId)
     if (!proc && !controller) return
     try {
+      console.log('Abort Job', jobId)
+      this.canceledJobs.add(jobId)
       controller?.abort()
-      proc?.ytDlpProcess?.kill?.('SIGTERM')
+      proc?.ytDlpProcess?.kill?.()
     } catch {
       void 0
     }
@@ -168,54 +198,17 @@ export class DownloadEngine {
     this.controllers.delete(jobId)
   }
 
-  private async _getWrap(): Promise<{ ytdlp: YTDlpWrapImport; ffmpegPath: string | null }> {
-    if (this.ytdlp) return { ytdlp: this.ytdlp, ffmpegPath: null }
+  private async _getBinaryPath(): Promise<string> {
+    if (this.binaryPath) return this.binaryPath
     const bp = readInternalConfig().ytDlpPath // when the app reaches this point, the internal config should be loaded, and the ytdlp path should be set
-    this.ytdlp = (bp ? new YTDlpWrap(bp) : new YTDlpWrap()) as YTDlpWrapImport
-
-    // when the app reaches this point, the ffmpeg is not guaranteed to be there that's why we are triggering the check
-    const ffmpegPath = await ensureFfmpegPath({
-      onBegin: () => {
-        begin({
-          message: 'Checking ffmpeg availability, please wait...',
-          messageKey: 'status.ffmpeg.checking'
-        })
-      },
-      onProgress: (payload) => {
-        progress({
-          progress: payload.progress,
-          message: 'Downloading ffmpeg, please wait...',
-          messageKey: 'status.ffmpeg.downloading'
-        })
-      },
-      onComplete: () => {
-        complete({
-          message: 'ffmpeg is ready, download will be starting soon',
-          messageKey: 'status.ffmpeg.ready'
-        })
-      },
-      onError: (payload) => {
-        error({
-          cause:
-            payload.source === 'download-failed'
-              ? 'Failed to download ffmpeg, download will be cancelled'
-              : 'Ffmpeg is not found on freebsd, the app may not work properly',
-          message:
-            payload.source === 'download-failed'
-              ? 'Failed to download ffmpeg, download will be cancelled'
-              : 'Ffmpeg is not found on freebsd, the app may not work properly',
-          messageKey:
-            payload.source === 'download-failed'
-              ? 'status.ffmpeg.download_failed'
-              : 'status.ffmpeg.not_found_freebsd' // TODO: change
-        })
-      }
-    })
-
-    return { ytdlp: this.ytdlp, ffmpegPath }
+    this.binaryPath = bp as string
+    return this.binaryPath
   }
 
-  private _buildArgs(job: Job): string[] {
+  private _buildArgs(
+    job: Job,
+    options?: { resume?: boolean }
+  ): { args: string[]; fileName: string } {
     const {
       payload: { type, url, title, ytdlpArgs, userOptionsSnapshot }
     } = job
@@ -224,6 +217,8 @@ export class DownloadEngine {
     const {
       downloader: { proxyServerUrl, cookiesFromBrowser, configPath }
     } = readConfig()
+
+    const { jsRuntimePath } = readInternalConfig()
 
     let formatId: string | undefined
     let ext: string | undefined
@@ -264,6 +259,7 @@ export class DownloadEngine {
     const outputPath = needOutTemplate
       ? `${finalFilename}.%(ext)s`
       : `${finalFilename}.${ext ?? 'mp4'}`
+
     const outputPathQuoted = `"${outputPath}"`
     const useCookies = Boolean(cookiesFromBrowser && cookiesFromBrowser !== 'none')
     const ffmpegPath = readInternalConfig().ffmpegPath
@@ -278,6 +274,7 @@ export class DownloadEngine {
       else subsArgs.push(subLangs)
     }
 
+    const resumeArgs = options?.resume ? ['--continue', '--no-overwrites'] : []
     const commonArgs = [
       '--no-playlist',
       '--no-mtime',
@@ -290,16 +287,21 @@ export class DownloadEngine {
       configPath ? `"${configPath}"` : '',
       '--ffmpeg-location',
       ffmpegPathQuoted,
+      jsRuntimePath ? `--no-js-runtimes --js-runtimes ${jsRuntimePath}` : '',
+      ...resumeArgs,
       `"${url}"`
     ].filter(Boolean) as string[]
 
     if (type === 'Video' || type === 'Audio') {
       const formatString = type === 'Video' ? `${formatId}${audioFormatSuffix}` : String(formatId)
       const args = ['-f', formatString, '-o', outputPathQuoted, ...subsArgs, ...commonArgs]
-      return args.filter(Boolean) as string[]
+      return { args: args.filter(Boolean) as string[], fileName: outputPath }
     }
 
-    return ['-o', outputPathQuoted, ...subsArgs, ...commonArgs].filter(Boolean) as string[]
+    return {
+      args: ['-o', outputPathQuoted, ...subsArgs, ...commonArgs].filter(Boolean) as string[],
+      fileName: outputPath
+    }
   }
 }
 

@@ -1,20 +1,16 @@
-import YTDlpWrapImport from 'yt-dlp-wrap-plus'
+import { YtdlpEngine, type DownloadProgressPayload } from './ytdlp-engine'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImport
+export type ProgressCallbackPayload = DownloadProgressPayload
 
 /**
  * @description
  * Downloads yt-dlp from github
  * @param path - path to download yt-dlp to
- * @param progressCallback - optional callback to receive progress updates
+ * @param onProgress - optional callback to receive progress updates
  */
 export async function downloadYtdlp(
   path: string,
-  progressCallback?: (progress: number) => void
+  onProgress?: (payload: DownloadProgressPayload) => void
 ): Promise<void> {
-  if (typeof YTDlpWrap.downloadFromGithub !== 'function') {
-    throw new Error('downloadFromGithub is not available on YTDlpWrap export')
-  }
-  await YTDlpWrap?.downloadFromGithub(path, undefined, undefined, progressCallback)
+  await YtdlpEngine.download(path, { onProgress })
 }

@@ -2,13 +2,16 @@ import { ipcMain } from 'electron'
 import { join } from 'path'
 import { promises as fs } from 'fs'
 import { is } from '@electron-toolkit/utils'
-import { LoadedLocaleDictPayload, LocaleDict } from '../../shared/i18n'
+import {
+  LoadedLocaleDictPayload,
+  LocaleDict,
+  setLoadedLanguage,
+  setLocale
+} from '../../shared/i18n/i18n'
 import { readConfig } from '../app-config/config-api'
 import { USER_PREF_CHANNELS } from '../../shared/ipc/user-pref'
-import { AppConfig } from '../../shared/ipc/app-config'
 import { broadcastToAllWindows } from '../lib'
-
-const dictionariesCache: Record<string, LocaleDict> = {}
+import { LocaleCode } from '../../shared/i18n/config'
 
 function getLocalesDir(): string {
   // In dev, locales live in ../../resources/locales relative to compiled main dir
@@ -28,15 +31,16 @@ export async function readLocaleFile(locale: string): Promise<LocaleDict> {
   return JSON.parse(txt)
 }
 
-async function loadDict(locale: string): Promise<LocaleDict> {
-  // if (dictionariesCache[locale]) return dictionariesCache[locale]
+async function loadDict(locale: LocaleCode): Promise<LocaleDict> {
   try {
     const dict = await readLocaleFile(locale)
-    dictionariesCache[locale] = dict
+    setLocale(locale)
+    setLoadedLanguage(dict)
     return dict
   } catch {
     const dict = await readLocaleFile('en')
-    dictionariesCache['en'] = dict
+    setLocale('en')
+    setLoadedLanguage(dict)
     return dict
   }
 }
@@ -45,17 +49,18 @@ async function loadDict(locale: string): Promise<LocaleDict> {
  * @description
  * This function performs a side-effect for loading the dictionary, and sending it to all renderer processes.
  */
-export async function loadAndBroadcastDict(locale: string): Promise<void> {
+export async function loadAndBroadcastDict(locale: LocaleCode): Promise<void> {
   const dict = await loadDict(locale)
   broadcastToAllWindows(USER_PREF_CHANNELS.LOCALE.LOADED, {
     locale,
     dict
   } satisfies LoadedLocaleDictPayload)
 }
+
 function setupIPC(): void {
-  ipcMain.handle(USER_PREF_CHANNELS.LOCALE.LOAD, async (_e, locale?: string) => {
+  ipcMain.handle(USER_PREF_CHANNELS.LOCALE.LOAD, async (_e, locale?: LocaleCode) => {
     const config = readConfig()
-    const dict = await loadDict(locale ?? config.general.language)
+    const dict = await loadDict(locale ?? (config.general.language as LocaleCode))
     return dict
   })
 }
@@ -64,7 +69,7 @@ function setupIPC(): void {
  * @description
  * This function initializes i18n in the main as well as the renderer processes.
  */
-export async function initI18n(locale: AppConfig['general']['language']): Promise<void> {
+export async function initI18n(locale: LocaleCode): Promise<void> {
   await loadAndBroadcastDict(locale)
   setupIPC()
 }

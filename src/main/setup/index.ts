@@ -9,43 +9,77 @@ import { initJobs } from '../download-jobs'
 import { initUserPref } from '../user-pref'
 import { initWindowControls } from '../window-controls'
 import { initYtdlp } from '../ytdlp'
-import { complete, error } from './setup-status-bus'
+import { begin, complete, error } from './setup-status-bus'
+import { initNavigation } from '../navigation'
+import { initJsRuntime } from '../js-runtime'
+import { LocaleCode } from '../../shared/i18n/config'
+import { initDirectories } from './init-directories'
 
 export function setupApp(): void {
+  begin()
   try {
+    // this must run synchrounously since it creates directories that other initializations depend on
+    initDirectories()
     // first: initialize config files
     const { appConfig: config } = initConfig()
     if (config) {
-      // second: initialize i18n
-      initI18n(config.general.language).then(async () => {
-        // third: anything else
+      // second: initialize i18n, then run the rest of the async setup chain.
+      initI18n(config.general.language as LocaleCode)
+        .then(async () => {
+          try {
+            // third: anything else
 
-        // init ffmpeg
-        initFFmpeg()
-        // init ytdlp
-        await initYtdlp()
-        // init user preferences for setting up things like changing download path, ytdlp config file,...etc
-        await initUserPref(config)
-        // check for update
-        if (config.general.autoUpdate) initAppUpdate()
-        // init window controls
-        initWindowControls()
-        // init app controls
-        initAppControls()
-        // init menus
-        initMenus()
-        // init jobs
-        initJobs()
-      })
+            // init ytdlp
+            await initYtdlp()
+            // init ffmpeg
+            await initFFmpeg()
+            // init js runtime
+            await initJsRuntime()
+            // init user preferences for setting up things like changing download path, ytdlp config file,...etc
+            await initUserPref(config)
+            // check for update
+            if (config.general.autoUpdate) initAppUpdate()
+            // init window controls
+            initWindowControls()
+            // init app controls
+            initAppControls()
+            // init navigation
+            initNavigation()
+            // init menus
+            initMenus()
+            // init jobs
+            initJobs()
+
+            console.log('setup complete')
+            complete()
+          } catch (err) {
+            console.error('async setup failed', err)
+            error({
+              payload: {
+                cause: err instanceof Error ? err.message : String(err)
+              }
+            })
+            app.exit(0)
+          }
+        })
+        .catch((err) => {
+          console.error('i18n init failed', err)
+          error({
+            payload: {
+              cause: err instanceof Error ? err.message : String(err)
+            }
+          })
+          app.exit(0)
+        })
     }
   } catch (err) {
     console.error('setup failed', err)
     error({
-      cause: err instanceof Error ? err.message : String(err)
+      payload: {
+        cause: err instanceof Error ? err.message : String(err)
+      }
     })
     app.exit(0) // at this point in time, any error thrown in the main process will cause the app to exit
     return
   }
-  console.log('setup complete')
-  complete()
 }

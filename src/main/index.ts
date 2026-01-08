@@ -5,6 +5,7 @@ import { readConfig } from './app-config/config-api'
 import { setupApp } from './setup/index'
 import { getIsQuitting, isTrayEnabled } from './user-pref/tray'
 import { pauseAllIncompletedJobs } from './download-jobs/download-jobs'
+import { DATA } from '../shared/data'
 
 function createWindow(): void {
   const iconPath = app.isPackaged
@@ -13,6 +14,7 @@ function createWindow(): void {
   const cfg = readConfig()
   const useNativeToolbar = Boolean(cfg.general.useNativeToolbar)
   const mainWindow = new BrowserWindow({
+    title: DATA.appName,
     width: 900,
     height: 670,
     show: false,
@@ -86,10 +88,9 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // Setup Application
-  setupApp()
-
   if (BrowserWindow.getAllWindows().length === 0) {
+    // Setup Application
+    setupApp()
     createWindow()
   } else {
     const win = BrowserWindow.getAllWindows()[0]

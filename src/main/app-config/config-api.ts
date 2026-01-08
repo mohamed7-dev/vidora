@@ -1,4 +1,4 @@
-import { accessSync, constants, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { accessSync, constants, readFileSync, writeFileSync } from 'node:fs'
 import { DEFAULT_CONFIG, DEFAULT_INTERNAL_CONFIG } from './default-config'
 import { DeepPartial } from '../../shared/types'
 import { performSideEffects } from './side-effects'
@@ -24,7 +24,6 @@ function ensureConfigFile(): void {
   try {
     accessSync(DEFAULT_INTERNAL_CONFIG.configFilePath, constants.R_OK)
   } catch {
-    mkdirSync(DEFAULT_INTERNAL_CONFIG.configFolderPath, { recursive: true })
     writeFileSync(DEFAULT_INTERNAL_CONFIG.configFilePath, JSON.stringify(DEFAULT_CONFIG, null, 2))
   }
 }
@@ -46,7 +45,6 @@ export function readConfig(): AppConfig {
 }
 
 export function writeConfig(config: AppConfig): void {
-  mkdirSync(DEFAULT_INTERNAL_CONFIG.configFolderPath, { recursive: true })
   writeFileSync(DEFAULT_INTERNAL_CONFIG.configFilePath, JSON.stringify(config, null, 2))
 }
 

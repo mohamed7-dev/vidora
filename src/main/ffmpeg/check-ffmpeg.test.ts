@@ -90,9 +90,9 @@ describe('ensureFfmpegPath / checkFFmpeg', () => {
     delete process.env.YALLA_DOWNLOAD_FFMPEG_PATH
   })
 
-  async function loadModule(): Promise<typeof import('./check-ffmpeg')> {
+  async function loadModule(): Promise<typeof import('./check-ffmpeg-v1')> {
     // fresh module instance each time so memoized promise is reset
-    return await import('./check-ffmpeg')
+    return await import('./check-ffmpeg-v1')
   }
 
   async function loadDownloadFFmpegModule(): Promise<typeof import('./ffmpeg-downloader')> {

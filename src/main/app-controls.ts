@@ -10,6 +10,10 @@ function handleAppControlsIpc(): void {
     app.relaunch()
     app.exit(0)
   })
+
+  ipcMain.on(APP_CONTROLS_CHANNELS.QUIT, () => {
+    app.quit()
+  })
 }
 
 /**

@@ -5,6 +5,7 @@ import { updateConfig } from '../app-config/config-api'
 import { USER_PREF_CHANNELS } from '../../shared/ipc/user-pref'
 import { complete, error } from './change-paths-status-bus'
 import { AppConfig } from '../../shared/ipc/app-config'
+import { t } from '../../shared/i18n/i18n'
 
 async function handleDownloadDirChange(
   event: Electron.IpcMainEvent,
@@ -15,9 +16,11 @@ async function handleDownloadDirChange(
   const result = await dialog.showOpenDialog(win, { properties: ['openDirectory'] })
   if (result.canceled || result.filePaths.length === 0) {
     error(win, channel, {
-      message: 'User canceled directory selection',
-      messageKey: 'status.configDownloadDir.canceled',
-      source: 'download-path'
+      message: t`User canceled directory selection`,
+      payload: {
+        source: 'download-path',
+        cause: t`User canceled directory selection`
+      }
     })
     return
   }
@@ -26,9 +29,11 @@ async function handleDownloadDirChange(
     const st = statSync(dir)
     if (!st.isDirectory()) {
       error(win, channel, {
-        message: 'Selected path is not a directory',
-        messageKey: 'status.configDownloadDir.invalid',
-        source: 'download-path'
+        message: t`Selected path is not a directory`,
+        payload: {
+          source: 'download-path',
+          cause: t`Selected path is not a directory`
+        }
       })
       return
     }
@@ -39,10 +44,11 @@ async function handleDownloadDirChange(
   } catch (e) {
     console.error('Download directory validation failed:', e)
     error(win, channel, {
-      message: 'Download directory validation failed',
-      messageKey: 'status.configDownloadDir.not_writable',
-      source: 'download-path',
-      cause: e instanceof Error ? e.message : String(e)
+      message: t`Download directory validation failed`,
+      payload: {
+        source: 'download-path',
+        cause: e instanceof Error ? e.message : String(e)
+      }
     })
     return
   }
@@ -50,6 +56,11 @@ async function handleDownloadDirChange(
   return dir
 }
 
+/**
+ * @description
+ * Checks Writability of the download directory at start up time, and throws
+ * if not writable
+ */
 function checkDownloadDir(downloadDir: AppConfig['downloads']['downloadDir']): boolean {
   // make sure download dir is exists, and writable
   try {
@@ -57,7 +68,7 @@ function checkDownloadDir(downloadDir: AppConfig['downloads']['downloadDir']): b
     accessSync(downloadDir, constants.W_OK)
     return true
   } catch (e) {
-    throw new Error(e instanceof Error ? e.message : 'Download directory validation failed')
+    throw new Error(e instanceof Error ? e.message : t`Download directory validation failed`)
   }
 }
 
@@ -75,9 +86,11 @@ function initChangeDownloadPathIpc(): void {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return
     complete(win, globalChannel, {
-      message: 'Download directory changed successfully',
-      messageKey: 'status.configDownloadDir.ready',
-      source: 'download-path'
+      message: t`Download directory changed successfully`,
+      payload: {
+        source: 'download-path',
+        path: dir
+      }
     })
   })
 
@@ -90,9 +103,11 @@ function initChangeDownloadPathIpc(): void {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return
     complete(win, localChannel, {
-      message: 'Download directory changed successfully',
-      messageKey: 'status.configDownloadDir.ready',
-      source: 'download-path'
+      message: t`Download directory changed successfully`,
+      payload: {
+        source: 'download-path',
+        path: dir
+      }
     })
   })
 }

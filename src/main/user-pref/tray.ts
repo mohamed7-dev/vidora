@@ -1,14 +1,14 @@
 import { BrowserWindow, Menu, Tray, nativeImage, app, clipboard } from 'electron'
 import { join } from 'node:path'
 import { platform } from '@electron-toolkit/utils'
-import { t } from '../../shared/i18n'
+import { t } from '../../shared/i18n/i18n'
 import { PASTE_LINK_CHANNELS } from '../../shared/ipc/paste-link'
 import { AppConfig } from '../../shared/ipc/app-config'
 
 function getIconPath(): string {
   const base = app.isPackaged
     ? join(process.resourcesPath, 'icons')
-    : join(__dirname, '../../../resources/icons')
+    : join(__dirname, '../../resources/icons')
   const file = platform.isMacOS ? 'icon-16.png' : 'icon-256.png'
   return join(base, file)
 }
@@ -29,7 +29,7 @@ async function init(): Promise<void> {
   trayRef.setToolTip(app.name)
   const menu = Menu.buildFromTemplate([
     {
-      label: t('open app'),
+      label: t`Open App`,
       click: () => {
         const win = getWindow()
         if (win) {
@@ -41,7 +41,7 @@ async function init(): Promise<void> {
       }
     },
     {
-      label: t('paste media link'),
+      label: t`Paste media url`,
       click: () => {
         const text = clipboard.readText()
         const win = getWindow()
@@ -52,7 +52,7 @@ async function init(): Promise<void> {
       }
     },
     {
-      label: t('quit'),
+      label: t`Quit`,
       role: 'quit',
       click: () => {
         quitting = true

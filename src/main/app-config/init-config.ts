@@ -49,6 +49,7 @@ export function initConfig(): { appConfig: AppConfig; internalConfig: InternalCo
   if (!internalConfig) {
     throw new Error('Something went wrong while initializing app config')
   }
+
   // register IPC for managing config file
   registerConfigIpc()
   return { appConfig, internalConfig }

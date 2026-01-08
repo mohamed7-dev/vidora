@@ -7,8 +7,10 @@ import { AppConfig } from '../../shared/ipc/app-config'
 export interface InternalConfig {
   ytDlpPath: string | null
   ffmpegPath: string | null
+  jsRuntimePath: string | null
   configFolderPath: string
   configFilePath: string
+  binFolderPath: string
   internalConfigFilePath: string
   downloadFolderPath: string
   jobsStorePath: string
@@ -20,11 +22,9 @@ export const DEFAULT_INTERNAL_PATHS = {
     'bin',
     os.platform() === 'win32' ? 'ytdlp.exe' : 'ytdlp'
   ),
-  ffmpegPath: join(
-    app.getPath('userData'),
-    'bin',
-    os.platform() === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
-  )
+  ffmpegPath: join(process.cwd(), 'resources', 'bin', 'ffmpeg', 'bin'), // path to the bundled ffmpeg
+  nodejsRuntimePath: join(process.cwd(), 'resources', 'bin', 'node'), // path to the bundled node on linux or macos
+  nodejsRuntimePathWin: join(process.cwd(), 'resources', 'bin', 'node.exe') // path to the bundled ffmpeg on windows
 }
 /**
  * @description
@@ -35,8 +35,10 @@ export const DEFAULT_INTERNAL_CONFIG: InternalConfig = {
   configFilePath: join(configDir, 'config.json'),
   internalConfigFilePath: join(configDir, 'internal-config.json'),
   downloadFolderPath: app.getPath('downloads'),
+  binFolderPath: join(app.getPath('userData'), 'bin'),
   ytDlpPath: null,
   ffmpegPath: null,
+  jsRuntimePath: null,
   jobsStorePath: join(app.getPath('userData'), 'jobs')
 }
 
