@@ -1,4 +1,6 @@
 import { ipcMain, BrowserWindow, Notification, clipboard } from 'electron'
+import fs from 'node:fs'
+import path from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { downloadEngine } from '../ytdlp/download-engine'
 import { DATA } from '../../shared/data'
@@ -13,6 +15,7 @@ import {
   statuses
 } from '../../shared/ipc/download-jobs'
 import { initOpenDownloadJobIPC } from './open-download-job'
+import { readConfig } from '../app-config/config-api'
 import { t } from '../../shared/i18n/i18n'
 import {
   countActive,
@@ -252,8 +255,28 @@ export function initDownloadJobs(): void {
       j.status = ok ? 'completed' : 'failed'
       j.statusText = ok ? statuses.completed : statuses.failed
       j.progress = ok ? 100 : j.progress
-      if (ok) delete j.error
-      else if (error) j.error = error
+      if (ok) {
+        delete j.error
+
+        // Try to resolve final file size from disk for history stats.
+        const payload = j.payload as DownloadJobPayload
+        const downloadDir =
+          (payload.ytdlpArgs.downloadDir as string | null) || readConfig().downloads.downloadDir
+        const fileName = payload.fileName
+        if (downloadDir && fileName) {
+          const fullPath = path.join(downloadDir, fileName)
+          try {
+            const stat = fs.statSync(fullPath)
+            if (typeof stat.size === 'number' && Number.isFinite(stat.size)) {
+              payload.sizeBytes = stat.size
+            }
+          } catch {
+            // Ignore stat errors; sizeBytes will remain undefined.
+          }
+        }
+      } else if (error) {
+        j.error = error
+      }
       j.updatedAt = now()
       saveJobs(jobs)
       broadcastUpdate(null, { type: 'updated', job: j })

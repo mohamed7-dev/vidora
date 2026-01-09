@@ -87,7 +87,7 @@ describe('ensureFfmpegPath / checkFFmpeg', () => {
     vi.clearAllMocks()
     ;(os.platform as unknown as Mock).mockReturnValue('linux')
     ;(os.arch as unknown as Mock).mockReturnValue('x64')
-    delete process.env.YALLA_DOWNLOAD_FFMPEG_PATH
+    delete process.env.VIDORA_FFMPEG_PATH
   })
 
   async function loadModule(): Promise<typeof import('./check-ffmpeg-v1')> {
@@ -99,10 +99,10 @@ describe('ensureFfmpegPath / checkFFmpeg', () => {
     return await import('./ffmpeg-downloader')
   }
 
-  it('uses ENV path when YALLA_DOWNLOAD_FFMPEG_PATH exists', async () => {
+  it('uses ENV path when VIDORA_FFMPEG_PATH exists', async () => {
     ;(readInternalConfig as Mock).mockReturnValue({ ffmpegPath: '/app/ffmpeg' })
     ;(existsSync as Mock).mockReturnValue(true)
-    process.env.YALLA_DOWNLOAD_FFMPEG_PATH = '/env/ffmpeg'
+    process.env.VIDORA_FFMPEG_PATH = '/env/ffmpeg'
 
     const { ensureFfmpegPath } = await loadModule()
     const result = await ensureFfmpegPath()

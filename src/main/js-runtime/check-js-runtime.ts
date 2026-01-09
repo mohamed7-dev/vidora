@@ -11,8 +11,8 @@ import { updateInternalConfig } from '../app-config/internal-config-api'
  * can still function without it
  */
 async function checkJsRuntime(): Promise<string | null> {
-  const nodejsEnvPath = process.env.YALLA_DOWNLOAD_NODEJS_PATH
-  const denoEnvPath = process.env.YALLA_DOWNLOAD_DENO_PATH
+  const nodejsEnvPath = process.env.VIDORA_NODEJS_PATH
+  const denoEnvPath = process.env.VIDORA_DENO_PATH
 
   let finalJsRuntime: null | string = null
 

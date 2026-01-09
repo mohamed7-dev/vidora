@@ -18,7 +18,7 @@ type Hooks = {
  * @returns path to ffmpeg or null if it fails
  */
 async function checkFFmpeg(hooks?: Hooks): Promise<string | null> {
-  const envPath = process.env.YALLA_DOWNLOAD_FFMPEG_PATH
+  const envPath = process.env.VIDORA_FFMPEG_PATH
   const ffmpegPath = DEFAULT_INTERNAL_PATHS.ffmpegPath
   let finalFFmpegPath: null | string = null
   hooks?.onBegin()
@@ -28,7 +28,7 @@ async function checkFFmpeg(hooks?: Hooks): Promise<string | null> {
     if (existsSync(envPath)) {
       finalFFmpegPath = String(envPath)
     } else {
-      const err = new Error(t`The file path sepcified in YALLA_DOWNLOAD_FFMPEG_PATH doesn't exist`)
+      const err = new Error(t`The file path sepcified in VIDORA_FFMPEG_PATH doesn't exist`)
       hooks?.onError({ source: 'env', err })
       // Should break the app initialization
       throw err

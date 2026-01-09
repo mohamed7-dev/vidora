@@ -1,7 +1,7 @@
 import { platform } from '@electron-toolkit/utils'
 import { execSync, spawn } from 'node:child_process'
 import { existsSync, promises } from 'node:fs'
-import * as os from 'node:os'
+import os from 'node:os'
 import { MAC_OS_BREW_PATHS, MAC_OS_YTDLP_PATHS } from '../constants'
 import { downloadYtdlp as internalYtdlpDownload, ProgressCallbackPayload } from './download-ytdlp'
 import { DEFAULT_INTERNAL_PATHS } from '../app-config/default-config'
@@ -63,7 +63,7 @@ async function updateYtdlp(ytdlpBinPath: string, hooks?: Hooks, isMacOS?: boolea
  */
 export async function checkYtdlp(hooks?: Hooks): Promise<string | null> {
   hooks?.onBegin()
-  const envPath = process.env.YALLA_DOWNLOAD_YTDLP_PATH
+  const envPath = process.env.VIDORA_YTDLP_PATH
   const ytDlpPath = DEFAULT_INTERNAL_PATHS.ytDlpPath
   let finalYtdlpPath: null | string = null
   // prioritize env variable
@@ -71,7 +71,7 @@ export async function checkYtdlp(hooks?: Hooks): Promise<string | null> {
     if (existsSync(envPath)) {
       finalYtdlpPath = String(envPath)
     } else {
-      const err = new Error(t`The file path sepcified in YALLA_DOWNLOAD_YTDLP_PATH doesn't exist`)
+      const err = new Error(t`The file path sepcified in VIDORA_YTDLP_PATH doesn't exist`)
       hooks?.onError({ err, source: 'env' })
       // should break the chain
       throw err

@@ -16,16 +16,7 @@ function initChangeYtdlpConfigPathIpc(): void {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return
     const result = await dialog.showOpenDialog(win, { properties: ['openFile'] })
-    if (result.canceled || result.filePaths.length === 0) {
-      error(win, USER_PREF_CHANNELS.YTDLP_FILE_PATH.CHANGE_RESPONSE, {
-        message: t`User canceled file selection`,
-        payload: {
-          source: 'ytdlp-path',
-          cause: t`User canceled file selection`
-        }
-      })
-      return
-    }
+    if (result.canceled || result.filePaths.length === 0) return // shouldn't send error to renderer since it's a user choice
     const picked = result.filePaths[0]
 
     const internalConfig = readInternalConfig()
@@ -41,7 +32,7 @@ function initChangeYtdlpConfigPathIpc(): void {
         message: t`Failed to copy yt-dlp config file`,
         payload: {
           source: 'ytdlp-path',
-          cause: e instanceof Error ? e.message : String(e)
+          cause: (e as Error).message ?? ''
         }
       })
       return

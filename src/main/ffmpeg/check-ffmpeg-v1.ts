@@ -35,7 +35,7 @@ function downloadFFmpeg(ffmpegPath: string, onProgress: Hooks['onProgress']): Pr
  * @returns path to ffmpeg or null if it fails
  */
 async function checkFFmpeg(hooks: Hooks): Promise<string | null> {
-  const envPath = process.env.YALLA_DOWNLOAD_FFMPEG_PATH
+  const envPath = process.env.VIDORA_FFMPEG_PATH
   const ffmpegPath = DEFAULT_INTERNAL_PATHS.ffmpegPath
   let finalFFmpegPath: null | string = null
   hooks.onBegin()

@@ -14,16 +14,7 @@ async function handleDownloadDirChange(
   const win = BrowserWindow.fromWebContents(event.sender)
   if (!win) return
   const result = await dialog.showOpenDialog(win, { properties: ['openDirectory'] })
-  if (result.canceled || result.filePaths.length === 0) {
-    error(win, channel, {
-      message: t`User canceled directory selection`,
-      payload: {
-        source: 'download-path',
-        cause: t`User canceled directory selection`
-      }
-    })
-    return
-  }
+  if (result.canceled || result.filePaths.length === 0) return // shouldn't error out when user cancels selection
   const dir = result.filePaths[0]
   try {
     const st = statSync(dir)
@@ -47,7 +38,7 @@ async function handleDownloadDirChange(
       message: t`Download directory validation failed`,
       payload: {
         source: 'download-path',
-        cause: e instanceof Error ? e.message : String(e)
+        cause: (e as Error).message ?? ''
       }
     })
     return

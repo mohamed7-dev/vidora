@@ -11,6 +11,7 @@ import {
   sendUpdateAvailable
 } from './update-status-bus'
 import { ApprovalRes } from '../../shared/ipc/app-update'
+import { t } from '../../shared/i18n/i18n'
 
 export function onUpdateAvailable(info: UpdateInfo): void {
   sendUpdateAvailable(info)
@@ -30,25 +31,19 @@ export function onDownloadApproved(_e: Electron.IpcMainInvokeEvent, response: Ap
       }
       sendApprovalSuccess(
         'download-approval-success',
-        'Download can be started now, go and download the latest release from github',
-        'appUpdate.download.approved.mac',
+        t`Download can be started now, go and download the latest release from github`,
         { link }
       )
     } else {
       // on other platforms, trigger download immediately
       autoUpdater.downloadUpdate()
-      sendApprovalSuccess(
-        'download-approval-success',
-        'Started downloading update',
-        'appUpdate.download.approved.others'
-      )
+      sendApprovalSuccess('download-approval-success', t`Started downloading update`)
     }
   } else {
     sendApprovalFail(
       'download-approval-fail',
-      'Latest version of the app is available, but the user refused to perform the update.',
-      'appUpdate.download.cancelled',
-      'Download was cancelled by the user'
+      t`Latest version of the app is available, but the user refused to perform the update.`,
+      t`Download was cancelled by the user`
     )
   }
 }
@@ -67,19 +62,14 @@ export function onUpdateError(e: Error): void {
 
 export function onInstallApproved(_e: Electron.IpcMainInvokeEvent, response: ApprovalRes): void {
   if (response && response === 1) {
+    sendApprovalSuccess('install-approval-success', t`A new update was installed successfully.`)
     autoUpdater.quitAndInstall()
-    sendApprovalSuccess(
-      'install-approval-success',
-      'A new update was installed successfully.',
-      'appUpdate.install.approved'
-    )
   } else {
-    autoUpdater.autoInstallOnAppQuit = true
     sendApprovalFail(
       'install-approval-fail',
-      'A new update is available and downloaded, but the user refused to perform the installation.',
-      'appUpdate.install.cancelled',
-      'User cancelled installation.'
+      t`A new update is available and downloaded, but the user refused to perform the installation.`,
+      t`User cancelled installation.`
     )
+    autoUpdater.autoInstallOnAppQuit = true
   }
 }

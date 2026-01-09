@@ -63,7 +63,7 @@ describe('checkYtdlp / ensureYtDlpPath', () => {
     vi.resetAllMocks()
     ;(platform as any).isMacOS = false
     ;(os.platform as unknown as Mock).mockReturnValue('linux')
-    delete process.env.YALLA_DOWNLOAD_YTDLP_PATH
+    delete process.env.VIDORA_YTDLP_PATH
   })
 
   // fresh module instance each time so memoized promise is reset
@@ -71,10 +71,10 @@ describe('checkYtdlp / ensureYtDlpPath', () => {
     return await import('./check-ytdlp')
   }
 
-  it('uses ENV path when YALLA_DOWNLOAD_YTDLP_PATH exists', async () => {
+  it('uses ENV path when VIDORA_YTDLP_PATH exists', async () => {
     ;(readInternalConfig as Mock).mockReturnValue({ ytDlpPath: '/app/ytdlp' })
     ;(existsSync as Mock).mockReturnValue(true)
-    process.env.YALLA_DOWNLOAD_YTDLP_PATH = '/env/ytdlp'
+    process.env.VIDORA_YTDLP_PATH = '/env/ytdlp'
 
     const { checkYtdlp } = await loadModule()
     const result = await checkYtdlp()
