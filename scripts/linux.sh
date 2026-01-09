@@ -6,8 +6,8 @@ if ! command -V curl > /dev/null 2>&1; then
     exit
 fi
 
-wget "https://github.com/mohamed7-dev/yalla-download-deps/releases/download/v.1.0.0/linux_ffmpeg_amd64.tar.xz"
-wget "https://github.com/mohamed7-dev/yalla-download-deps/releases/download/v.1.0.0/nodejs-linux-amd64" -O node
+wget "https://github.com/mohamed7-dev/vidora-deps/releases/download/v.1.0.0/linux_ffmpeg_amd64.tar.xz"
+wget "https://github.com/mohamed7-dev/vidora-deps/releases/download/v.1.0.0/nodejs-linux-amd64" -O node
 chmod +x node
 
 tar -xf linux_ffmpeg_amd64.tar.xz

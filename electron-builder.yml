@@ -1,5 +1,5 @@
-appId: io.github.mohamed7-dev.yalla-download
-productName: Yalla Download
+appId: io.github.mohamed7-dev.vidora
+productName: Vidora
 artifactName: '${productName}.${ext}'
 directories:
   buildResources: build
@@ -18,7 +18,7 @@ extraResources:
   - from: resources/icons
     to: icons
 win:
-  executableName: yalla-download
+  executableName: vidora
   icon: resources/icons/icon-256.png
   target:
     - nsis
@@ -77,5 +77,5 @@ npmRebuild: false
 publish:
   provider: github
   owner: mohamed7-dev
-  repo: yalla-download
+  repo: vidora
   private: true

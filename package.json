@@ -1,5 +1,5 @@
 {
-  "name": "yalla-download",
+  "name": "vidora",
   "version": "0.0.0",
   "description": "A modern video and audio downloader from YouTube and many other sites",
   "main": "./out/main/index.js",
@@ -10,13 +10,13 @@
   "homepage": "https://electron-vite.org",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mohamed7-dev/yalla-download.git"
+    "url": "https://github.com/mohamed7-dev/vidora.git"
   },
   "license": "GPL-3.0",
   "publish": {
     "provider": "github",
     "owner": "mohamed7-dev",
-    "repo": "yalla-download",
+    "repo": "vidora",
     "private": true
   },
   "scripts": {
