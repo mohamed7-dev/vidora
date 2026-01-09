@@ -1,7 +1,32 @@
 <template>
   <page-layout>
     <span slot="header" data-i18n="History"></span>
-    <div slot="content">
+    <div class="history__content" slot="content">
+      <div class="history__content-top">
+        <div class="history__content-top-filters">
+          <ui-input
+            data-el="search-input"
+            data-i18n-placeholder="Search by title, or media url"
+            type="search"
+            block
+          ></ui-input>
+          <ui-select data-el="filter-select">
+            <ui-select-trigger>
+              <ui-select-value data-i18n-placeholder="Filter"></ui-select-value>
+              <ui-icon name="chevrons-up-down"></ui-icon>
+            </ui-select-trigger>
+            <ui-select-portal offset="18" align="center">
+              <ui-select-content data-el="filter-select-content"></ui-select-content>
+            </ui-select-portal>
+          </ui-select>
+          <ui-button variant="secondary" data-el="clear-btn">
+            <span data-i18n="Clear All"></span>
+          </ui-button>
+        </div>
+        <area-section>
+          <div class="history__content-stats" slot="articles" data-el="stats-container"></div>
+        </area-section>
+      </div>
       <area-section data-i18n-label="Download History">
         <jobs-page slot="articles"></jobs-page>
       </area-section>

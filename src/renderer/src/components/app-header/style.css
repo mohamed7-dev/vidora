@@ -18,6 +18,7 @@ header {
 
 /* Anything clickable must be no-drag */
 notification-popover,
+notification-center,
 .new__dialog-trigger,
 .sheet__trigger,
 .dropdown__trigger,

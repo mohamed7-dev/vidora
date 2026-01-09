@@ -1,8 +1,6 @@
 import '../preferences-dialog/index'
 import '../about-dialog/about-dialog.component'
 import '../app-sidebar/content/index'
-
-// import '../notification-popover/index' // will be back once we fix the bug
 import html from './template.html?raw'
 import style from './style.css?inline'
 import { DATA } from '@root/shared/data'

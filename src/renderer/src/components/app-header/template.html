@@ -11,6 +11,8 @@
         <span data-i18n="Add New Download" class="sr-only"></span>
       </ui-button>
       <h1 data-el="app-header-title"></h1>
+      <notification-center></notification-center>
+
       <ui-dropdown>
         <ui-dropdown-trigger as-child>
           <ui-button class="dropdown__trigger" variant="ghost" size="icon">
@@ -30,8 +32,6 @@
         </ui-dropdown-portal>
       </ui-dropdown>
 
-      <!-- TODO: will be back once we fix the bug in notification-popover -->
-      <!-- <notification-popover></notification-popover> -->
       <preferences-dialog></preferences-dialog>
       <about-dialog></about-dialog>
       <ui-sheet side="right" style="--ui-sheet-width: 100vw">

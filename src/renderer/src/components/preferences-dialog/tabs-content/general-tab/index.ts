@@ -1,5 +1,3 @@
-import '../../../area-article/index'
-import '../../../area-section/index'
 import html from './template.html?raw'
 import style from './style.css?inline'
 import { DATA } from '@root/shared/data'
@@ -22,8 +20,6 @@ export class GeneralTabContent extends HTMLElement {
   private _eventsAborter: AbortController | null = null
   private _changeThemeUnsub: (() => void) | null = null
 
-  // private initialConfig: AppConfig | null = null
-  private t = window.api?.i18n?.t || (() => '')
   private needsReload = false
   private needsRelaunch = false
 
@@ -107,7 +103,7 @@ export class GeneralTabContent extends HTMLElement {
     if (!theme) return
     if (this.themeSelectContent) {
       const options = DATA.themes.map((theme) => {
-        return `<ui-select-option value="${theme.value}">${this.t(theme.label)}</ui-select-option>`
+        return `<ui-select-option value="${theme.value}">${theme.label}</ui-select-option>`
       })
       this.themeSelectContent.innerHTML = options.join('')
       this.themeSelect.value = theme
@@ -228,7 +224,7 @@ export class GeneralTabContent extends HTMLElement {
     this.checkForUpdatesBtn.addEventListener(
       'click',
       () => {
-        // TODO: check for updates
+        window.api.appUpdate.rendererToMain({ action: 'check' })
       },
       { signal: this._eventsAborter.signal }
     )

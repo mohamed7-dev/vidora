@@ -1,5 +1,3 @@
-import '../../../area-article/index'
-import '../../../area-section/index'
 import html from './template.html?raw'
 import style from './style.css?inline'
 import { DATA } from '@root/shared/data'
@@ -12,6 +10,7 @@ import { type UiInput, type UIInputValueDetail } from '@ui/input/ui-input'
 import { type UiButton } from '@ui/button/ui-button'
 import { ChangePathsStatusBusEvent } from '@root/shared/ipc/user-pref'
 import { localizeElementsText } from '@renderer/lib/ui/localize'
+import { toast } from '@renderer/lib/sonner'
 
 const DOWNLOADER_TAB_TAG_NAME = 'downloader-tab-content'
 
@@ -101,9 +100,21 @@ export class DownloaderTabContent extends HTMLElement {
     )
     this._ytdlpPathChangedUnsub = window.api.preferences.ytdlpConfigPath.changed(
       (payload: ChangePathsStatusBusEvent) => {
-        this._syncYtdlpConfigPath(
-          Array.isArray(payload.path) ? (payload.path[0] ?? '') : payload.path
-        )
+        if (payload.status === 'success') {
+          this._syncYtdlpConfigPath(
+            Array.isArray(payload.payload.path)
+              ? (payload.payload.path[0] ?? '')
+              : payload.payload.path
+          )
+        }
+        if (payload.status === 'error') {
+          toast.show({
+            variant: 'destructive',
+            title: payload.message,
+            description: payload.payload.cause,
+            duration: 3000
+          })
+        }
       }
     )
   }

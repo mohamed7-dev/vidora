@@ -116,7 +116,8 @@ export class JobsPage extends HTMLElement {
     this._page = all.nextPage
     const newJobs = all.items || []
 
-    if (page && this._jobs.length) {
+    const shouldAppend = pageToLoad > 1 && this._jobs.length > 0
+    if (shouldAppend) {
       this._jobs = [...this._jobs, ...newJobs]
     } else {
       this._jobs = newJobs

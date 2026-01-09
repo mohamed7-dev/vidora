@@ -1,0 +1,67 @@
+@import url('../../assets/shadow-common.css');
+
+.notification-center {
+  display: flex;
+  align-items: center;
+}
+
+.notification-center__trigger {
+  position: relative;
+}
+
+.notification-center__badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 14px;
+  height: 14px;
+  border-radius: var(--radius-circle);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: var(--font-size-x-small);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 2px;
+}
+
+.notification-center__item {
+  padding: var(--spacing-small);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  margin-bottom: var(--spacing-small);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-x-small);
+}
+
+.notification-center__item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-x-small);
+}
+
+.notification-center__item-close ui-icon {
+  --ui-icon-size: 0.75rem;
+}
+
+.notification-center__item--unread {
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+
+.notification-center__item-title {
+  font-weight: 600;
+}
+
+.notification-center__item-message {
+  font-size: var(--font-size-small);
+  opacity: 0.9;
+}
+
+.notification-center__item-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-x-small);
+  margin-top: var(--spacing-x-small);
+}

@@ -1,5 +1,3 @@
-import '../../../area-article/index'
-import '../../../area-section/index'
 import html from './template.html?raw'
 import style from './style.css?inline'
 import { DATA } from '@root/shared/data'
@@ -12,6 +10,7 @@ import { type ValueChangeEventDetail } from '@ui/select/constants'
 import { type UiSelectContent } from '@ui/select/ui-select-content'
 import { ChangePathsStatusBusEvent } from '@root/shared/ipc/user-pref'
 import { localizeElementsText } from '@renderer/lib/ui/localize'
+import { toast } from '@renderer/lib/sonner'
 
 const DOWNLOADS_TAB_TAG_NAME = 'downloads-tab-content'
 
@@ -118,6 +117,14 @@ export class DownloadsTabContent extends HTMLElement {
       (payload: ChangePathsStatusBusEvent) => {
         if (payload.status === 'success') {
           this._handleChangedDownloadPath(payload.payload.path)
+        }
+        if (payload.status === 'error') {
+          toast.show({
+            variant: 'destructive',
+            title: payload.message,
+            description: payload.payload.cause,
+            duration: 3000
+          })
         }
       }
     )

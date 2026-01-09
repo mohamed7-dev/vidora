@@ -1,0 +1,32 @@
+<template>
+  <div class="notification-center">
+    <ui-sheet side="right" style="--ui-sheet-width: min(400px, 100vw)">
+      <ui-sheet-trigger as-child>
+        <ui-button class="notification-center__trigger" variant="ghost" size="icon">
+          <ui-icon name="bell" class="header-button-icon"></ui-icon>
+          <span class="sr-only" data-i18n="Open Notifications"></span>
+          <span class="notification-center__badge" data-el="badge" hidden></span>
+        </ui-button>
+      </ui-sheet-trigger>
+      <ui-sheet-portal>
+        <ui-sheet-overlay></ui-sheet-overlay>
+        <ui-sheet-content>
+          <ui-sheet-header>
+            <ui-sheet-title>
+              <span slot="label" data-i18n="Notifications"></span>
+              <ui-button slot="action" variant="outline" data-el="clear-all">
+                <span data-i18n="Clear All"></span>
+              </ui-button>
+            </ui-sheet-title>
+            <ui-sheet-description
+              data-i18n="Recent notifications and actions"
+            ></ui-sheet-description>
+          </ui-sheet-header>
+          <ui-sheet-body>
+            <div class="notification-center__list" data-el="list"></div>
+          </ui-sheet-body>
+        </ui-sheet-content>
+      </ui-sheet-portal>
+    </ui-sheet>
+  </div>
+</template>

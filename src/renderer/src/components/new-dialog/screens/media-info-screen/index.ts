@@ -14,6 +14,7 @@ import { UICheckbox } from '@renderer/components/ui/checkbox/ui-checkbox'
 import { localizeElementsText } from '@renderer/lib/ui/localize'
 import { UiSelectContent } from '@renderer/components/ui/select/ui-select-content'
 import { UI_TAB_EVENTS, type ChangeValueEventDetail } from '@renderer/components/ui/tab/constants'
+import { toast } from '@renderer/lib/sonner'
 
 const MEDIA_INFO_NAME = 'media-info-screen'
 
@@ -187,6 +188,14 @@ export class MediaInfoScreen extends HTMLElement {
     if (payload.status === 'success') {
       this._downloadPathTextEl.textContent = payload.payload.path
       this._selectedDownloadPath = payload.payload.path
+    }
+    if (payload.status === 'error') {
+      toast.show({
+        variant: 'destructive',
+        title: payload.message,
+        description: payload.payload.cause,
+        duration: 3000
+      })
     }
   }
 

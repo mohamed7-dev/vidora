@@ -2,6 +2,7 @@ export * from './ui/index'
 
 // Global Component
 export * from './app-header/index'
+import './notification-center/notification-center'
 export * from './app-sidebar/index'
 export * from './new-dialog/index'
 export * from './app-scrim/index'
