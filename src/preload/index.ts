@@ -10,7 +10,11 @@ import { MEDIA_INFO_CHANNELS, MediaInfoChannelPayload } from '../shared/ipc/get-
 import { PASTE_LINK_CHANNELS } from '../shared/ipc/paste-link'
 import { NAVIGATION_CHANNELS, SPANavigateChannelPayload } from '../shared/ipc/navigation'
 import { APP_CONFIG_CHANNELS, AppConfig } from '../shared/ipc/app-config'
-import { APP_UPDATE_CHANNELS, ApprovalRes } from '../shared/ipc/app-update'
+import {
+  APP_UPDATE_CHANNELS,
+  AppUpdateMainToRendererPayload,
+  AppUpdateRendererToMainPayload
+} from '../shared/ipc/app-update'
 import { DOWNLOAD_JOBS_CHANNELS, JobsUpdateEvent } from '../shared/ipc/download-jobs'
 import { DOWNLOAD_HISTORY_CHANNELS, type HistoryListQuery } from '../shared/ipc/download-history'
 import { ChangePathsStatusBusEvent, USER_PREF_CHANNELS } from '../shared/ipc/user-pref'
@@ -19,6 +23,8 @@ import { CHECK_YTDLP_CHANNELS, CheckYtdlpChannelPayload } from '../shared/ipc/ch
 
 void initTheme()
 void initI18n()
+
+let lastYtdlpStatus: CheckYtdlpChannelPayload | null = null
 
 const api = {
   setup: {
@@ -151,16 +157,26 @@ const api = {
     }
   },
   appUpdate: {
-    respondToDownloadApproval: (res: ApprovalRes) =>
-      ipcRenderer.invoke(APP_UPDATE_CHANNELS.RENDERER_TO_MAIN, res),
-    respondToInstallApproval: (res: ApprovalRes) =>
-      ipcRenderer.invoke(APP_UPDATE_CHANNELS.RENDERER_TO_MAIN, res)
-    // add main to renderer listeners
+    rendererToMain: (payload: AppUpdateRendererToMainPayload) =>
+      ipcRenderer.invoke(APP_UPDATE_CHANNELS.RENDERER_TO_MAIN, payload),
+    mainToRenderer: (cb) => {
+      const handler = (_: unknown, payload: AppUpdateMainToRendererPayload): void => cb(payload)
+      ipcRenderer.on(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, handler)
+      return () => ipcRenderer.removeListener(APP_UPDATE_CHANNELS.MAIN_TO_RENDERER, handler)
+    }
   },
   ytdlp: {
     onCheckingStatus: (cb) => {
-      const handler = (_: unknown, evt: CheckYtdlpChannelPayload): void => cb(evt)
+      const handler = (_: unknown, evt: CheckYtdlpChannelPayload): void => {
+        lastYtdlpStatus = evt
+        cb(evt)
+      }
       ipcRenderer.on(CHECK_YTDLP_CHANNELS.STATUS, handler)
+      // Immediately replay the last known status (if any) so late subscribers
+      // still receive the most recent yt-dlp check/update info.
+      if (lastYtdlpStatus) {
+        cb(lastYtdlpStatus)
+      }
       return () => ipcRenderer.removeListener(CHECK_YTDLP_CHANNELS.STATUS, handler)
     }
   }

@@ -1,7 +1,10 @@
 import { LoadedLocaleDictPayload } from '../shared/i18n/i18n'
 import { AppConfig } from '../shared/ipc/app-config'
 import { AppSetupChannelPayload } from '../shared/ipc/app-setup'
-import { ApprovalRes } from '../shared/ipc/app-update'
+import {
+  AppUpdateMainToRendererPayload,
+  AppUpdateRendererToMainPayload
+} from '../shared/ipc/app-update'
 import { CheckYtdlpChannelPayload } from '../shared/ipc/check-ytdlp'
 import {
   CopyUrlResult,
@@ -91,8 +94,8 @@ export type PreloadApi = {
     stats: () => Promise<DownloadHistoryStats>
   }
   appUpdate: {
-    respondToDownloadApproval: (res: ApprovalRes) => void
-    respondToInstallApproval: (res: ApprovalRes) => void
+    rendererToMain: (payload: AppUpdateRendererToMainPayload) => void
+    mainToRenderer: (cb: (payload: AppUpdateMainToRendererPayload) => void) => () => void
   }
   downloads: {
     getInfo: (url: string) => Promise<YtdlpInfo>
