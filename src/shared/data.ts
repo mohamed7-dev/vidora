@@ -1,7 +1,7 @@
 import { t } from './i18n/i18n'
 
 export const DATA = {
-  appName: 'Yalla-Download',
+  appName: 'Vidora',
   /* eslint-disable-next-line no-useless-escape */
   proxyServerPattern: '^(http://|https://|socks5://)?[a-zA-Z0-9.]+:[\d]+$',
   videoQualities: [
@@ -53,7 +53,7 @@ export const DATA = {
     { value: 'none', label: 'None' }
   ],
   pages: [
-    { id: 'home', route: '', windowTitle: 'Yalla-Download' },
+    { id: 'home', route: '', windowTitle: 'Vidora' },
     { id: 'downloading', route: 'downloading', windowTitle: t`Downloading` },
     { id: 'queued', route: 'queued', windowTitle: t`Queued` },
     { id: 'history', route: 'history', windowTitle: t`History` },

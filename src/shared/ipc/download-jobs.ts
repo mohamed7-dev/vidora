@@ -39,6 +39,7 @@ export type DownloadJobPayload = {
   title: string
   thumbnail: string
   fileName?: string
+  sizeBytes?: number
   ytdlpArgs: DownloadArgs & {
     downloadDir: string | null
     subtitles: boolean
