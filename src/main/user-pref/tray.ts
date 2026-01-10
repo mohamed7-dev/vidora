@@ -22,12 +22,8 @@ let trayRef: Tray | null = null
 let quitting = false
 let enabled = false
 
-async function init(): Promise<void> {
-  if (trayRef) return
-  const image = nativeImage.createFromPath(getIconPath())
-  trayRef = new Tray(image)
-  trayRef.setToolTip(app.name)
-  const menu = Menu.buildFromTemplate([
+function buildTrayMenu(): Menu {
+  return Menu.buildFromTemplate([
     {
       label: t`Open App`,
       click: () => {
@@ -60,7 +56,14 @@ async function init(): Promise<void> {
       }
     }
   ])
-  trayRef.setContextMenu(menu)
+}
+
+async function init(): Promise<void> {
+  if (trayRef) return
+  const image = nativeImage.createFromPath(getIconPath())
+  trayRef = new Tray(image)
+  trayRef.setToolTip(app.name)
+  trayRef.setContextMenu(buildTrayMenu())
   trayRef.on('click', () => {
     const win = getWindow()
     if (win) {
@@ -85,6 +88,11 @@ export function useTray(value: boolean): void {
     destroy()
   }
   enabled = value
+}
+
+export function refreshTrayMenu(): void {
+  if (!trayRef) return
+  trayRef.setContextMenu(buildTrayMenu())
 }
 
 export function getIsQuitting(): boolean {

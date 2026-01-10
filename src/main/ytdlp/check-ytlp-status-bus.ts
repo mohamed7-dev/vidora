@@ -19,7 +19,7 @@ export function progress(info: CommonParam): void {
     payload: info.payload,
     message:
       info.message ??
-      t`yt-dlp check is in progress. This may include downloading or verifying the binary…`
+      t`yt-dlp check is in progress, This may include downloading or verifying the binary…`
   })
 }
 

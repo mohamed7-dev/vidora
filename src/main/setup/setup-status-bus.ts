@@ -26,7 +26,7 @@ export function begin(info?: CommonParams): void {
 export function complete(info?: CommonParams): void {
   latestStatus = {
     status: 'success',
-    message: info?.message ?? t`All checks passed. You are ready to start downloading.`,
+    message: info?.message ?? t`All checks passed, You are ready to start downloading.`,
     payload: info?.payload ?? {}
   }
   broadcastToAllWindows(channel, latestStatus)

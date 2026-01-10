@@ -15,8 +15,8 @@ export async function setupYtdlp(): Promise<void> {
     },
     onInfo: (payload) => {
       const messages: Record<(typeof payload)['scope'], string> = {
-        'macos-homebrew': t`yt-dlp is not installed. You can install it from Homebrew.`,
-        'freebsd-bin-notfound': t`yt-dlp was not found on this system. Please install it before continuing.`,
+        'macos-homebrew': t`yt-dlp is not installed, You can install it from Homebrew.`,
+        'freebsd-bin-notfound': t`yt-dlp was not found on this system, Please install it before continuing.`,
         'updated-ytdlp': t`yt-dlp was updated successfully.`,
         'updating-ytdlp': t`yt-dlp is currently being updated…`
       }
