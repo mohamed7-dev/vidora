@@ -1,5 +1,14 @@
 import { t } from './i18n/i18n'
 
+// This function is never called; it only exists so the i18n extractor
+// can see these window-title tokens at build time.
+export function _ensureNavigationTitleTokens(): void {
+  void t`Downloading`
+  void t`Queued`
+  void t`History`
+  void t`Completed`
+}
+
 export const DATA = {
   appName: 'Vidora',
   /* eslint-disable-next-line no-useless-escape */
@@ -54,9 +63,9 @@ export const DATA = {
   ],
   pages: [
     { id: 'home', route: '', windowTitle: 'Vidora' },
-    { id: 'downloading', route: 'downloading', windowTitle: t`Downloading` },
-    { id: 'queued', route: 'queued', windowTitle: t`Queued` },
-    { id: 'history', route: 'history', windowTitle: t`History` },
-    { id: 'completed', route: 'completed', windowTitle: t`Completed` }
+    { id: 'downloading', route: 'downloading', windowTitle: 'Downloading' },
+    { id: 'queued', route: 'queued', windowTitle: 'Queued' },
+    { id: 'history', route: 'history', windowTitle: 'History' },
+    { id: 'completed', route: 'completed', windowTitle: 'Completed' }
   ]
 }
