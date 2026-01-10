@@ -28,6 +28,8 @@ export interface OpenChangeEventDetail {
   tooltipId: string
   open: boolean
 }
+export type UiTooltipAlign = 'center' | 'start' | 'end'
+export type UiTooltipSide = 'top' | 'right' | 'bottom' | 'left'
 
 // ui-tooltip-trigger
 export const UI_TOOLTIP_TRIGGER_TAG_NAME = 'ui-tooltip-trigger'

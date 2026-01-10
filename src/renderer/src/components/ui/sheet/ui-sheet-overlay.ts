@@ -25,15 +25,14 @@ export class UiSheetOverlay extends HTMLElement {
             --ui-sheet-overlay-bg,
             color-mix(in oklch, black 40%, transparent)
           );
-          -webkit-backdrop-filter: blur(6px);
           backdrop-filter: blur(6px);
         }
-        :host-context(.dark) {
+        :host-context(.dark) .sheet__overlay{
           background: var(
             --ui-sheet-overlay-bg-dark,
             color-mix(in oklch, white 12%, transparent)
           );
-        }  
+        }
       </style>
       <div part="base" class="sheet__overlay">
         <slot></slot>

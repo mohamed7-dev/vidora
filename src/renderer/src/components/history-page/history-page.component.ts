@@ -19,8 +19,6 @@ export class HistoryPage extends HTMLElement {
   private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
   private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
 
-  private _t = window.api.i18n.t
-
   //Refs
   private _jobsPage: JobsPage | null = null
   private _searchInput: UiInput | null = null
@@ -120,9 +118,9 @@ export class HistoryPage extends HTMLElement {
     }
 
     this._filterSelectContent.append(
-      makeOption('any', this._t`All`),
-      makeOption('video', this._t`Video`),
-      makeOption('audio', this._t`Audio`)
+      makeOption('any', window.api.i18n.t`All`),
+      makeOption('video', window.api.i18n.t`Video`),
+      makeOption('audio', window.api.i18n.t`Audio`)
     )
 
     // Default selection
@@ -149,10 +147,10 @@ export class HistoryPage extends HTMLElement {
       | 'completedSizeBytes'
 
     const entries: Array<{ key: StatKey; label: string; format?: 'bytes' }> = [
-      { key: 'totalCount', label: this._t`Total downloads` },
-      { key: 'completedCount', label: this._t`Completed` },
-      { key: 'failedCount', label: this._t`Failed` },
-      { key: 'totalSizeBytes', label: this._t`Total size`, format: 'bytes' }
+      { key: 'totalCount', label: window.api.i18n.t`Total downloads` },
+      { key: 'completedCount', label: window.api.i18n.t`Completed` },
+      { key: 'failedCount', label: window.api.i18n.t`Failed` },
+      { key: 'totalSizeBytes', label: window.api.i18n.t`Total size`, format: 'bytes' }
     ]
     const formatBytes = (value: number): string => {
       if (!Number.isFinite(value) || value <= 0) return '0 B'
@@ -190,7 +188,7 @@ export class HistoryPage extends HTMLElement {
       status: ['completed', 'failed', 'canceled', 'deleted'],
       pageSize: 10,
       empty: {
-        message: this._t`No downloads in history yet`,
+        message: window.api.i18n.t`No downloads in history yet`,
         iconName: ICONS_KEYS.find((icon) => icon === 'history'),
         actionsNode: document.createElement('add-download-button')
       },
@@ -209,7 +207,7 @@ export class HistoryPage extends HTMLElement {
       },
       jobItemFactory: ({ job, index, total, eventsAborter }) => {
         const payload = job.payload as DownloadJobPayload
-        const title = payload?.title || payload?.url || this._t`Untitled`
+        const title = payload?.title || payload?.url || window.api.i18n.t`Untitled`
         const subtitle = `${job.statusText}`
         const article = document.createElement('area-article')
         if (index === 0) article.setAttribute('first', '')
@@ -229,7 +227,20 @@ export class HistoryPage extends HTMLElement {
             JOB_ITEM_EVENTS.DELETE,
             async () => {
               await window.api.history.delete(job.id)
-              // Optionally: reload list or rely on JobsPage reload logic if you add a bus
+            },
+            { signal: eventsAborter.signal }
+          )
+          jobItem.addEventListener(
+            JOB_ITEM_EVENTS.OPEN,
+            async () => {
+              await window.api.downloadJobs.open(job.id)
+            },
+            { signal: eventsAborter.signal }
+          )
+          jobItem.addEventListener(
+            JOB_ITEM_EVENTS.COPY_URL,
+            async () => {
+              await window.api.downloadJobs.copyUrl(job.id)
             },
             { signal: eventsAborter.signal }
           )
@@ -240,13 +251,11 @@ export class HistoryPage extends HTMLElement {
     })
     if (isEmpty) {
       this.setAttribute('data-empty', '')
-      // Disable search when there are no history items
       if (this._searchInput && !this._searchQuery) {
         this._searchInput.disabled = true
       }
     } else {
       this.removeAttribute('data-empty')
-      // Enable search when there are history items
       if (this._searchInput) {
         this._searchInput.disabled = false
       }

@@ -43,15 +43,18 @@ export class UiButton extends HTMLElement {
     ]
   }
 
-  attributeChangedCallback(name: string): void {
+  attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
     switch (name) {
       case UI_BUTTON_ATTRIBUTES.DISABLED:
-        this._syncDisabled()
+        this._syncInteractiveState()
         break
       case UI_BUTTON_ATTRIBUTES.LOADING:
+        if (newValue === oldValue) break
         this._syncLoading()
+        this._syncInteractiveState()
         break
       case UI_BUTTON_ATTRIBUTES.PRESSED:
+        if (newValue === oldValue) break
         this._syncPressed()
         break
       default:
@@ -105,7 +108,7 @@ export class UiButton extends HTMLElement {
     this.variant = this.variant || 'default'
     this.size = this.size || 'default'
     this._syncLoading()
-    this._syncDisabled()
+    this._syncInteractiveState()
     this._syncPressed()
   }
 
@@ -166,7 +169,7 @@ export class UiButton extends HTMLElement {
   private _bindKeyboardA11y(): void {
     if (this._isAsChild) return
     this.addEventListener('keydown', (e) => {
-      if (this.disabled) return
+      if (this.disabled || this.loading) return
 
       if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') {
         e.preventDefault()
@@ -175,7 +178,7 @@ export class UiButton extends HTMLElement {
     })
 
     this.addEventListener('keyup', (e) => {
-      if (this.disabled) return
+      if (this.disabled || this.loading) return
 
       if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') {
         e.preventDefault()
@@ -191,34 +194,34 @@ export class UiButton extends HTMLElement {
       this.removeAttribute('aria-pressed')
     }
   }
+
   private _syncLoading(): void {
+    const existingIcon = this.querySelector("ui-icon[name='loader-circle']")
     if (this.loading) {
-      const icon = document.createElement('ui-icon')
-      icon.setAttribute('name', 'loader-circle')
-      icon.setAttribute('spin', '')
-      icon.setAttribute('aria-hidden', 'true')
-      this.prepend(icon)
-    } else {
-      // Remove existing loader icon if present
-      const existingIcon = this.querySelector("ui-icon[name='loader-circle']")
-      if (existingIcon) {
-        existingIcon.remove()
+      if (!existingIcon) {
+        const icon = document.createElement('ui-icon')
+        icon.setAttribute('name', 'loader-circle')
+        icon.setAttribute('spin', '')
+        icon.setAttribute('aria-hidden', 'true')
+        this.prepend(icon)
       }
+    } else if (existingIcon) {
+      // Remove existing loader icon if present
+      existingIcon.remove()
     }
     this.ariaBusy = this.loading ? 'true' : 'false'
-    this.disabled = this.loading
   }
 
-  private _syncDisabled(): void {
-    const isDisabled = this.disabled || this.loading
+  private _syncInteractiveState(): void {
+    const isDisabledLike = this.disabled || this.loading
 
     if (!this._isAsChild) {
-      this.tabIndex = isDisabled ? -1 : 0
-      this.setAttribute('aria-disabled', isDisabled ? 'true' : 'false')
+      this.tabIndex = isDisabledLike ? -1 : 0
+      this.setAttribute('aria-disabled', isDisabledLike ? 'true' : 'false')
     } else if (this._asChildTarget) {
       // Reflect disabled semantics onto the slotted child in as-child mode.
-      this._asChildTarget.setAttribute('aria-disabled', isDisabled ? 'true' : 'false')
-      if (isDisabled) {
+      this._asChildTarget.setAttribute('aria-disabled', isDisabledLike ? 'true' : 'false')
+      if (isDisabledLike) {
         this._asChildTarget.setAttribute('tabindex', '-1')
       } else {
         this._asChildTarget.removeAttribute('tabindex')
@@ -263,10 +266,12 @@ export class UiButton extends HTMLElement {
   }
 
   get disabled(): boolean {
-    return this.hasAttribute(UI_BUTTON_ATTRIBUTES.DISABLED)
+    return this.hasAttribute(UI_BUTTON_ATTRIBUTES.DISABLED) || this.loading
   }
 
   set disabled(value: boolean) {
+    const currentlyDisabledAttr = this.hasAttribute(UI_BUTTON_ATTRIBUTES.DISABLED)
+    if (value === currentlyDisabledAttr) return
     if (value) {
       this.setAttribute(UI_BUTTON_ATTRIBUTES.DISABLED, '')
     } else {
@@ -307,6 +312,8 @@ export class UiButton extends HTMLElement {
   }
 
   set loading(value: boolean) {
+    const currentlyLoading = this.hasAttribute(UI_BUTTON_ATTRIBUTES.LOADING)
+    if (value === currentlyLoading) return
     if (value) this.setAttribute(UI_BUTTON_ATTRIBUTES.LOADING, '')
     else this.removeAttribute(UI_BUTTON_ATTRIBUTES.LOADING)
   }

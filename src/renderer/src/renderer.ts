@@ -1,5 +1,5 @@
 import './components/index'
-import { initRouter, navigate, normalizePath } from './lib/router'
+import { initRouter, navigate } from './lib/router'
 import { SPANavigateChannelPayload, NAVIGATION_CHANNELS } from '@root/shared/ipc/navigation'
 import { APP_SCRIM_ACTIVE_ATTR, APP_SCRIM_EVENTS, FIRST_RUN_KEY } from './components/app-scrim'
 import { toast } from './lib/sonner'
@@ -89,7 +89,9 @@ class App {
     // Listen to preload-dispatched SPA navigation events
     window.addEventListener(NAVIGATION_CHANNELS.TO, ((e: Event) => {
       const detail = (e as CustomEvent<SPANavigateChannelPayload>).detail
-      void navigate(normalizePath(detail.page))
+      const page = (detail.page || '').trim()
+      const path = page ? `/${page}` : '/'
+      void navigate(path)
     }) as EventListener)
   }
 

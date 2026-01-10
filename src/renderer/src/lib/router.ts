@@ -14,47 +14,76 @@ export function normalizePath(path: string): string {
 }
 
 export function getRouteFromLocation(): string {
-  // Prefer hash (e.g., #/downloading); fallback to pathname last segment
-  const hash = (window.location.hash || '').replace(/^#\/?/, '')
-  if (hash) return normalizePath(hash)
+  // Use pathname last segment (e.g., /downloading)
   const last = (location.pathname.split('/').pop() || 'index').toLowerCase()
   return normalizePath(last)
 }
 
-function setHashForPath(path: string, replace = false): void {
-  const name = normalizePath(path).replace(/^\//, '')
-  const newUrl = name ? `${location.pathname}#/${name}` : `${location.pathname}#`
+function setHistoryForPath(path: string, replace = false): void {
+  const normalized = normalizePath(path)
+  // keep current directory as base (works for sub-path deployments and file://)
+  const currentPath = location.pathname
+  const baseDir = currentPath.replace(/\/?[^/]*$/, '') || '/'
+  // When joining baseDir + normalized, avoid generating a leading '//' which the
+  // browser interprets as a protocol-relative URL (e.g. '//history' -> 'http://history/').
+  const cleanBase = baseDir.replace(/\/$/, '')
+  const newUrl = normalized === '/' ? baseDir || '/' : `${cleanBase}${normalized}`
   if (replace) history.replaceState(null, '', newUrl)
   else history.pushState(null, '', newUrl)
 }
 
-export async function navigate(path: string, replace = false): Promise<void> {
+let currentPath = getRouteFromLocation()
+let isRouterMounted = false
+
+export async function navigate(path: string, replace = false, skipHistory = false): Promise<void> {
+  // If the router has already mounted at this path, avoid re-rendering.
+  if (isRouterMounted && currentPath === path) return
   const root = appRoot()
   const route = routes[path] || routes['/']
   if (!root) return
-  // unmount previous
-  const prevPath = currentPath
-  if (prevPath && prevPath !== path && routes[prevPath]?.unmount) routes[prevPath].unmount!(root)
-  // Update URL hash (keeps document URL at /pages/index.html)
-  setHashForPath(path, replace)
-  currentPath = path
-  root.innerHTML = `
-    <new-dialog></new-dialog>
-    <app-header></app-header>
-    <app-sidebar></app-sidebar>
-    <main></main>
-  `
-  await route.mount(root)
-  try {
-    window.dispatchEvent(new CustomEvent(ROUTED_EVENT, { detail: { path } }) as RoutedEvent)
-  } catch {
-    // no-op
+
+  const performNavigation = async (): Promise<void> => {
+    // unmount previous
+    const prevPath = currentPath
+    if (prevPath && prevPath !== path && routes[prevPath]?.unmount) {
+      routes[prevPath].unmount!(root)
+    }
+    if (!skipHistory) {
+      setHistoryForPath(path, replace)
+    }
+    currentPath = path
+    root.innerHTML = `
+      <new-dialog></new-dialog>
+      <app-header></app-header>
+      <app-sidebar></app-sidebar>
+      <main></main>
+    `
+    await route.mount(root)
+    try {
+      window.dispatchEvent(new CustomEvent(ROUTED_EVENT, { detail: { path } }) as RoutedEvent)
+    } catch {
+      // no-op
+    }
+    isRouterMounted = true
+  }
+
+  const anyDocument = document as Document & {
+    startViewTransition?: (cb: () => void | Promise<void>) => { finished: Promise<void> }
+  }
+
+  if (anyDocument.startViewTransition) {
+    await anyDocument.startViewTransition(() => performNavigation()).finished
+  } else {
+    await performNavigation()
   }
 }
 
-let currentPath = getRouteFromLocation()
 export function initRouter(): void {
   // initial mount
   const path = getRouteFromLocation()
+  window.addEventListener('popstate', () => {
+    const routePath = getRouteFromLocation()
+    void navigate(routePath, true, true)
+  })
   void navigate(path, true)
 }

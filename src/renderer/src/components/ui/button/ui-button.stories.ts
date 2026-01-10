@@ -82,6 +82,36 @@ const renderButton = (args: ButtonArgs): string => {
   `
 }
 
+const renderFormButton = (): string => {
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form')
+    if (!form) return
+    form.addEventListener('submit', (e) => {
+      e.preventDefault()
+      console.log('Form submitted', new FormData(form))
+    })
+  })
+  return `
+    <form>
+      <input type="text" placeholder="Name" name="name" />
+      <input type="email" placeholder="Email" name="email" />
+      <ui-button type="submit">
+        <span>Submit</span>
+      </ui-button>
+      <ui-button type="reset">
+        <span>Reset</span>
+      </ui-button>
+      <ui-button type="button">
+        <span>Normal Button</span>
+      </ui-button>
+    </form>
+  `
+}
+
 export const Playground: Story = {
   render: (args) => renderButton(args)
+}
+
+export const FormButton: Story = {
+  render: () => renderFormButton()
 }

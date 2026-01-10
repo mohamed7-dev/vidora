@@ -128,7 +128,7 @@ export class UiSelectTrigger extends HTMLElement {
     const disabledValue = disabled ?? !!this._select?.disabled
 
     if (disabledValue) {
-      // Host should be removed from tab order when disabled so focus
+      // Target should be removed from tab order when disabled so focus
       // traversal skips the trigger entirely.
       this._target.tabIndex = -1
       this._target.setAttribute('aria-disabled', 'true')

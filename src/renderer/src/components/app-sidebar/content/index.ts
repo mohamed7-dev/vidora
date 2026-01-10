@@ -85,7 +85,7 @@ export class AppSidebarContent extends HTMLElement {
     const notPrevented = this.dispatchEvent(ev)
     if (notPrevented) {
       e.preventDefault()
-      window.api?.navigation?.navigate(page)
+      window.api.navigation.navigate(page)
     }
   }
 

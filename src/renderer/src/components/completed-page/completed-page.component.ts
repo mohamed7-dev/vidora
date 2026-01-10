@@ -14,8 +14,6 @@ export class CompletedPage extends HTMLElement {
   private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
   private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
 
-  private _t = window.api.i18n.t
-
   //Refs
   private _jobsPage: JobsPage | null = null
 
@@ -49,13 +47,13 @@ export class CompletedPage extends HTMLElement {
       status: 'completed',
       pageSize: 10,
       empty: {
-        message: this._t`No Downloads Completed`,
+        message: window.api.i18n.t`No Downloads Completed`,
         iconName: ICONS_KEYS.find((icon) => icon === 'circle-check-big'),
         actionsNode: document.createElement('add-download-button')
       },
       jobItemFactory: ({ job, index, total, eventsAborter }) => {
         const payload = job.payload as DownloadJobPayload
-        const title = payload?.title || payload?.url || this._t`Untitled`
+        const title = payload?.title || payload?.url || window.api.i18n.t`Untitled`
         const subtitle = `${job.statusText} • 100%`
         const article = document.createElement('area-article')
         if (index === 0) article.setAttribute('first', '')
@@ -86,7 +84,7 @@ export class CompletedPage extends HTMLElement {
                 console.error('Failed to open download:', res.error)
                 toast.show({
                   variant: 'destructive',
-                  title: this._t`Failed to open the file`,
+                  title: window.api.i18n.t`Failed to open the file`,
                   description: res.error,
                   duration: 3000
                 })
@@ -104,15 +102,15 @@ export class CompletedPage extends HTMLElement {
                 console.error('Failed to copy url:', res.error)
                 toast.show({
                   variant: 'destructive',
-                  title: this._t`Failed to copy url`,
+                  title: window.api.i18n.t`Failed to copy url`,
                   description: res.error,
                   duration: 3000
                 })
               } else {
                 toast.show({
                   variant: 'default',
-                  title: this._t`Copied to clipboard`,
-                  description: this._t`The url has been copied to clipboard`,
+                  title: window.api.i18n.t`Copied to clipboard`,
+                  description: window.api.i18n.t`The url has been copied to clipboard`,
                   duration: 3000
                 })
               }

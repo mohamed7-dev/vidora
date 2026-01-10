@@ -1,0 +1,57 @@
+/* Each direct child of main participates in view transitions. */
+main > * {
+  view-transition-name: page-block;
+}
+
+/* Base keyframes (horizontal) */
+@keyframes page-block-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes page-block-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+/* Shared animation for old/new blocks */
+::view-transition-old(page-block),
+::view-transition-new(page-block) {
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+}
+/* Old leaves first (no delay) */
+::view-transition-old(page-block) {
+  animation-name: page-block-out;
+  animation-delay: 0ms;
+}
+/* New waits a bit, then enters */
+::view-transition-new(page-block) {
+  animation-name: page-block-in;
+  animation-delay: 80ms;
+}
+
+/* Optional: horizontal cascade only on the IN animation */
+::view-transition-new(page-block):nth-child(1) {
+  animation-delay: 80ms;
+}
+::view-transition-new(page-block):nth-child(2) {
+  animation-delay: 120ms;
+}
+::view-transition-new(page-block):nth-child(3) {
+  animation-delay: 160ms;
+}
+
+/* Add more nth-child steps as needed */

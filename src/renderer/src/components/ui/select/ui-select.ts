@@ -12,6 +12,10 @@ import {
 } from './constants'
 import { UiSelectTrigger } from './ui-select-trigger'
 
+// TODO: fix bug: when ui-select is form assciated, it doesn't recieve focus
+// and when tabindex = -1, the browser is able to focus it, but this removes children<trigger>
+// from keyboard tan sequence
+
 let nextSelectId = 1
 
 const selectRegistry = new Map<string, UiSelect>()

@@ -13,7 +13,6 @@ export class QueuedPage extends HTMLElement {
   private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
   private static readonly tpl: HTMLTemplateElement = createTemplateFromHtml(html)
 
-  private _t = window.api.i18n.t
   //Refs
   private _jobsPage: JobsPage | null = null
 
@@ -47,13 +46,13 @@ export class QueuedPage extends HTMLElement {
       status: 'queued',
       pageSize: 10,
       empty: {
-        message: this._t`No Downloads Queued`,
+        message: window.api.i18n.t`No Downloads Queued`,
         iconName: ICONS_KEYS.find((icon) => icon === 'hour-glass'),
         actionsNode: document.createElement('add-download-button')
       },
       jobItemFactory: ({ job, index, total, eventsAborter }) => {
         const payload = job.payload as DownloadJobPayload
-        const title = payload?.title || payload?.url || this._t`Untitled`
+        const title = payload?.title || payload?.url || window.api.i18n.t`Untitled`
         const subtitle = `${job.statusText}`
         const article = document.createElement('area-article')
         if (index === 0) article.setAttribute('first', '')

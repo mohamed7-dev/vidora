@@ -42,3 +42,5 @@ export const UI_DROPDOWN_ITEM_TAG_NAME = 'ui-dropdown-item'
 
 // ui-dropdown-portal
 export const UI_DROPDOWN_PORTAL_TAG_NAME = 'ui-dropdown-portal'
+
+export type UiDropdownAlign = 'center' | 'start' | 'end'

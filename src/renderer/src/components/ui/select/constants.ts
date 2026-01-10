@@ -58,3 +58,4 @@ export const UI_SELECT_VALUE_TAG_NAME = 'ui-select-value'
 
 // ui-select-portal
 export const UI_SELECT_PORTAL_TAG_NAME = 'ui-select-portal'
+export type UiSelectAlign = 'center' | 'start' | 'end'

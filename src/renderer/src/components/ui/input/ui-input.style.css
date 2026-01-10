@@ -71,6 +71,7 @@
 }
 
 :host([variant='underline']) .input {
+  background: transparent;
   border: none;
   border-bottom: 1px solid var(--input-border-color, var(--input));
   border-radius: 0;
@@ -80,6 +81,7 @@
 
 :host([variant='underline']) .input:focus-visible {
   border-bottom-color: var(--ring);
+  box-shadow: none;
 }
 
 :host([variant='underline']) .input[aria-invalid='true'] {

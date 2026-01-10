@@ -14,7 +14,6 @@ export class DownloadingPage extends HTMLElement {
 
   //states
   private _eventsAborter: null | AbortController = new AbortController()
-  private _t = window.api.i18n.t
   private _unsub: (() => void) | null = null
 
   //Refs
@@ -139,7 +138,7 @@ export class DownloadingPage extends HTMLElement {
 
   private _createJobItem(j: Job): JobItem {
     const payload = j.payload as DownloadJobPayload
-    const title = payload?.title || payload?.url || this._t`Untitled`
+    const title = payload?.title || payload?.url || window.api.i18n.t`Untitled`
     const jobItem = document.createElement('job-item')
 
     jobItem.create({
@@ -211,7 +210,7 @@ export class DownloadingPage extends HTMLElement {
     if (this._emptyPlaceholder) return
     const placeholder = document.createElement('empty-data-placeholder')
     placeholder.create({
-      message: this._t`No Downloads Running`,
+      message: window.api.i18n.t`No Downloads Running`,
       iconName: ICONS_KEYS.find((icon) => icon === 'arrow-big-down-dash')
     })
     placeholder.append(document.createElement('add-download-button'))
