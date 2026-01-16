@@ -11,6 +11,8 @@ export function _ensureNavigationTitleTokens(): void {
 
 export const DATA = {
   appName: 'Vidora',
+  appCreatorName: 'mohamed shaban',
+  repoNewIssueLink: 'https://github.com/mohamed7-dev/vidora/issues/new',
   /* eslint-disable-next-line no-useless-escape */
   proxyServerPattern: '^(http://|https://|socks5://)?[a-zA-Z0-9.]+:[\d]+$',
   videoQualities: [
@@ -43,8 +45,9 @@ export const DATA = {
     { value: 'system', label: t`System` },
     { value: 'dark', mode: 'dark', label: t`Dark` },
     { value: 'light', mode: 'light', label: t`Light` },
-    { value: 'caffeine', mode: 'dark', label: 'caffeine' },
-    { value: 'spotify', mode: 'dark', label: 'spotify' }
+    { value: 'caffeine', mode: 'dark', label: 'Caffeine' },
+    { value: 'spotify', mode: 'dark', label: 'Spotify' },
+    { value: 'perplexity', mode: 'dark', label: 'Perplexity' }
   ],
   languages: [
     { value: 'en', label: 'English' },

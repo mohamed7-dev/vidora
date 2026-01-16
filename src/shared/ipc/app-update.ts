@@ -21,6 +21,17 @@ export type AppUpdateRendererToMainPayload =
 
 export type AppUpdateMainToRendererPayload =
   | {
+      action: 'check-started'
+      message: string
+    }
+  | {
+      action: 'check-result'
+      message: string
+      payload: {
+        hasUpdate: boolean
+      }
+    }
+  | {
       action: 'download-available'
       message: string
       payload: {

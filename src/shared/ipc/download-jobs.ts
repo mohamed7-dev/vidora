@@ -12,18 +12,28 @@ export const DOWNLOAD_JOBS_CHANNELS = {
   STATUS_BUS: 'download-jobs:status-bus' // main -> renderer
 }
 
-export const statuses = {
-  pending: t`Pending`,
-  queued: t`Queued`,
-  downloading: t`Downloading`,
-  paused: t`Paused`,
-  completed: t`Completed`,
-  failed: t`Failed`,
-  canceled: t`Canceled`,
-  deleted: t`Deleted`
-} as const
+// This function is never called; it only exists so the i18n extractor
+// can see these window-title tokens at build time.
+export function _ensureJobStatusTokens(): void {
+  void t`pending`
+  void t`queued`
+  void t`downloading`
+  void t`paused`
+  void t`completed`
+  void t`failed`
+  void t`canceled`
+  void t`deleted`
+}
 
-export type JobStatus = keyof typeof statuses
+export type JobStatus =
+  | 'pending'
+  | 'queued'
+  | 'downloading'
+  | 'paused'
+  | 'completed'
+  | 'failed'
+  | 'canceled'
+  | 'deleted'
 
 type DownloadJobType = 'Video' | 'Audio'
 
@@ -58,7 +68,6 @@ export type DownloadJobPayload = {
 export type Job = {
   id: string
   status: JobStatus
-  statusText: string
   progress?: number
   error?: string
   createdAt: number

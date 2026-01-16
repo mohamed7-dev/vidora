@@ -4,7 +4,8 @@ export const DOWNLOAD_HISTORY_CHANNELS = {
   LIST: 'download-history:list',
   DELETE: 'download-history:delete',
   CLEAR: 'download-history:clear',
-  STATS: 'download-history:stats'
+  STATS: 'download-history:stats',
+  STATUS_BUS: 'download-history:status-bus'
 } as const
 
 export type HistoryListSortBy = 'createdAt' | 'updatedAt' | 'title' | 'url'
@@ -49,3 +50,12 @@ export type DownloadHistoryStats = {
   totalSizeBytes: number
   completedSizeBytes: number
 }
+
+export type HistoryUpdateEvent =
+  | {
+      type: 'deleted'
+      id: string
+    }
+  | {
+      type: 'cleared'
+    }
