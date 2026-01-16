@@ -13,14 +13,16 @@
 
 ## Screenshots
 
-> Replace the image paths below with real screenshots when available.
+Below is a collage of screenshots that walks through a typical user journey.
 
-- **Home / Downloads view**
-  - `![Vidora home](./docs/images/home.png)`
-- **History & completed downloads**
-  - `![Vidora history](./docs/images/history.png)`
-- **Notification center & background updates**
-  - `![Vidora notifications](./docs/images/notifications.png)`
+| Step                                     | Screenshot                                                                               |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **1. Home / Downloads view**             | ![Home screen](./docs/screenshots/home-screenshot.png)                                   |
+| **2. Start a new download (URL + info)** | ![New download – URL & media info](./docs/screenshots/new-download-media-screenshot.png) |
+| **3. Download in progress**              | ![Downloading](./docs/screenshots/downloading-screenshot.png)                            |
+| **4. Completed downloads**               | ![Completed downloads](./docs/screenshots/completed-screenshot.png)                      |
+| **5. History page**                      | ![History](./docs/screenshots/history-screenshot.png)                                    |
+| **6. Preferences / settings**            | ![Preferences dialog](./docs/screenshots/pref-dialog-screenshot.png)                     |
 
 ---
 
