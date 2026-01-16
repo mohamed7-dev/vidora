@@ -1,5 +1,7 @@
+import type { t as CoreT } from '../shared/i18n/i18n'
 import { LoadedLocaleDictPayload } from '../shared/i18n/i18n'
 import { AppConfig } from '../shared/ipc/app-config'
+import { AppInfo } from '../shared/ipc/app-info'
 import { AppSetupChannelPayload } from '../shared/ipc/app-setup'
 import {
   AppUpdateMainToRendererPayload,
@@ -21,7 +23,8 @@ import {
   HistoryClearResponse,
   HistoryDeleteResponse,
   HistoryListQuery,
-  HistoryListResult
+  HistoryListResult,
+  HistoryUpdateEvent
 } from '../shared/ipc/download-history'
 import { MediaInfoChannelPayload, YtdlpInfo } from '../shared/ipc/get-media-info'
 import { ChangePathsStatusBusEvent } from '../shared/ipc/user-pref'
@@ -31,6 +34,7 @@ export type PreloadApi = {
   app: {
     relaunch: () => void
     quit: () => void
+    getInfo: () => Promise<AppInfo>
   }
   window: {
     minimize: () => void
@@ -52,7 +56,7 @@ export type PreloadApi = {
   i18n: {
     loadLocale: (locale: string) => Promise<Record<string, unknown>>
     onLocaleChanged?: (callback: (info: LoadedLocaleDictPayload) => void) => () => void
-    t: (strings: TemplateStringsArray) => string
+    t: typeof CoreT
   }
   pasteLink: {
     showMenu: () => void
@@ -92,6 +96,7 @@ export type PreloadApi = {
     delete: (id: string) => Promise<HistoryDeleteResponse>
     clear: () => Promise<HistoryClearResponse>
     stats: () => Promise<DownloadHistoryStats>
+    onUpdated?: (cb: (evt: HistoryUpdateEvent) => void) => () => void
   }
   appUpdate: {
     rendererToMain: (payload: AppUpdateRendererToMainPayload) => void

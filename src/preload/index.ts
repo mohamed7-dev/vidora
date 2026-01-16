@@ -10,6 +10,7 @@ import { MEDIA_INFO_CHANNELS, MediaInfoChannelPayload } from '../shared/ipc/get-
 import { PASTE_LINK_CHANNELS } from '../shared/ipc/paste-link'
 import { NAVIGATION_CHANNELS, SPANavigateChannelPayload } from '../shared/ipc/navigation'
 import { APP_CONFIG_CHANNELS, AppConfig } from '../shared/ipc/app-config'
+import { APP_INFO_CHANNELS } from '../shared/ipc/app-info'
 import {
   APP_UPDATE_CHANNELS,
   AppUpdateMainToRendererPayload,
@@ -40,11 +41,17 @@ const api = {
       ipcRenderer.invoke(DOWNLOAD_HISTORY_CHANNELS.LIST, query ?? {}),
     delete: async (id: string) => ipcRenderer.invoke(DOWNLOAD_HISTORY_CHANNELS.DELETE, { id }),
     clear: async () => ipcRenderer.invoke(DOWNLOAD_HISTORY_CHANNELS.CLEAR),
-    stats: async () => ipcRenderer.invoke(DOWNLOAD_HISTORY_CHANNELS.STATS)
+    stats: async () => ipcRenderer.invoke(DOWNLOAD_HISTORY_CHANNELS.STATS),
+    onUpdated: (cb) => {
+      const handler = (_: unknown, evt: unknown): void => cb(evt as never)
+      ipcRenderer.on(DOWNLOAD_HISTORY_CHANNELS.STATUS_BUS, handler)
+      return () => ipcRenderer.removeListener(DOWNLOAD_HISTORY_CHANNELS.STATUS_BUS, handler)
+    }
   },
   app: {
     relaunch: () => ipcRenderer.send(APP_CONTROLS_CHANNELS.RELAUNCH),
-    quit: () => ipcRenderer.send(APP_CONTROLS_CHANNELS.QUIT)
+    quit: () => ipcRenderer.send(APP_CONTROLS_CHANNELS.QUIT),
+    getInfo: async () => ipcRenderer.invoke(APP_INFO_CHANNELS.GET_INFO)
   },
   window: {
     minimize: () => ipcRenderer.send(WINDOWS_CONTROLS_CHANNELS.MINIMIZE),
@@ -138,16 +145,16 @@ const api = {
       ipcRenderer.on(USER_PREF_CHANNELS.LOCALE.LOADED, handler)
       return () => ipcRenderer.removeListener(USER_PREF_CHANNELS.LOCALE.LOADED, handler)
     },
-    t: (strings: TemplateStringsArray) => coreT(strings)
+    t: coreT
   },
   downloadJobs: {
-    add: async (payload) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.ADD, payload),
-    list: async (params) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.LIST, params),
+    add: async (payload) => await ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.ADD, payload),
+    list: async (params) => await ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.LIST, params),
     updateStatus: async (id, status) =>
-      ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.UPDATE_STATUS, id, status),
-    remove: async (id: string) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.REMOVE, id),
-    pause: async (id: string) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.PAUSE, id),
-    resume: async (id: string) => ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.RESUME, id),
+      await ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.UPDATE_STATUS, id, status),
+    remove: async (id: string) => await ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.REMOVE, id),
+    pause: async (id: string) => await ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.PAUSE, id),
+    resume: async (id: string) => await ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.RESUME, id),
     open: async (id) => await ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.OPEN, id),
     copyUrl: async (id) => await ipcRenderer.invoke(DOWNLOAD_JOBS_CHANNELS.COPY_URL, id),
     onUpdated: (cb) => {
