@@ -11,8 +11,7 @@ import {
   JobStatus,
   JobsUpdateEvent,
   ListJobsParams,
-  ListJobsResult,
-  statuses
+  ListJobsResult
 } from '../../shared/ipc/download-jobs'
 import { initOpenDownloadJobIPC } from './open-download-job'
 import { readConfig } from '../app-config/config-api'
@@ -32,13 +31,11 @@ export function pauseAllIncompletedJobs(): void {
   for (const j of jobs) {
     if (j.status === 'downloading') {
       j.status = 'paused'
-      j.statusText = statuses.paused
       j.updatedAt = now()
       downloadEngine.stop(j.id)
       changed = true
     } else if (j.status === 'queued' || j.status === 'pending') {
       j.status = 'paused'
-      j.statusText = statuses.paused
       j.updatedAt = now()
       changed = true
     }
@@ -74,7 +71,6 @@ function enqueueNextIfPossible(): void {
   const next = jobs.find((j) => j.status === 'queued')
   if (!next) return
   next.status = 'downloading'
-  next.statusText = statuses.downloading
   next.updatedAt = now()
   saveJobs(jobs)
   broadcastUpdate(null, { type: 'updated', job: next })
@@ -91,8 +87,7 @@ function registerDownloadJobsIPC(): void {
     const status = decideInitialStatus(jobs)
     const job: Job = {
       id: randomUUID(),
-      status: status.status,
-      statusText: status.statusText,
+      status: status,
       progress: 0,
       createdAt: now(),
       updatedAt: now(),
@@ -131,7 +126,6 @@ function registerDownloadJobsIPC(): void {
     const j = jobs.find((x) => x.id === id)
     if (!j) return null
     j.status = status
-    j.statusText = statuses[status]
     j.updatedAt = now()
     saveJobs(jobs)
     broadcastUpdate(null, { type: 'updated', job: j })
@@ -162,7 +156,6 @@ function registerDownloadJobsIPC(): void {
     downloadEngine.stop(id)
     // soft delete
     j.status = 'deleted'
-    j.statusText = statuses.deleted
     saveJobs(jobs)
     broadcastUpdate(null, { type: 'updated', job: j })
     enqueueNextIfPossible()
@@ -175,7 +168,6 @@ function registerDownloadJobsIPC(): void {
     if (!j) return null
     if (j.status === 'downloading') {
       j.status = 'paused'
-      j.statusText = statuses.paused
       j.updatedAt = now()
       saveJobs(jobs)
       broadcastUpdate(null, { type: 'updated', job: j })
@@ -191,8 +183,7 @@ function registerDownloadJobsIPC(): void {
     if (!j) return null
     if (j.status === 'paused') {
       const stateInfo = decideInitialStatus(jobs)
-      j.status = stateInfo.status
-      j.statusText = stateInfo.statusText
+      j.status = stateInfo
       j.updatedAt = now()
       saveJobs(jobs)
       broadcastUpdate(null, { type: 'updated', job: j })
@@ -253,7 +244,6 @@ export function initDownloadJobs(): void {
         return
       }
       j.status = ok ? 'completed' : 'failed'
-      j.statusText = ok ? statuses.completed : statuses.failed
       j.progress = ok ? 100 : j.progress
       if (ok) {
         delete j.error

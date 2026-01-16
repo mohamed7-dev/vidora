@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { BrowserWindow, ipcMain } from 'electron'
 import { getJobs, saveJobs } from './download-jobs-store'
 import { Job, JobStatus } from '../../shared/ipc/download-jobs'
 import {
@@ -8,13 +8,19 @@ import {
   HistoryDeleteRequest,
   HistoryDeleteResponse,
   HistoryListQuery,
-  HistoryListResult
+  HistoryListResult,
+  HistoryUpdateEvent
 } from '../../shared/ipc/download-history'
 
 function isActiveStatus(status: JobStatus): boolean {
   return (
     status === 'pending' || status === 'queued' || status === 'downloading' || status === 'paused'
   )
+}
+
+function broadcastHistoryUpdate(evt: HistoryUpdateEvent): void {
+  const targets = BrowserWindow.getAllWindows()
+  for (const w of targets) w.webContents.send(DOWNLOAD_HISTORY_CHANNELS.STATUS_BUS, evt)
 }
 
 function defaultHistoryStatuses(): JobStatus[] {
@@ -179,6 +185,7 @@ export function initDownloadHistory(): void {
 
     jobs.splice(idx, 1)
     saveJobs(jobs)
+    broadcastHistoryUpdate({ type: 'deleted', id: req.id })
     return { success: true } satisfies HistoryDeleteResponse
   })
 
@@ -197,6 +204,9 @@ export function initDownloadHistory(): void {
     }
 
     saveJobs(active)
+    if (removedCount > 0) {
+      broadcastHistoryUpdate({ type: 'cleared' })
+    }
     return { removedCount } satisfies HistoryClearResponse
   })
 

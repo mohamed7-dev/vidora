@@ -5,24 +5,29 @@ import {
   onInstallApproved,
   onUpdateAvailable,
   onUpdateDownloaded,
-  onUpdateError
+  onUpdateError,
+  onUpdateNotAvailable
 } from './update-lib'
 import { ipcMain } from 'electron'
 import { APP_UPDATE_CHANNELS, AppUpdateRendererToMainPayload } from '../../shared/ipc/app-update'
+import { sendCheckStarted } from './update-status-bus'
 
 autoUpdater.autoDownload = false
 
 function checkForUpdate(): void {
   autoUpdater.removeAllListeners('update-available')
+  autoUpdater.removeAllListeners('update-not-available')
   autoUpdater.removeAllListeners('download-progress')
   autoUpdater.removeAllListeners('update-downloaded')
   autoUpdater.removeAllListeners('error')
 
   autoUpdater.on('update-available', onUpdateAvailable)
+  autoUpdater.on('update-not-available', onUpdateNotAvailable)
   autoUpdater.on('download-progress', onDownloadProgress)
   autoUpdater.on('update-downloaded', onUpdateDownloaded)
   autoUpdater.on('error', onUpdateError)
 
+  sendCheckStarted()
   autoUpdater.checkForUpdates()
 }
 

@@ -16,15 +16,16 @@ export interface InternalConfig {
   jobsStorePath: string
 }
 const configDir = join(app.getPath('userData'), 'config')
+
+const isWindows = os.platform() === 'win32'
+const resourcesBasePath = app.isPackaged ? process.resourcesPath : join(process.cwd(), 'resources')
+const binBasePath = join(resourcesBasePath, 'bin')
+
 export const DEFAULT_INTERNAL_PATHS = {
-  ytDlpPath: join(
-    app.getPath('userData'),
-    'bin',
-    os.platform() === 'win32' ? 'ytdlp.exe' : 'ytdlp'
-  ),
-  ffmpegPath: join(process.cwd(), 'resources', 'bin', 'ffmpeg', 'bin'), // path to the bundled ffmpeg
-  nodejsRuntimePath: join(process.cwd(), 'resources', 'bin', 'node'), // path to the bundled node on linux or macos
-  nodejsRuntimePathWin: join(process.cwd(), 'resources', 'bin', 'node.exe') // path to the bundled ffmpeg on windows
+  ytDlpPath: join(app.getPath('userData'), 'bin', isWindows ? 'ytdlp.exe' : 'ytdlp'),
+  ffmpegPath: join(binBasePath, 'ffmpeg', 'bin'), // path to the bundled ffmpeg
+  nodejsRuntimePath: join(binBasePath, isWindows ? 'node.exe' : 'node'), // path to the bundled node runtime
+  nodejsRuntimePathWin: join(binBasePath, 'node.exe') // path to the bundled node on windows
 }
 /**
  * @description

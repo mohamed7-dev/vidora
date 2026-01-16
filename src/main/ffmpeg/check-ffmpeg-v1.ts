@@ -15,11 +15,11 @@ type Hooks = {
 
 let activeDownloadPromise: Promise<string> | null = null
 
-function downloadFFmpeg(ffmpegPath: string, onProgress: Hooks['onProgress']): Promise<string> {
+function downloadFFmpeg(ffmpegPath: string, onProgress?: Hooks['onProgress']): Promise<string> {
   if (!activeDownloadPromise) {
     activeDownloadPromise = FfmpegDownloader.downloadFfmpeg(ffmpegPath, (downloaded, total) => {
       const percent = Math.round((downloaded / total) * 100)
-      onProgress({
+      onProgress?.({
         progress: percent
       })
     }).finally(() => {
@@ -34,11 +34,11 @@ function downloadFFmpeg(ffmpegPath: string, onProgress: Hooks['onProgress']): Pr
  * Checks if ffmpeg is installed
  * @returns path to ffmpeg or null if it fails
  */
-async function checkFFmpeg(hooks: Hooks): Promise<string | null> {
+async function checkFFmpeg(hooks?: Hooks): Promise<string | null> {
   const envPath = process.env.VIDORA_FFMPEG_PATH
   const ffmpegPath = DEFAULT_INTERNAL_PATHS.ffmpegPath
   let finalFFmpegPath: null | string = null
-  hooks.onBegin()
+  hooks?.onBegin()
 
   // if env variable exist, prioritize it
   if (envPath) {
@@ -58,7 +58,7 @@ async function checkFFmpeg(hooks: Hooks): Promise<string | null> {
         finalFFmpegPath = ffmpegPath
       }
     } catch {
-      hooks.onError({
+      hooks?.onError({
         source: 'freebsd-not-found'
       })
       finalFFmpegPath = null // should give the renderer the chance to resolve the issue
@@ -74,17 +74,17 @@ async function checkFFmpeg(hooks: Hooks): Promise<string | null> {
       try {
         // run the download and wait for it to complete
         // this will reuse any in-progress download via activeDownloadPromise
-        const downloadedPath = await downloadFFmpeg(ffmpegPath, hooks.onProgress)
+        const downloadedPath = await downloadFFmpeg(ffmpegPath, hooks?.onProgress)
         finalFFmpegPath = downloadedPath
       } catch {
-        hooks.onError({
+        hooks?.onError({
           source: 'download-failed'
         })
         finalFFmpegPath = null
       }
     }
   }
-  hooks.onComplete()
+  hooks?.onComplete()
   updateInternalConfig({ ffmpegPath: finalFFmpegPath })
   return finalFFmpegPath
 }
@@ -94,7 +94,7 @@ let ffmpegPathPromise: Promise<string | null> | null = null
  * Memoize the check (run once per process, reused)
  * @returns Promise that resolves to the path to ffmpeg or null if it fails
  */
-export function ensureFfmpegPath(hooks: Hooks): Promise<string | null> {
+export function ensureFfmpegPath(hooks?: Hooks): Promise<string | null> {
   if (!ffmpegPathPromise) ffmpegPathPromise = checkFFmpeg(hooks)
   return ffmpegPathPromise
 }
@@ -111,28 +111,29 @@ export function prefetchFfmpegInBackground(): void {
     },
     onProgress: (payload) => {
       progress({
-        progress: payload.progress,
-        message: 'Downloading ffmpeg',
-        messageKey: 'status.ffmpeg.downloading'
+        payload: {
+          progress: payload.progress
+        },
+        message: 'Downloading ffmpeg'
       })
     },
     onComplete: () => {
-      complete()
+      complete({
+        message: 'FFmpeg downloaded successfully'
+      })
     },
     onError: (payload) => {
       error({
-        cause:
-          payload.source === 'download-failed'
-            ? 'Failed to download ffmpeg'
-            : 'Ffmpeg is not found on freebsd, the app may not work properly',
+        payload: {
+          cause:
+            payload.source === 'download-failed'
+              ? 'Failed to download ffmpeg'
+              : 'Ffmpeg is not found on freebsd, the app may not work properly'
+        },
         message:
           payload.source === 'download-failed'
             ? 'Failed to download ffmpeg'
-            : 'Ffmpeg is not found on freebsd',
-        messageKey:
-          payload.source === 'download-failed'
-            ? 'status.ffmpeg.download_failed'
-            : 'status.ffmpeg.not_found_freebsd' // TODO: change
+            : 'Ffmpeg is not found on freebsd'
       })
     }
   })

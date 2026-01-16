@@ -5,6 +5,7 @@ import { shell } from 'electron'
 import {
   sendApprovalFail,
   sendApprovalSuccess,
+  sendCheckResult,
   sendDownloadedSuccessfully,
   sendDownloadProgress,
   sendError,
@@ -15,6 +16,10 @@ import { t } from '../../shared/i18n/i18n'
 
 export function onUpdateAvailable(info: UpdateInfo): void {
   sendUpdateAvailable(info)
+}
+
+export function onUpdateNotAvailable(): void {
+  sendCheckResult(false)
 }
 
 export function onDownloadApproved(_e: Electron.IpcMainInvokeEvent, response: ApprovalRes): void {
@@ -57,6 +62,9 @@ export function onDownloadProgress(info: ProgressInfo): void {
 }
 
 export function onUpdateError(e: Error): void {
+  // Treat errors during checking as "no update"
+  // so the user always sees a final status.
+  sendCheckResult(false)
   sendError(e)
 }
 

@@ -7,6 +7,7 @@ import { initFFmpeg } from '../ffmpeg'
 import { initI18n } from '../i18n'
 import { initJobs } from '../download-jobs'
 import { initUserPref } from '../user-pref'
+import { initAppInfo } from '../app-info'
 import { initWindowControls } from '../window-controls'
 import { initYtdlp } from '../ytdlp'
 import { begin, complete, error } from './setup-status-bus'
@@ -35,6 +36,8 @@ export function setupApp(): void {
             await initFFmpeg()
             // init js runtime
             await initJsRuntime()
+            // init app info ipc
+            initAppInfo()
             // init user preferences for setting up things like changing download path, ytdlp config file,...etc
             await initUserPref(config)
             // check for update

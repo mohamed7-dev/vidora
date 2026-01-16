@@ -5,6 +5,25 @@ import { t } from '../../shared/i18n/i18n'
 
 const channel = APP_UPDATE_CHANNELS.MAIN_TO_RENDERER
 
+export function sendCheckStarted(): void {
+  broadcastToAllWindows(channel, {
+    action: 'check-started',
+    message: t`Checking for updates...`
+  })
+}
+
+export function sendCheckResult(hasUpdate: boolean): void {
+  broadcastToAllWindows(channel, {
+    action: 'check-result',
+    message: hasUpdate
+      ? t`A new app update is available.`
+      : t`You are already running the latest version.`,
+    payload: {
+      hasUpdate
+    }
+  })
+}
+
 export function sendUpdateAvailable(info: UpdateInfo): void {
   broadcastToAllWindows(channel, {
     action: 'download-available',

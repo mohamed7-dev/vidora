@@ -54,9 +54,7 @@ import { existsSync, promises } from 'node:fs'
 import * as statusBus from './check-ytlp-status-bus'
 import * as os from 'node:os'
 import { platform } from '@electron-toolkit/utils'
-import YTDlpWrapImport from 'yt-dlp-wrap-plus'
-
-const YTDlpWrap: any = (YTDlpWrapImport as any)?.default ?? YTDlpWrapImport
+import { YtdlpEngine } from './ytdlp-engine'
 
 describe('checkYtdlp / ensureYtDlpPath', () => {
   beforeEach(() => {
@@ -83,14 +81,14 @@ describe('checkYtdlp / ensureYtDlpPath', () => {
     expect(statusBus.begin).toHaveBeenCalled()
     expect(statusBus.complete).toHaveBeenCalled()
     // No download in this path
-    expect(YTDlpWrap.downloadFromGithub).not.toHaveBeenCalled()
+    expect(YtdlpEngine).not.toHaveBeenCalled()
   })
 
   it('downloads yt-dlp when not present and returns its path', async () => {
     ;(readInternalConfig as Mock).mockReturnValue({ ytDlpPath: '/user-data/ytdlp' })
     ;(existsSync as Mock).mockReturnValue(false)
     ;(promises.access as Mock).mockRejectedValue(new Error('not found'))
-    ;(YTDlpWrap.downloadFromGithub as Mock).mockImplementation(async () => {
+    ;(YtdlpEngine.download as Mock).mockImplementation(async () => {
       // simulate progress callback
       return
     })
@@ -99,7 +97,7 @@ describe('checkYtdlp / ensureYtDlpPath', () => {
     const result = await checkYtdlp()
 
     expect(result).toBe('/user-data/ytdlp')
-    expect(YTDlpWrap.downloadFromGithub).toHaveBeenCalledWith(
+    expect(YtdlpEngine.download).toHaveBeenCalledWith(
       '/user-data/ytdlp',
       undefined,
       undefined,

@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, Menu } from 'electron'
 import { join } from 'node:path'
 import { electronApp, optimizer, is, platform } from '@electron-toolkit/utils'
 import { readConfig } from './app-config/config-api'
@@ -6,6 +6,8 @@ import { setupApp } from './setup/index'
 import { getIsQuitting, isTrayEnabled } from './user-pref/tray'
 import { pauseAllIncompletedJobs } from './download-jobs/download-jobs'
 import { DATA } from '../shared/data'
+
+const isDev = !app.isPackaged
 
 function createWindow(): void {
   const iconPath = app.isPackaged
@@ -27,6 +29,11 @@ function createWindow(): void {
       sandbox: false
     }
   })
+
+  if (!isDev) {
+    // In production: remove the menu entirely
+    Menu.setApplicationMenu(null)
+  }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()

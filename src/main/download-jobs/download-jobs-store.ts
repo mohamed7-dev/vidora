@@ -1,4 +1,4 @@
-import { Job, JobStatus, statuses } from '../../shared/ipc/download-jobs'
+import { Job, JobStatus } from '../../shared/ipc/download-jobs'
 import { readConfig } from '../app-config/config-api'
 import { DEFAULT_INTERNAL_CONFIG } from '../app-config/default-config'
 
@@ -32,10 +32,8 @@ export function maxConcurrent(): number {
   return config.downloads.maxDownloads
 }
 
-export function decideInitialStatus(jobs: Job[]): { status: JobStatus; statusText: string } {
-  return countActive(jobs) < maxConcurrent()
-    ? { status: 'downloading', statusText: statuses.downloading }
-    : { status: 'queued', statusText: statuses.queued }
+export function decideInitialStatus(jobs: Job[]): JobStatus {
+  return countActive(jobs) < maxConcurrent() ? 'downloading' : 'queued'
 }
 
 export function now(): number {
