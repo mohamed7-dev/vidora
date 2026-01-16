@@ -32,8 +32,8 @@
 }
 
 :host-context([use-native-toolbar='true']) .page__header-wrapper {
-  margin-inline-end: 0;
-  display: none;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .page__header-wrapper h1 {

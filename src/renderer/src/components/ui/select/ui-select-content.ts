@@ -36,6 +36,7 @@ export class UiSelectContent extends HTMLElement {
           display: flex;
           flex-direction: column;
           gap: var(--ui-select-content-gap, var(--spacing-2x-small));
+          box-shadow: var(--shadow-x-large);
         }
         .select__content:focus-visible {
           outline: none;

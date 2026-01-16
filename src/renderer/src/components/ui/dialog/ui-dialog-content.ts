@@ -38,9 +38,10 @@ export class UiDialogContent extends HTMLElement {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: var(--ui-dialog-content-padding, var(--spacing-x-small));
+          padding: var(--ui-dialog-content-padding, var(--spacing-small));
           box-sizing: border-box;
           position: relative;
+          box-shadow: var(--shadow-2x-large);
         }
       </style>
       <div class="dialog__content" part="base">

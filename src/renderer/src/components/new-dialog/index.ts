@@ -249,17 +249,30 @@ export class NewDialog extends HTMLElement {
   }
 
   private async _handleKeydown(e: KeyboardEvent): Promise<void> {
+    const isInputFocused = this.shadowRoot?.activeElement === this._mediaUrlInput
+
     if (e.ctrlKey && e.key === 'v') {
-      this._mediaUrl = (await window.api.clipboard?.readText()) ?? ''
-      if (!this._mediaUrlInput) return
-      this._mediaUrlInput.value = this._mediaUrl
+      // Avoid duplicating the browser's native paste behavior.
+      // Only handle Ctrl+V when the media URL input is not currently focused.
+      if (!isInputFocused) {
+        e.preventDefault()
+        this._mediaUrl = (await window.api.clipboard?.readText()) ?? ''
+        if (!this._mediaUrlInput) return
+        this._mediaUrlInput.value = this._mediaUrl
+        this._validateUrl(this._mediaUrl)
+      }
     }
     if (e.ctrlKey && e.key === 'x') {
-      if (this._mediaUrlInput) {
-        this._mediaUrlInput.value = ''
+      // Let the browser handle cutting text when the input is focused to
+      // avoid any duplicate clipboard behavior.
+      if (!isInputFocused) {
+        e.preventDefault()
+        if (this._mediaUrlInput) {
+          this._mediaUrlInput.value = ''
+        }
+        this._mediaUrl = ''
+        this._validateUrl()
       }
-      this._mediaUrl = ''
-      this._validateUrl()
     }
   }
 

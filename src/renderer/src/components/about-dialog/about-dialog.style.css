@@ -5,8 +5,74 @@ ui-dialog-content {
   --ui-dialog-content-height: auto;
 }
 
+.about-dialog__back {
+  display: none;
+}
+
+.about-dialog__screen {
+  display: none;
+}
+
+.about__dialog-label {
+  display: none;
+}
+
+/* Detail screens visibility */
+:host([data-active-screen='home']) .about-dialog__screen[data-screen='home'],
+:host([data-active-screen='home']) .about__dialog-label[data-screen='home'],
+:host([data-active-screen='app-info']) .about-dialog__screen[data-screen='app-info'],
+:host([data-active-screen='app-info']) .about__dialog-label[data-screen='app-info'],
+:host([data-active-screen='whats-new']) .about-dialog__screen[data-screen='whats-new'],
+:host([data-active-screen='whats-new']) .about__dialog-label[data-screen='whats-new'],
+:host([data-active-screen='report-issue']) .about-dialog__screen[data-screen='report-issue'],
+:host([data-active-screen='report-issue']) .about__dialog-label[data-screen='report-issue'],
+:host([data-active-screen='credits']) .about-dialog__screen[data-screen='credits'],
+:host([data-active-screen='credits']) .about__dialog-label[data-screen='credits'],
+:host([data-active-screen='legal']) .about-dialog__screen[data-screen='legal'],
+:host([data-active-screen='legal']) .about__dialog-label[data-screen='legal'] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-medium);
+}
+
+/* Show back button on any non-home screen */
+:host(:not([data-active-screen='home'])) .about-dialog__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-x-small);
+}
+
 @media (max-width: 640px) {
   ui-dialog-content::part(base) {
     --ui-dialog-content-width: 95vw;
   }
+}
+
+.about-dialog__screen--detail p {
+  font-size: var(--font-size-medium);
+  color: var(--popover-foreground);
+}
+
+.about-dialog__screen--detail li {
+  font-size: var(--font-size-small);
+}
+
+/* maintainer info  */
+.maintainer__info {
+  display: flex;
+  gap: var(--spacing-x-small);
+}
+
+.maintainer__info-at {
+  color: var(--secondary-foreground);
+}
+
+.maintainer__info-username {
+  color: var(--primary);
+}
+
+/* license  */
+.license__link,
+.new__issue-link {
+  color: var(--primary);
 }

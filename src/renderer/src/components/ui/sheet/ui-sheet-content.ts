@@ -46,11 +46,11 @@ export class UiSheetContent extends HTMLElement {
           position: fixed;
           background: var(--ui-sheet-background, var(--popover));
           color: var(--ui-sheet-foreground, var(--popover-foreground));
-          border: 1px solid var(--ui-sheet-border, var(--border));
           display: flex;
           flex-direction: column;
-          padding: var(--ui-sheet-padding, var(--spacing-x-small));
+          padding: var(--ui-sheet-padding, var(--spacing-small));
           box-sizing: border-box;
+          box-shadow: var(--shadow-2x-large);
         }
         
         :host([data-side='right']) .sheet__content,
@@ -62,11 +62,13 @@ export class UiSheetContent extends HTMLElement {
         :host([data-side='right']) .sheet__content {
           top: 0;
           right: 0;
+          border-inline-start: 1px solid var(--ui-sheet-border, var(--border));
         }
 
         :host([data-side='left']) .sheet__content {
           top: 0;
           left: 0;
+          border-inline-end: 1px solid var(--ui-sheet-border, var(--border));
         }
 
         :host([data-side='top']) .sheet__content,
@@ -78,11 +80,13 @@ export class UiSheetContent extends HTMLElement {
         :host([data-side='top']) .sheet__content {
           top: 0;
           left: 0;
+          border-bottom: 1px solid var(--ui-sheet-border, var(--border));
         }
 
         :host([data-side='bottom']) .sheet__content {
           bottom: 0;
           left: 0;
+          border-top: 1px solid var(--ui-sheet-border, var(--border));
         }
       </style>
       <div class="sheet__content" part="base">

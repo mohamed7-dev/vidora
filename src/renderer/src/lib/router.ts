@@ -69,13 +69,17 @@ export async function navigate(path: string, replace = false, skipHistory = fals
 
   const anyDocument = document as Document & {
     startViewTransition?: (cb: () => void | Promise<void>) => { finished: Promise<void> }
+    __themeViewTransitionInProgress?: boolean
   }
 
-  if (anyDocument.startViewTransition) {
-    await anyDocument.startViewTransition(() => performNavigation()).finished
-  } else {
+  // If a theme-specific view transition is running, avoid stacking another
+  // page-level transition. Just perform the navigation normally.
+  if (!anyDocument.startViewTransition || anyDocument.__themeViewTransitionInProgress) {
     await performNavigation()
+    return
   }
+
+  await anyDocument.startViewTransition(() => performNavigation()).finished
 }
 
 export function initRouter(): void {

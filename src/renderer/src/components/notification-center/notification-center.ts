@@ -10,6 +10,7 @@ import {
 } from '@renderer/lib/notifications/api'
 import { runNotificationAction } from '@renderer/lib/notifications/actions'
 import { localizeElementsText } from '@renderer/lib/ui/localize'
+import { UiSheet } from '../ui/sheet/ui-sheet'
 
 const TAG_NAME = 'notification-center'
 const POLL_INTERVAL_MS = 5000
@@ -20,6 +21,7 @@ export class NotificationCenter extends HTMLElement {
 
   private _listEl: HTMLDivElement | null = null
   private _badgeEl: HTMLSpanElement | null = null
+  private _sheet: UiSheet | null = null
   private _pollHandle: number | null = null
   private _onNotificationsChanged: (() => void) | null = null
   private _clearAllBtn: HTMLButtonElement | null = null
@@ -33,6 +35,7 @@ export class NotificationCenter extends HTMLElement {
   connectedCallback(): void {
     this._render()
     this._queryRefs()
+    this._syncSheetSide()
     this._bindClearAll()
     void this._refresh()
     this._startPolling()
@@ -60,6 +63,13 @@ export class NotificationCenter extends HTMLElement {
     this._clearAllBtn = this.shadowRoot.querySelector(
       '[data-el="clear-all"]'
     ) as HTMLButtonElement | null
+    this._sheet = this.shadowRoot.querySelector('[data-el="sheet"]') as UiSheet | null
+  }
+
+  private async _syncSheetSide(): Promise<void> {
+    if (!this._sheet) return
+    const config = await window.api.config.getConfig()
+    this._sheet.side = config.general.dir === 'rtl' ? 'left' : 'right'
   }
 
   private _startPolling(): void {

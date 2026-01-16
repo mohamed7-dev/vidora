@@ -143,8 +143,8 @@ export class UiDialog extends HTMLElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent(UI_DIALOG_EVENTS.OPEN_CHANGE, {
-        detail: { open: this._open },
+      new CustomEvent<OpenChangeEventDetail>(UI_DIALOG_EVENTS.OPEN_CHANGE, {
+        detail: { open: this._open, dialogId: this.instanceId },
         bubbles: true,
         composed: true
       })

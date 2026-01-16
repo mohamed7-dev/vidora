@@ -3,7 +3,7 @@
     <div slot="articles">
       <area-article data-i18n-label="Download Path" first>
         <div slot="content" class="download__path-container">
-          <span data-el="download-path-display"></span>
+          <output data-el="download-path-display"></output>
           <ui-button
             class="download-path-button"
             data-el="change-download-path-btn"
@@ -18,7 +18,7 @@
             <ui-icon name="minus"></ui-icon>
             <span data-i18n="decrement number of downloads" class="sr-only"></span>
           </ui-button>
-          <p data-el="max-downloads-display"></p>
+          <output data-el="max-downloads-display"></output>
           <ui-button size="icon" variant="outline" data-action="increment">
             <ui-icon name="plus"></ui-icon>
             <span data-i18n="increment number of downloads" class="sr-only"></span>

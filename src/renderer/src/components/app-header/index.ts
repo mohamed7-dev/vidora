@@ -3,7 +3,6 @@ import '../about-dialog/about-dialog.component'
 import '../app-sidebar/content/index'
 import html from './template.html?raw'
 import style from './style.css?inline'
-import { DATA } from '@root/shared/data'
 import { NEW_DIALOG_EVENTS, NewDialog } from '../new-dialog/index'
 import { NAV_ITEM_CLICKED_EVENT } from '../app-sidebar/content'
 import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
@@ -147,8 +146,9 @@ export class AppHeader extends HTMLElement {
     )
   }
 
-  private _init(): void {
-    if (this.appTitle) this.appTitle.textContent = DATA.appName
+  private async _init(): Promise<void> {
+    const appInfo = await window.api.app.getInfo()
+    if (this.appTitle) this.appTitle.textContent = appInfo.name
   }
 }
 

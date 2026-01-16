@@ -11,22 +11,22 @@ export interface JobItemConfig {
   thumbnail?: string
   progress?: string
   hideControls?: boolean
-  hideProgress?: boolean
-  hidePauseBtn?: boolean
-  hideResumeBtn?: boolean
-  hideDeleteBtn?: boolean
-  hideOpenBtn?: boolean
-  hideCopyUrlBtn?: boolean
+  showProgress?: boolean
+  showPauseBtn?: boolean
+  showResumeBtn?: boolean
+  showDeleteBtn?: boolean
+  showOpenBtn?: boolean
+  showCopyUrlBtn?: boolean
 }
 
 const ATTRIBUTES = {
   HIDE_CONTROLS: 'hide-controls',
-  HIDE_PROGRESS: 'hide-progress',
-  HIDE_PAUSE_BTN: 'hide-pause-btn',
-  HIDE_RESUME_BTN: 'hide-resume-btn',
-  HIDE_DELETE_BTN: 'hide-delete-btn',
-  HIDE_OPEN_BTN: 'hide-open-btn',
-  HIDE_COPY_URL_BTN: 'hide-copyurl-btn',
+  SHOW_PROGRESS: 'show-progress',
+  SHOW_PAUSE_BTN: 'show-pause-btn',
+  SHOW_RESUME_BTN: 'show-resume-btn',
+  SHOW_DELETE_BTN: 'show-delete-btn',
+  SHOW_OPEN_BTN: 'show-open-btn',
+  SHOW_COPY_URL_BTN: 'show-copyurl-btn',
   PROGRESS: 'progress',
   LABEL: 'label',
   SUBTITLE: 'subtitle',
@@ -198,31 +198,31 @@ export class JobItem extends HTMLElement {
       this.progress = config.progress
     }
 
-    if (config.hideDeleteBtn !== undefined) {
-      this.toggleAttribute(ATTRIBUTES.HIDE_DELETE_BTN, config.hideDeleteBtn)
+    if (config.showDeleteBtn !== undefined) {
+      this.showDeleteButton = config.showDeleteBtn
     }
 
-    if (config.hidePauseBtn !== undefined) {
-      this.toggleAttribute(ATTRIBUTES.HIDE_PAUSE_BTN, config.hidePauseBtn)
+    if (config.showPauseBtn !== undefined) {
+      this.showPauseButton = config.showPauseBtn
     }
 
-    if (config.hideResumeBtn !== undefined) {
-      this.toggleAttribute(ATTRIBUTES.HIDE_RESUME_BTN, config.hideResumeBtn)
+    if (config.showResumeBtn !== undefined) {
+      this.showResumeButton = config.showResumeBtn
     }
-    if (config.hideOpenBtn !== undefined) {
-      this.toggleAttribute(ATTRIBUTES.HIDE_OPEN_BTN, config.hideOpenBtn)
+    if (config.showOpenBtn !== undefined) {
+      this.showOpenButton = config.showOpenBtn
     }
 
-    if (config.hideCopyUrlBtn !== undefined) {
-      this.toggleAttribute(ATTRIBUTES.HIDE_COPY_URL_BTN, config.hideCopyUrlBtn)
+    if (config.showCopyUrlBtn !== undefined) {
+      this.showCopyUrlButton = config.showCopyUrlBtn
     }
 
     if (config.hideControls !== undefined) {
       this.toggleAttribute(ATTRIBUTES.HIDE_CONTROLS, config.hideControls)
     }
 
-    if (config.hideProgress !== undefined) {
-      this.toggleAttribute(ATTRIBUTES.HIDE_PROGRESS, config.hideProgress)
+    if (config.showProgress !== undefined) {
+      this.showProgress = config.showProgress
     }
   }
 
@@ -280,6 +280,30 @@ export class JobItem extends HTMLElement {
 
   set progress(value: string) {
     this.setAttribute(ATTRIBUTES.PROGRESS, value)
+  }
+
+  set showPauseButton(value: boolean) {
+    this.toggleAttribute(ATTRIBUTES.SHOW_PAUSE_BTN, value)
+  }
+
+  set showResumeButton(value: boolean) {
+    this.toggleAttribute(ATTRIBUTES.SHOW_RESUME_BTN, value)
+  }
+
+  set showDeleteButton(value: boolean) {
+    this.toggleAttribute(ATTRIBUTES.SHOW_DELETE_BTN, value)
+  }
+
+  set showOpenButton(value: boolean) {
+    this.toggleAttribute(ATTRIBUTES.SHOW_OPEN_BTN, value)
+  }
+
+  set showCopyUrlButton(value: boolean) {
+    this.toggleAttribute(ATTRIBUTES.SHOW_COPY_URL_BTN, value)
+  }
+
+  set showProgress(value: boolean) {
+    this.toggleAttribute(ATTRIBUTES.SHOW_PROGRESS, value)
   }
 }
 

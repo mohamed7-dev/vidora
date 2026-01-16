@@ -1,3 +1,12 @@
 @import './reset.css';
 @import './utils.css';
 @import './scrollbar.css';
+
+/* font family */
+:host {
+  font-family: var(--app-font-family);
+}
+
+:host * {
+  font-family: inherit;
+}

@@ -95,24 +95,28 @@
   padding-inline: var(--spacing-x-small);
 }
 
-:host([hide-delete-btn]) .item__controls-delete-btn {
+.item__controls > ui-button {
   display: none;
 }
 
-:host([hide-pause-btn]) .item__controls-pause-btn {
-  display: none;
+:host([show-delete-btn]) .item__controls-delete-btn {
+  display: block;
 }
 
-:host([hide-resume-btn]) .item__controls-resume-btn {
-  display: none;
+:host([show-pause-btn]) .item__controls-pause-btn {
+  display: block;
 }
 
-:host([hide-open-btn]) .item__controls-open-btn {
-  display: none;
+:host([show-resume-btn]) .item__controls-resume-btn {
+  display: block;
 }
 
-:host([hide-copyurl-btn]) .item__controls-copyurl-btn {
-  display: none;
+:host([show-open-btn]) .item__controls-open-btn {
+  display: block;
+}
+
+:host([show-copyurl-btn]) .item__controls-copyurl-btn {
+  display: block;
 }
 
 /* progress */
@@ -122,10 +126,11 @@
   background: color-mix(in oklch, var(--secondary) 80%, var(--foreground));
   border-radius: var(--radius-pill);
   overflow: hidden;
+  display: none;
 }
 
-:host([hide-progress]) .meta__progress {
-  display: none;
+:host([show-progress]) .meta__progress {
+  display: block;
 }
 
 .meta__progress > .meta__progress-bar {

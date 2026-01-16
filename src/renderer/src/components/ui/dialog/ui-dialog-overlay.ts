@@ -23,16 +23,9 @@ export class UiDialogOverlay extends HTMLElement {
           pointer-events: none;
           background: var(
             --ui-dialog-overlay-bg,
-            color-mix(in oklch, black 40%, transparent)
+            color-mix(in oklch, var(--popover) 60%, transparent)
           );
-          backdrop-filter: blur(6px);
         }
-        :host-context(.dark) .dialog__overlay{
-          background: var(
-            --ui-dialog-overlay-bg-dark,
-            color-mix(in oklch, white 12%, transparent)
-          );
-        }  
       </style>
       <div part="base" class="dialog__overlay">
         <slot></slot>

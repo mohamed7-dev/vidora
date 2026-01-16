@@ -5,6 +5,7 @@ import { DownloadJobPayload, Job, type JobsUpdateEvent } from '@root/shared/ipc/
 import { JOB_ITEM_EVENTS, JobItem } from '../job-item/job-item.component'
 import { localizeElementsText } from '@renderer/lib/ui/localize'
 import { ICONS_KEYS } from '../ui/icon/icons'
+import { toast } from '@renderer/lib/sonner'
 
 const DOWNLOADING_PAGE_TAG_NAME = 'downloading-page'
 
@@ -27,13 +28,11 @@ export class DownloadingPage extends HTMLElement {
   }
 
   connectedCallback(): void {
+    this._eventsAborter = new AbortController()
     this._render()
-    this._cacheRefs()
-    if (!this._eventsAborter) {
-      this._eventsAborter = new AbortController()
-    }
-    this._load()
     localizeElementsText(this.shadowRoot as ShadowRoot)
+    this._cacheRefs()
+    this._load()
     this._bindUpdates()
   }
 
@@ -144,10 +143,12 @@ export class DownloadingPage extends HTMLElement {
     jobItem.create({
       label: title,
       thumbnail: payload.thumbnail,
-      subtitle: j.statusText,
-      hideOpenBtn: true,
-      hideCopyUrlBtn: true,
-      hideDeleteBtn: true
+      subtitle: window.api.i18n.t(j.status),
+      showCopyUrlBtn: true,
+      showPauseBtn: j.status === 'downloading',
+      showResumeBtn: j.status === 'paused',
+      showDeleteBtn: true,
+      showProgress: true
     })
 
     if (j.status === 'failed' && j.error) {
@@ -177,6 +178,49 @@ export class DownloadingPage extends HTMLElement {
         },
         { signal }
       )
+      jobItem.addEventListener(
+        JOB_ITEM_EVENTS.OPEN,
+        async () => {
+          const res = await window.api.downloadJobs.open(j.id)
+          if (!res.ok && res.error) {
+            console.error('Failed to open download:', res.error)
+            toast.show({
+              variant: 'destructive',
+              title: window.api.i18n.t`Failed to open the file`,
+              description: res.error,
+              duration: 3000
+            })
+          }
+        },
+        {
+          signal: signal
+        }
+      )
+      jobItem.addEventListener(
+        JOB_ITEM_EVENTS.COPY_URL,
+        async () => {
+          const res = await window.api.downloadJobs.copyUrl(j.id)
+          if (!res.ok && res.error) {
+            console.error('Failed to copy url:', res.error)
+            toast.show({
+              variant: 'destructive',
+              title: window.api.i18n.t`Failed to copy url`,
+              description: res.error,
+              duration: 3000
+            })
+          } else {
+            toast.show({
+              variant: 'default',
+              title: window.api.i18n.t`Copied to clipboard`,
+              description: window.api.i18n.t`The url has been copied to clipboard`,
+              duration: 3000
+            })
+          }
+        },
+        {
+          signal: signal
+        }
+      )
     }
 
     this._applyJobProgress(jobItem, j)
@@ -188,15 +232,17 @@ export class DownloadingPage extends HTMLElement {
     if (j.status === 'failed' && j.error) {
       jobItem.subtitle = j.error
     } else {
-      jobItem.subtitle = j.statusText
+      jobItem.subtitle = window.api.i18n.t(j.status)
     }
+    jobItem.showPauseButton = j.status === 'downloading'
+    jobItem.showResumeButton = j.status === 'paused'
     this._applyJobProgress(jobItem, j)
   }
 
   private _applyJobProgress(jobItem: JobItem, j: Job): void {
     if (typeof j.progress === 'number' && j.progress > 0) {
       const pct = `${Math.max(0, Math.min(100, Math.round(j.progress)))}%`
-      const subtitle = `${j.statusText} • ${pct}`
+      const subtitle = `${window.api.i18n.t(j.status)} • ${pct}`
       jobItem.subtitle = subtitle
 
       const progress = `${Math.max(0, Math.min(100, j.progress))}%`

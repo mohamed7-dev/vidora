@@ -23,14 +23,7 @@ export class UiSheetOverlay extends HTMLElement {
           pointer-events: none;
           background: var(
             --ui-sheet-overlay-bg,
-            color-mix(in oklch, black 40%, transparent)
-          );
-          backdrop-filter: blur(6px);
-        }
-        :host-context(.dark) .sheet__overlay{
-          background: var(
-            --ui-sheet-overlay-bg-dark,
-            color-mix(in oklch, white 12%, transparent)
+            color-mix(in oklch, var(--popover) 60%, transparent)
           );
         }
       </style>

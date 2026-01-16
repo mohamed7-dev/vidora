@@ -23,6 +23,7 @@ export class UiTooltipContent extends HTMLElement {
           font-size: var(--ui-tooltip-font-size, var(--font-size-small));
           line-height: var(--ui-tooltip-line-height, var(--line-height-dense));
           border: var(--ui-tooltip-border, 1px solid var(--border));
+          box-shadow: var(--shadow-x-large);
         }
       </style>
       <div class="tooltip__content" part="base" role="tooltip">

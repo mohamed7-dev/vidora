@@ -53,5 +53,3 @@ main > * {
 ::view-transition-new(page-block):nth-child(3) {
   animation-delay: 160ms;
 }
-
-/* Add more nth-child steps as needed */

@@ -2,7 +2,8 @@ import html from './jobs-page.template.html?raw'
 import style from './jobs-page.style.css?inline'
 import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
 import { localizeElementsText } from '@renderer/lib/ui/localize'
-import { Job, JobStatus } from '@root/shared/ipc/download-jobs'
+import { Job, JobStatus, JobsUpdateEvent } from '@root/shared/ipc/download-jobs'
+import { HistoryUpdateEvent } from '@root/shared/ipc/download-history'
 import { createInfiniteLoaderElement } from '@renderer/lib/infinite-loader'
 import { EmptyPlaceholderConfig } from '../empty-placeholder/empty-placeholder.component'
 
@@ -27,7 +28,10 @@ export type JobsPageLoader = (params: JobsPageLoaderParams) => Promise<{
   nextPage: number | null
 }>
 
+export type JobsPageApiType = 'job' | 'history'
+
 export type JobsPageConfig = {
+  api?: JobsPageApiType
   status: JobsPageStatusFilter
   pageSize?: number
   empty: EmptyPlaceholderConfig & { actionsNode?: Node }
@@ -35,7 +39,15 @@ export type JobsPageConfig = {
   loader?: JobsPageLoader
 }
 
+export interface EmptyChangeEventDetail {
+  isEmpty: boolean
+}
+
 const JOBS_PAGE_TAG_NAME = 'jobs-page'
+
+export const JOBS_PAGE_EVENTS = {
+  EMPTY_CHANGED: 'jobs-page:empty-changed'
+}
 
 export class JobsPage extends HTMLElement {
   private static readonly sheet: CSSStyleSheet = createStyleSheetFromStyle(style)
@@ -61,8 +73,12 @@ export class JobsPage extends HTMLElement {
 
   connectedCallback(): void {
     this._render()
-    this._cacheRefs()
     localizeElementsText(this.shadowRoot as ShadowRoot)
+    this._cacheRefs()
+    // Ensure we have a fresh AbortController for item-level events on (re)connect.
+    if (!this._eventsAborter) {
+      this._eventsAborter = new AbortController()
+    }
     this._load()
     this._bindUpdates()
   }
@@ -79,6 +95,23 @@ export class JobsPage extends HTMLElement {
     this._page = null
     this._jobs = []
     this._isLoadingNext = false
+
+    // Tear down any existing update subscriptions so we can re-bind for the new config.
+    if (this._unsub) {
+      this._unsub()
+      this._unsub = null
+    }
+
+    // Reset the AbortController so previously created job items stop listening
+    // and new ones get a fresh signal.
+    if (this._eventsAborter) {
+      this._eventsAborter.abort()
+    }
+    this._eventsAborter = new AbortController()
+
+    // Bind updates according to the new configuration (jobs vs history, filters, etc.).
+    this._bindUpdates()
+
     const isEmpty = await this._load(1)
     return { isEmpty: isEmpty !== undefined ? isEmpty : false }
   }
@@ -130,11 +163,80 @@ export class JobsPage extends HTMLElement {
   }
 
   private _bindUpdates(): void {
-    this._unsub = window.api.downloadJobs.onUpdated(() => {
-      this._page = null
+    if (!this._config) return
+
+    const api: JobsPageApiType = this._config.api ?? 'job'
+
+    if (api === 'job') {
+      this._unsub = window.api.downloadJobs.onUpdated((evt) => {
+        this._handleJobsUpdate(evt)
+      })
+    } else {
+      this._unsub = window.api.history.onUpdated
+        ? window.api.history.onUpdated((evt) => {
+            this._handleHistoryUpdate(evt as HistoryUpdateEvent)
+          })
+        : null
+    }
+  }
+
+  private _handleJobsUpdate(evt: JobsUpdateEvent): void {
+    if (!this._config) return
+
+    if (evt.type === 'removed') {
+      this._jobs = this._jobs.filter((j) => j.id !== evt.job.id)
+    } else if (evt.type === 'updated') {
+      // Soft delete comes through as an "updated" event where status === 'deleted'.
+      // Treat that as a removal from the current list.
+      if (evt.job.status === 'deleted') {
+        this._jobs = this._jobs.filter((j) => j.id !== evt.job.id)
+      } else {
+        const idx = this._jobs.findIndex((j) => j.id === evt.job.id)
+        if (idx === -1) return
+        this._jobs[idx] = evt.job
+      }
+    } else if (evt.type === 'added') {
+      const statusFilter = this._config.status
+      const allowedStatuses = Array.isArray(statusFilter) ? statusFilter : [statusFilter]
+      if (!allowedStatuses.includes(evt.job.status)) return
+      this._jobs = [evt.job, ...this._jobs]
+    }
+    if (!this._jobs.length) this._isEmpty = true
+    const wasEmpty = this._isEmpty
+    this._renderJobs(this._jobs)
+    this._renderFooter()
+
+    if (this._isEmpty !== wasEmpty) {
+      this.dispatchEvent(
+        new CustomEvent<EmptyChangeEventDetail>(JOBS_PAGE_EVENTS.EMPTY_CHANGED, {
+          detail: { isEmpty: this._isEmpty }
+        })
+      )
+    }
+  }
+
+  private _handleHistoryUpdate(evt: HistoryUpdateEvent): void {
+    if (!this._config) return
+
+    if (evt.type === 'deleted') {
+      this._jobs = this._jobs.filter((j) => j.id !== evt.id)
+    } else if (evt.type === 'cleared') {
       this._jobs = []
-      this._load(1)
-    })
+    }
+
+    if (!this._jobs.length) this._isEmpty = true
+    const wasEmpty = this._isEmpty
+
+    this._renderJobs(this._jobs)
+    this._renderFooter()
+
+    if (this._isEmpty !== wasEmpty) {
+      this.dispatchEvent(
+        new CustomEvent<EmptyChangeEventDetail>(JOBS_PAGE_EVENTS.EMPTY_CHANGED, {
+          detail: { isEmpty: this._isEmpty }
+        })
+      )
+    }
   }
 
   private _renderJobs(jobs: Array<Job>): void {

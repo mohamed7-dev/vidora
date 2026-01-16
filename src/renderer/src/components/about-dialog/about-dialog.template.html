@@ -1,45 +1,218 @@
 <template>
-  <ui-dialog alert>
+  <ui-dialog>
     <ui-dialog-portal>
       <ui-dialog-overlay></ui-dialog-overlay>
       <ui-dialog-content>
         <ui-dialog-header>
-          <ui-dialog-title class="sr-only">About Application</ui-dialog-title>
-          <ui-dialog-description class="sr-only">info about the application</ui-dialog-description>
+          <ui-dialog-title>
+            <span
+              slot="label"
+              data-i18n="About Application"
+              class="about__dialog-label sr-only"
+              data-screen="home"
+            ></span>
+            <!-- app info screen label -->
+            <span
+              slot="label"
+              data-i18n="Application Info"
+              class="about__dialog-label"
+              data-screen="app-info"
+              id="about-dialog-app-info-title"
+            ></span>
+            <!-- whats new screen label -->
+            <span
+              slot="label"
+              data-i18n="What's New"
+              class="about__dialog-label"
+              data-screen="whats-new"
+              id="about-dialog-whats-new-title"
+            ></span>
+            <!-- report issue screen label -->
+            <span
+              slot="label"
+              data-i18n="Report An Issue"
+              class="about__dialog-label"
+              data-screen="report-issue"
+              id="about-dialog-report-issue-title"
+            ></span>
+            <!-- credits screen label -->
+            <span
+              slot="label"
+              data-i18n="Credits"
+              class="about__dialog-label"
+              data-screen="credits"
+              id="about-dialog-credits-title"
+            ></span>
+            <!-- legal screen label -->
+            <span
+              slot="label"
+              data-i18n="Legal"
+              class="about__dialog-label"
+              data-screen="legal"
+              id="about-dialog-legal-title"
+            ></span>
+            <ui-button
+              slot="action"
+              type="button"
+              class="about-dialog__back"
+              data-el="back"
+              variant="outline"
+              size="icon"
+            >
+              <ui-icon name="chevron-left"></ui-icon>
+              <span class="sr-only" data-i18n="Back to About overview"></span>
+            </ui-button>
+          </ui-dialog-title>
+          <ui-dialog-description
+            class="sr-only"
+            data-i18n="info about the application"
+          ></ui-dialog-description>
         </ui-dialog-header>
         <ui-dialog-body>
-          <section>
-            <img data-el="logo" />
-            <h1 data-el="app-name"></h1>
+          <!-- Home / overview screen -->
+          <section class="about-dialog__screen" data-screen="home">
+            <section>
+              <img data-el="logo" />
+              <h1 data-el="app-name"></h1>
+              <h2 data-el="app-creator-name"></h2>
+              <h3 data-el="app-version"></h3>
+            </section>
+
+            <area-section>
+              <div slot="articles">
+                <area-article label="Application Info" first data-screen-target="app-info">
+                  <ui-button slot="content" variant="ghost" size="icon">
+                    <ui-icon name="chevron-left"></ui-icon>
+                  </ui-button>
+                </area-article>
+                <area-article label="What's New" last data-screen-target="whats-new">
+                  <ui-button slot="content" variant="ghost" size="icon">
+                    <ui-icon name="chevron-left"></ui-icon>
+                  </ui-button>
+                </area-article>
+              </div>
+            </area-section>
+            <area-section>
+              <div slot="articles">
+                <area-article label="Report An Issue" data-screen-target="report-issue">
+                  <ui-button slot="content" variant="ghost" size="icon">
+                    <ui-icon name="chevron-left"></ui-icon>
+                  </ui-button>
+                </area-article>
+              </div>
+            </area-section>
+            <area-section>
+              <div slot="articles">
+                <area-article label="Credits" first data-screen-target="credits">
+                  <ui-button slot="content" variant="ghost" size="icon">
+                    <ui-icon name="chevron-left"></ui-icon>
+                  </ui-button>
+                </area-article>
+                <area-article label="Legal" last data-screen-target="legal">
+                  <ui-button slot="content" variant="ghost" size="icon">
+                    <ui-icon name="chevron-left"></ui-icon>
+                  </ui-button>
+                </area-article>
+              </div>
+            </area-section>
           </section>
 
-          <area-section>
-            <div slot="articles">
-              <area-article label="Application Info" first>
-                <span slot="content">Application Info</span>
-              </area-article>
-              <area-article label="What's New" last>
-                <span slot="content">What's New</span>
-              </area-article>
-            </div>
-          </area-section>
-          <area-section>
-            <div slot="articles">
-              <area-article label="Report An Issue">
-                <span slot="content">Report An Issue</span>
-              </area-article>
-            </div>
-          </area-section>
-          <area-section>
-            <div slot="articles">
-              <area-article label="Credits" first>
-                <span slot="content">Credits</span>
-              </area-article>
-              <area-article label="Legal" last>
-                <span slot="content">Legal</span>
-              </area-article>
-            </div>
-          </area-section>
+          <!-- Application Info screen -->
+          <section
+            class="about-dialog__screen about-dialog__screen--detail"
+            data-screen="app-info"
+            aria-labelledby="about-dialog-app-info-title"
+          >
+            <p
+              data-i18n="This application lets you download and manage videos from supported platforms with a focus on reliability and control"
+            ></p>
+            <ul class="about-dialog__list">
+              <li data-i18n="Supports multiple video and audio formats"></li>
+              <li data-i18n="Designed for resumable and batch downloads"></li>
+              <li data-i18n="Built for desktop with keyboard-first workflows"></li>
+            </ul>
+          </section>
+
+          <!-- What's New screen -->
+          <section
+            class="about-dialog__screen about-dialog__screen--detail"
+            data-screen="whats-new"
+            aria-labelledby="about-dialog-whats-new-title"
+          >
+            <ul class="about-dialog__list">
+              <li data-i18n="First stable release with core video downloading"></li>
+              <li data-i18n="Support for multiple formats and quality presets"></li>
+              <li data-i18n="Queue and batch downloads with progress feedback"></li>
+            </ul>
+          </section>
+
+          <!-- Report an Issue screen -->
+          <section
+            class="about-dialog__screen about-dialog__screen--detail"
+            data-screen="report-issue"
+            aria-labelledby="about-dialog-report-issue-title"
+          >
+            <p
+              data-i18n="If you run into a problem, please include as much detail as possible so it can be reproduced and fixed"
+            ></p>
+            <ul class="about-dialog__list">
+              <li data-i18n="Steps you took before the issue happened"></li>
+              <li data-i18n="The expected behaviour versus what actually happened"></li>
+              <li data-i18n="Your operating system and application version"></li>
+            </ul>
+            <a
+              data-el="new-issue-link"
+              class="new__issue-link"
+              target="_blank"
+              data-i18n="You can report issues on the project's GitHub page"
+            ></a>
+          </section>
+
+          <!-- Credits screen -->
+          <section
+            class="about-dialog__screen about-dialog__screen--detail"
+            data-screen="credits"
+            aria-labelledby="about-dialog-credits-title"
+          >
+            <p
+              data-i18n="This project is made possible thanks to its contributors and the open source ecosystem"
+            ></p>
+            <ul class="about-dialog__list">
+              <li data-i18n="yt-dlp for download engine capabilities"></li>
+              <li data-i18n="FFmpeg for media processing and conversion"></li>
+              <li data-i18n="Nodejs and its ecosystem for the runtime and tooling"></li>
+              <li data-i18n="GNOME desktop environment for UI and UX inspiration"></li>
+              <li data-i18n="shadcnstudio for design system tokens"></li>
+            </ul>
+          </section>
+
+          <!-- Legal screen -->
+          <section
+            class="about-dialog__screen about-dialog__screen--detail"
+            data-screen="legal"
+            aria-labelledby="about-dialog-legal-title"
+          >
+            <p class="maintainer__info">
+              <span class="maintainer__info-at">@</span
+              ><span class="maintainer__info-username">mohamed7-dev</span
+              ><span class="maintainer__info-year">2026</span>
+            </p>
+            <p
+              data-i18n="Please make sure you comply with the terms of service and copyright laws that apply to the content you download"
+            ></p>
+            <ul class="about-dialog__list">
+              <li data-i18n="This tool is provided without warranty; use it at your own risk"></li>
+              <li data-i18n="You are responsible for how you use downloaded content"></li>
+              <li>
+                <a
+                  href="https://www.gnu.org/licenses/gpl-3.0.html"
+                  data-i18n="This application is distributed under the GNU General Public License v3"
+                  class="license__link"
+                  target="_blank"
+                ></a>
+              </li>
+            </ul>
+          </section>
         </ui-dialog-body>
       </ui-dialog-content>
     </ui-dialog-portal>

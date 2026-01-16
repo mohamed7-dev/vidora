@@ -4,7 +4,11 @@ import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib
 import { localizeElementsText } from '@renderer/lib/ui/localize'
 import { DownloadJobPayload } from '@root/shared/ipc/download-jobs'
 import { JOB_ITEM_EVENTS, JobItem } from '../job-item/job-item.component'
-import { JobsPage } from '../jobs-page/jobs-page.component'
+import {
+  EmptyChangeEventDetail,
+  JOBS_PAGE_EVENTS,
+  JobsPage
+} from '../jobs-page/jobs-page.component'
 import { ICONS_KEYS } from '../ui/icon/icons'
 import { toast } from '@renderer/lib/sonner'
 
@@ -17,16 +21,26 @@ export class CompletedPage extends HTMLElement {
   //Refs
   private _jobsPage: JobsPage | null = null
 
+  private _eventsAborter: AbortController | null = new AbortController()
+
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
   }
 
   connectedCallback(): void {
+    this._eventsAborter = new AbortController()
     this._render()
-    this._cacheRefs()
     localizeElementsText(this.shadowRoot as ShadowRoot)
+    this._cacheRefs()
     this._configurePage()
+    this._setupListeners()
+  }
+
+  disconnectedCallback(): void {
+    this._eventsAborter?.abort()
+    this._eventsAborter = null
+    this._jobsPage = null
   }
 
   private _render(): void {
@@ -54,7 +68,7 @@ export class CompletedPage extends HTMLElement {
       jobItemFactory: ({ job, index, total, eventsAborter }) => {
         const payload = job.payload as DownloadJobPayload
         const title = payload?.title || payload?.url || window.api.i18n.t`Untitled`
-        const subtitle = `${job.statusText} • 100%`
+        const subtitle = `${window.api.i18n.t(job.status)} • 100%`
         const article = document.createElement('area-article')
         if (index === 0) article.setAttribute('first', '')
         if (index === total - 1) article.setAttribute('last', '')
@@ -65,8 +79,10 @@ export class CompletedPage extends HTMLElement {
           subtitle,
           thumbnail: payload.thumbnail,
           progress: '100%',
-          hidePauseBtn: true,
-          hideResumeBtn: true
+          showCopyUrlBtn: true,
+          showOpenBtn: true,
+          showDeleteBtn: true,
+          showProgress: true
         })
         if (eventsAborter) {
           jobItem.addEventListener(
@@ -125,6 +141,23 @@ export class CompletedPage extends HTMLElement {
         return article
       }
     })
+    this._setEmpty(isEmpty)
+  }
+
+  private _setupListeners(): void {
+    const signal = this._eventsAborter?.signal
+
+    this._jobsPage?.addEventListener(
+      JOBS_PAGE_EVENTS.EMPTY_CHANGED,
+      (e) => {
+        const detail = (e as CustomEvent<EmptyChangeEventDetail>).detail
+        this._setEmpty(detail.isEmpty)
+      },
+      { signal }
+    )
+  }
+
+  private _setEmpty(isEmpty: boolean): void {
     if (isEmpty) {
       this.setAttribute('data-empty', '')
     } else {

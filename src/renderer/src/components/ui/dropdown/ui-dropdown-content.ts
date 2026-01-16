@@ -29,6 +29,7 @@ export class UiDropdownContent extends HTMLElement {
           display: flex;
           flex-direction: column;
           gap: var(--ui-dropdown-content-gap, var(--spacing-2x-small));
+          box-shadow: var(--shadow-x-large);
         }
       </style>
       <div class="dropdown__content" part="base" data-el="root" role="menu">

@@ -4,7 +4,11 @@ import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib
 import { localizeElementsText } from '@renderer/lib/ui/localize'
 import { DownloadJobPayload } from '@root/shared/ipc/download-jobs'
 import { JOB_ITEM_EVENTS, JobItem } from '../job-item/job-item.component'
-import { JobsPage } from '../jobs-page/jobs-page.component'
+import {
+  EmptyChangeEventDetail,
+  JOBS_PAGE_EVENTS,
+  JobsPage
+} from '../jobs-page/jobs-page.component'
 import { ICONS_KEYS } from '../ui/icon/icons'
 import { UiInput } from '../ui/input/ui-input'
 import { UiSelect } from '../ui/select/ui-select'
@@ -12,6 +16,7 @@ import { UiSelectContent } from '../ui/select/ui-select-content'
 import type { HistoryMediaType } from '@root/shared/ipc/download-history'
 import { AreaSection } from '../area-section'
 import { UiButton } from '../ui/button/ui-button'
+import { toast } from '@renderer/lib/sonner'
 
 const HISTORY_PAGE_TAG_NAME = 'history-page'
 
@@ -27,6 +32,9 @@ export class HistoryPage extends HTMLElement {
   private _statsContainer: AreaSection | null = null
   private _clearButton: UiButton | null = null
 
+  private _eventsAborter: AbortController | null = new AbortController()
+  private _historyUnsub: (() => void) | null = null
+
   private _searchQuery = ''
   private _searchDebounceHandle: number | null = null
   private _mediaType: HistoryMediaType = 'any'
@@ -37,13 +45,36 @@ export class HistoryPage extends HTMLElement {
   }
 
   connectedCallback(): void {
+    this._eventsAborter = new AbortController()
     this._render()
+    localizeElementsText(this.shadowRoot as ShadowRoot)
     this._cacheRefs()
     this._initFilterOptions()
-    localizeElementsText(this.shadowRoot as ShadowRoot)
     void this._loadStats()
     this._configurePage()
-    this._applyListeners()
+    this._setupListeners()
+  }
+
+  disconnectedCallback(): void {
+    if (this._searchDebounceHandle !== null) {
+      window.clearTimeout(this._searchDebounceHandle)
+      this._searchDebounceHandle = null
+    }
+
+    this._eventsAborter?.abort()
+    this._eventsAborter = null
+
+    if (this._historyUnsub) {
+      this._historyUnsub()
+      this._historyUnsub = null
+    }
+
+    this._jobsPage = null
+    this._searchInput = null
+    this._filterSelect = null
+    this._filterSelectContent = null
+    this._statsContainer = null
+    this._clearButton = null
   }
 
   private _render(): void {
@@ -61,17 +92,18 @@ export class HistoryPage extends HTMLElement {
     this._filterSelectContent = this.shadowRoot?.querySelector<UiSelectContent>(
       '[data-el="filter-select-content"]'
     )
-    this._filterSelectContent = this.shadowRoot?.querySelector<UiSelectContent>(
-      '[data-el="filter-select-content"]'
-    )
     this._statsContainer = this.shadowRoot?.querySelector<AreaSection>(
       '[data-el="stats-container"]'
     )
     this._clearButton = this.shadowRoot?.querySelector<UiButton>('[data-el="clear-btn"]')
   }
 
-  private _applyListeners(): void {
-    this._searchInput?.addEventListener('input', () => this._handleSearchInputChange())
+  private _setupListeners(): void {
+    const signal = this._eventsAborter?.signal
+
+    this._searchInput?.addEventListener('input', () => this._handleSearchInputChange(), {
+      signal
+    })
 
     if (this._filterSelect) {
       this._filterSelect.onValueChange((value) => {
@@ -82,7 +114,31 @@ export class HistoryPage extends HTMLElement {
     }
 
     if (this._clearButton) {
-      this._clearButton.addEventListener('click', () => this._handleClearing)
+      this._clearButton.addEventListener(
+        'click',
+        () => {
+          void this._handleClearing()
+        },
+        { signal }
+      )
+    }
+
+    if (this._jobsPage) {
+      this._jobsPage.addEventListener(
+        JOBS_PAGE_EVENTS.EMPTY_CHANGED,
+        (e) => {
+          const detail = (e as CustomEvent<EmptyChangeEventDetail>).detail
+          this._setEmpty(detail.isEmpty)
+        },
+        { signal }
+      )
+    }
+
+    // Keep stats in sync with history changes coming from the main process.
+    if (window.api.history?.onUpdated) {
+      this._historyUnsub = window.api.history.onUpdated(() => {
+        void this._loadStats()
+      })
     }
   }
 
@@ -185,6 +241,7 @@ export class HistoryPage extends HTMLElement {
   private async _configurePage(): Promise<void> {
     if (!this._jobsPage) return
     const { isEmpty } = await this._jobsPage.create({
+      api: 'history',
       status: ['completed', 'failed', 'canceled', 'deleted'],
       pageSize: 10,
       empty: {
@@ -208,7 +265,7 @@ export class HistoryPage extends HTMLElement {
       jobItemFactory: ({ job, index, total, eventsAborter }) => {
         const payload = job.payload as DownloadJobPayload
         const title = payload?.title || payload?.url || window.api.i18n.t`Untitled`
-        const subtitle = `${job.statusText}`
+        const subtitle = `${window.api.i18n.t(job.status)}`
         const article = document.createElement('area-article')
         if (index === 0) article.setAttribute('first', '')
         if (index === total - 1) article.setAttribute('last', '')
@@ -218,9 +275,9 @@ export class HistoryPage extends HTMLElement {
           label: title,
           subtitle,
           thumbnail: payload.thumbnail,
-          hidePauseBtn: true,
-          hideResumeBtn: true,
-          hideProgress: true
+          showOpenBtn: true,
+          showCopyUrlBtn: true,
+          showDeleteBtn: true
         })
         if (eventsAborter) {
           jobItem.addEventListener(
@@ -233,22 +290,55 @@ export class HistoryPage extends HTMLElement {
           jobItem.addEventListener(
             JOB_ITEM_EVENTS.OPEN,
             async () => {
-              await window.api.downloadJobs.open(job.id)
+              const res = await window.api.downloadJobs.open(job.id)
+              if (!res.ok && res.error) {
+                console.error('Failed to open download:', res.error)
+                toast.show({
+                  variant: 'destructive',
+                  title: window.api.i18n.t`Failed to open the file`,
+                  description: res.error,
+                  duration: 3000
+                })
+              }
             },
-            { signal: eventsAborter.signal }
+            {
+              signal: eventsAborter.signal
+            }
           )
           jobItem.addEventListener(
             JOB_ITEM_EVENTS.COPY_URL,
             async () => {
-              await window.api.downloadJobs.copyUrl(job.id)
+              const res = await window.api.downloadJobs.copyUrl(job.id)
+              if (!res.ok && res.error) {
+                console.error('Failed to copy url:', res.error)
+                toast.show({
+                  variant: 'destructive',
+                  title: window.api.i18n.t`Failed to copy url`,
+                  description: res.error,
+                  duration: 3000
+                })
+              } else {
+                toast.show({
+                  variant: 'default',
+                  title: window.api.i18n.t`Copied to clipboard`,
+                  description: window.api.i18n.t`The url has been copied to clipboard`,
+                  duration: 3000
+                })
+              }
             },
-            { signal: eventsAborter.signal }
+            {
+              signal: eventsAborter.signal
+            }
           )
         }
         article.appendChild(jobItem)
         return article
       }
     })
+    this._setEmpty(isEmpty)
+  }
+
+  private _setEmpty(isEmpty: boolean): void {
     if (isEmpty) {
       this.setAttribute('data-empty', '')
       if (this._searchInput && !this._searchQuery) {

@@ -5,6 +5,7 @@ import { CheckYtdlpChannelPayload, InfoScopes } from '@root/shared/ipc/check-ytd
 import { DATA } from '@root/shared/data'
 import { createStyleSheetFromStyle, createTemplateFromHtml } from '@renderer/lib/ui/dom-utils'
 import { type UiButton } from '@ui/button/ui-button'
+import { Icons } from '../ui/icon/icons'
 
 const APP_SCRIM_TAG_NAME = 'app-scrim'
 const ATTRIBUTES = {
@@ -35,7 +36,7 @@ type Snap =
     }
 
 const ICONS = {
-  pending: 'loader-circle',
+  pending: 'hour-glass',
   info: 'info',
   success: 'circle-check-big',
   error: 'triangle-alert'
@@ -229,7 +230,7 @@ export class AppScrim extends HTMLElement {
       const currentIcon = iconEl.querySelector('ui-icon')
       // avoid re-creating the icon each time pending status is sent
       if (currentIcon && snap.state === 'pending') return
-      const icon = ICONS[snap.state as keyof typeof ICONS] || ''
+      const icon = ICONS[snap.state as Icons] || ''
       const uiIcon = document.createElement('ui-icon')
       uiIcon.setAttribute('name', icon)
       if (snap.state === 'pending') uiIcon.setAttribute('spin', 'true')

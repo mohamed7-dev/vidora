@@ -9,6 +9,8 @@ import { UICheckValueDetail, type UICheckbox } from '@ui/checkbox/ui-checkbox'
 import { AppConfig } from '@root/shared/ipc/app-config'
 import { UI_SELECT_EVENTS, type ValueChangeEventDetail } from '@ui/select/constants'
 import { localizeElementsText } from '@renderer/lib/ui/localize'
+import { upsertNotification } from '@renderer/lib/notifications/api'
+import { type AppUpdateMainToRendererPayload } from '@root/shared/ipc/app-update'
 
 const GENERAL_TAB_TAG_NAME = 'general-tab-content'
 
@@ -19,8 +21,8 @@ export class GeneralTabContent extends HTMLElement {
   private initialConfig: AppConfig | null = null
   private _eventsAborter: AbortController | null = null
   private _changeThemeUnsub: (() => void) | null = null
+  private _unsubscribeAppUpdateCheck: (() => void) | null = null
 
-  private needsReload = false
   private needsRelaunch = false
 
   // refs
@@ -67,6 +69,8 @@ export class GeneralTabContent extends HTMLElement {
     this._eventsAborter = null
     this._changeThemeUnsub?.()
     this._changeThemeUnsub = null
+    this._unsubscribeAppUpdateCheck?.()
+    this._unsubscribeAppUpdateCheck = null
   }
 
   private _render(): void {
@@ -120,46 +124,15 @@ export class GeneralTabContent extends HTMLElement {
         if (detail.selectId !== this.themeSelect?.instanceId) return
         const value = detail.value
         if (!value) return
-        // Wait for actual config update before animating for accurate visual change
-        this._changeThemeUnsub = window.api.config.onUpdated((cfg) => {
-          if (cfg.general.theme !== value) return
-          if (this._changeThemeUnsub) {
-            this._changeThemeUnsub()
-            this._changeThemeUnsub = null
-          }
-          const x = window.innerWidth / 2
-          const y = window.innerHeight / 2
-          const maxRadius = Math.hypot(window.innerWidth, window.innerHeight)
-          const transition = document.startViewTransition(() => {
-            // preload already syncs theme
-          })
-          transition.ready
-            .then(() => {
-              const animation = document.documentElement.animate(
-                {
-                  clipPath: [
-                    `circle(0px at ${x}px ${y}px)`,
-                    `circle(${maxRadius}px at ${x}px ${y}px)`
-                  ],
-                  opacity: [0.6, 1]
-                },
-                {
-                  duration: 700,
-                  easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-                  pseudoElement: '::view-transition-new(root)'
-                }
-              )
-              return animation.finished
-            })
-            .catch((err) => {
-              if ((err as DOMException).name !== 'AbortError') {
-                console.error(err)
-              }
-            })
+        const root = document.documentElement
+
+        // Subtle flash effect to smooth the theme switch using Web Animations API only.
+        root.animate([{ filter: 'brightness(0.96)' }, { filter: 'brightness(1)' }], {
+          duration: 220,
+          easing: 'cubic-bezier(0.33, 1, 0.68, 1)',
+          fill: 'none'
         })
-        window.api.config.updateConfig({ general: { theme: value } }).catch(() => {
-          if (this._changeThemeUnsub) this._changeThemeUnsub()
-        })
+        void window.api.config.updateConfig({ general: { theme: value } }).catch(() => {})
       },
       { signal: this._eventsAborter.signal }
     )
@@ -196,7 +169,7 @@ export class GeneralTabContent extends HTMLElement {
           })
           .catch(() => {})
         // Mark reload required only if changed from initial
-        this.needsReload = value !== originalLanguage
+        this.needsRelaunch = value !== originalLanguage
       },
       { signal: this._eventsAborter.signal }
     )
@@ -210,8 +183,6 @@ export class GeneralTabContent extends HTMLElement {
       () => {
         if (this.needsRelaunch) {
           window.api.app.relaunch()
-        } else if (this.needsReload) {
-          window.api.window.reload()
         }
       },
       { signal: this._eventsAborter.signal }
@@ -224,10 +195,42 @@ export class GeneralTabContent extends HTMLElement {
     this.checkForUpdatesBtn.addEventListener(
       'click',
       () => {
+        // Lazily subscribe once to the app-update main->renderer bus so we can
+        // surface only the check-started / check-result events to the
+        // notification center.
+        if (!this._unsubscribeAppUpdateCheck && window.api?.appUpdate?.mainToRenderer) {
+          this._unsubscribeAppUpdateCheck = window.api.appUpdate.mainToRenderer(
+            (payload: AppUpdateMainToRendererPayload) => {
+              void this._handleAppUpdateCheckEvent(payload)
+            }
+          )
+        }
         window.api.appUpdate.rendererToMain({ action: 'check' })
       },
       { signal: this._eventsAborter.signal }
     )
+  }
+
+  private async _handleAppUpdateCheckEvent(payload: AppUpdateMainToRendererPayload): Promise<void> {
+    if (!window.api?.i18n) return
+
+    if (payload.action === 'check-started') {
+      await upsertNotification('app-update-check-status', {
+        title: window.api.i18n.t`Checking for updates`,
+        message: payload.message
+      })
+      return
+    }
+
+    if (payload.action === 'check-result') {
+      const hasUpdate = payload.payload?.hasUpdate
+      await upsertNotification('app-update-check-status', {
+        title: hasUpdate
+          ? window.api.i18n.t`Update check finished`
+          : window.api.i18n.t`No updates available`,
+        message: payload.message
+      })
+    }
   }
 
   private _syncCloseAppToSystemTray(): void {
