@@ -11,12 +11,14 @@ files:
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
-  - resources/**
+  - bin/**
 extraResources:
   - from: resources/locales
     to: locales
   - from: resources/icons
     to: icons
+  - from: resources/bin
+    to: bin
 win:
   executableName: vidora
   icon: resources/icons/icon-256.png
@@ -70,12 +72,10 @@ linux:
   icon: resources/icons
   category: Utility
   artifactName: '${productName}_Linux.${ext}'
-snap:
-  grade: stable
-  base: core22
 npmRebuild: false
 publish:
   provider: github
   owner: mohamed7-dev
   repo: vidora
   private: true
+  releaseType: release

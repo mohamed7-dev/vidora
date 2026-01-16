@@ -1,10 +1,10 @@
 {
   "name": "vidora",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "A modern video and audio downloader from YouTube and many other sites",
   "main": "./out/main/index.js",
   "author": {
-    "name": "Mohamed",
+    "name": "mohamed shaban",
     "email": "mo.job3830@gmail.com"
   },
   "homepage": "https://electron-vite.org",
@@ -33,7 +33,9 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
-    "publish:linux": "electron-builder --linux --publish always",
+    "publish:linux": "electron-builder --linux --publish=always",
+    "publish:win": "electron-builder --win --publish=always",
+    "publish:mac": "electron-builder --mac --publish=always",
     "icons:gen": "node scripts/gen-icons.mjs",
     "test:ffmpeg-download": "tsx scripts/test-ffmpeg-download.ts",
     "test:ytdlp-download": "tsx scripts/test-ytdlp-download.ts",
@@ -48,8 +50,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "electron-store": "^11.0.2",
-    "electron-updater": "^6.3.9",
-    "yt-dlp-wrap-plus": "^2.4.3"
+    "electron-updater": "^6.3.9"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",

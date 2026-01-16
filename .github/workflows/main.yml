@@ -1,0 +1,101 @@
+name: Build and Release
+on:
+    push:
+        branches: [main]
+        tags: ["v*"]
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        runs-on: ${{ matrix.os }}
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        strategy:
+            matrix:
+                os:
+                    [
+                        macos-latest,
+                        macos-15-intel,
+                        ubuntu-latest,
+                        windows-latest,
+                    ]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: "pnpm"
+
+            - name: Set up pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 9
+                  run_install: false
+
+            - name: Prepare ffmpeg and Node.js for Linux
+              if: matrix.os == 'ubuntu-latest'
+              run: |
+                  wget "https://github.com/mohamed7-dev/vidora-deps/releases/download/v.1.0.0/linux_ffmpeg_amd64.tar.xz"
+                  wget "https://github.com/mohamed7-dev/vidora-deps/releases/download/v.1.0.0/nodejs-linux-amd64" -O node
+                  chmod +x node
+                  tar -xf linux_ffmpeg_amd64.tar.xz
+                  mkdir -p resources/bin
+                  mv node resources/bin/node
+                  mv ffmpeg_linux_amd64 resources/bin/ffmpeg
+                  rm -rf linux_ffmpeg_amd64.tar.xz
+                  cd resources/bin
+                  chmod +x ffmpeg/bin/ffmpeg
+                  chmod +x ffmpeg/bin/ffprobe
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build app
+              run: pnpm run build
+
+            - name: Publish Linux artifacts
+              if: matrix.os == 'ubuntu-latest'
+              run: pnpm run publish:linux
+
+            - name: Prepare ffmpeg and Node.js for Windows
+              if: matrix.os == 'windows-latest'
+              shell: powershell
+              run: |
+                  Invoke-WebRequest -Uri "https://github.com/mohamed7-dev/vidora-deps/releases/download/v.1.0.0/node.exe" -OutFile node.exe
+                  Invoke-WebRequest -Uri "https://github.com/mohamed7-dev/vidora-deps/releases/download/v.1.0.0/win_ffmpeg_amd64.zip" -OutFile ffmpeg_win64.zip
+                  Expand-Archive -Path ffmpeg_win64.zip -DestinationPath .
+                  New-Item -ItemType Directory -Force -Path resources\bin | Out-Null
+                  Move-Item -Path .\node.exe -Destination .\resources\bin\node.exe -Force
+                  Move-Item -Path .\ffmpeg_win64 -Destination .\resources\bin\ffmpeg -Force
+                  Remove-Item -Path ffmpeg_win64.zip
+
+            - name: Publish Windows artifacts
+              if: matrix.os == 'windows-latest'
+              run: pnpm run publish:windows
+
+            - name: Prepare ffmpeg for Macos Intel
+              if: matrix.os == 'macos-15-intel'
+              run: |
+                  mkdir -p resources/bin/ffmpeg/bin
+                  curl -L https://github.com/mohamed7-dev/vidora-deps/releases/download/v.1.0.0/macos_ffmpeg_amd64  -o resources/bin/ffmpeg/bin/ffmpeg
+                  curl -L https://github.com/mohamed7-dev/vidora-deps/releases/download/v.1.0.0/macos_ffprobe_amd64  -o resources/bin/ffmpeg/bin/ffprobe
+                  chmod +x resources/bin/ffmpeg/bin/ffmpeg
+                  chmod +x resources/bin/ffmpeg/bin/ffprobe
+
+            - name: Prepare ffmpeg for Macos Arm
+              if: matrix.os == 'macos-latest'
+              run: |
+                  mkdir -p resources/bin/ffmpeg/bin
+                  curl -L https://github.com/mohamed7-dev/vidora-deps/releases/download/v.1.0.0/macos_ffmpeg_arm64  -o resources/bin/ffmpeg/bin/ffmpeg
+                  curl -L https://github.com/mohamed7-dev/vidora-deps/releases/download/v.1.0.0/macos_ffprobe_arm64  -o resources/bin/ffmpeg/bin/ffprobe
+                  chmod +x resources/bin/ffmpeg/bin/ffmpeg
+                  chmod +x resources/bin/ffmpeg/bin/ffprobe
+
+            - name: Publish macOS artifacts
+              if: startsWith(matrix.os, 'macos-')
+              run: pnpm run publish:mac

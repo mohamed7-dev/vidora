@@ -20,9 +20,6 @@ importers:
       electron-updater:
         specifier: ^6.3.9
         version: 6.6.2
-      yt-dlp-wrap-plus:
-        specifier: ^2.4.3
-        version: 2.4.3
     devDependencies:
       '@electron-toolkit/eslint-config-prettier':
         specifier: ^3.0.0
@@ -3176,9 +3173,6 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
-
-  yt-dlp-wrap-plus@2.4.3:
-    resolution: {integrity: sha512-D/Q1/gipu8hEmairp5gRyWQE+BsfJanALbkzTxWdTC/LRXlCq00vDdscFxvVrypXT5UGf6KP1gtrKFV087uCEw==}
 
   zip-stream@4.1.1:
     resolution: {integrity: sha512-9qv4rlDiopXg4E69k+vMHjNN63YFMe9sZMrdlvKnCjlCRWeCBswPPMPUfx+ipsAWq1LXHe70RcbaHdJJpS6hyQ==}
@@ -6481,8 +6475,6 @@ snapshots:
       fd-slicer: 1.1.0
 
   yocto-queue@0.1.0: {}
-
-  yt-dlp-wrap-plus@2.4.3: {}
 
   zip-stream@4.1.1:
     dependencies:
