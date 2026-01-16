@@ -15,25 +15,30 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, macos-15-intel, ubuntu-latest, windows-latest]
+        node-version: [24]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: "pnpm"
       - name: Enable corepack
         run: corepack enable
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
-          run_install: false
+          version: 10
+
       - name: Show pnpm version
         run: pnpm -v
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Prepare ffmpeg and Node.js for Linux
         if: matrix.os == 'ubuntu-latest'
@@ -49,8 +54,6 @@ jobs:
           cd resources/bin
           chmod +x ffmpeg/bin/ffmpeg
           chmod +x ffmpeg/bin/ffprobe
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Build app
         run: pnpm run build
