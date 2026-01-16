@@ -76,7 +76,7 @@ jobs:
 
       - name: Publish Windows artifacts
         if: matrix.os == 'windows-latest'
-        run: pnpm run publish:windows
+        run: pnpm run publish:win
 
       - name: Prepare ffmpeg for Macos Intel
         if: matrix.os == 'macos-15-intel'
