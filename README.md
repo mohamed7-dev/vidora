@@ -64,7 +64,9 @@ Below is a collage of screenshots that walks through a typical user journey.
 
 ## Install (prebuilt app)
 
-For **end users**, the easiest way to use Vidora is to download a prebuilt binary from the **Releases** page.
+For **end users**, the easiest way to use Vidora is to [download the latest prebuilt binary](https://mohamed7-dev.github.io/vidora-marketing-website/)
+
+**OR** you can get a prebuilt binary from releases page:
 
 1. Go to the repository **Releases** page.
 2. Download the installer / package for your OS:
